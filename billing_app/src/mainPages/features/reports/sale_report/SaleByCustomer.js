@@ -8,7 +8,7 @@ export default function SaleByCustomer() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-report-sales-by-customer/')
+        axios.get('http://localhost:8000/get-report-sales-by-customer/')
             .then((response) => {
                 setSales(response.data)
                 setLoading(false);

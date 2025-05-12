@@ -22,7 +22,7 @@ export default function LoanDetails() {
   const dropdownRef = UseClickOutside(() => setDropdown(false));
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-loan-list/')
+    axios.get('http://localhost:8000/get-loan-list/')
       .then((response) => {
         setLoanList(response.data)
         setLoading(false);
@@ -57,7 +57,7 @@ export default function LoanDetails() {
   }
 
   const getJournals = (accno) => {
-    axios.get(`http://192.168.1.23:8000/get-loan-journal/${accno}/`)
+    axios.get(`http://localhost:8000/get-loan-journal/${accno}/`)
       .then((response) => {
         setLoanJournal(response.data)
       })

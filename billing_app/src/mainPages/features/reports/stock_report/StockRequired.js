@@ -11,7 +11,7 @@ export default function StockRequired() {
 
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-required-stock-list/')
+    axios.get('http://localhost:8000/get-required-stock-list/')
       .then((response) => {
         setStockList(response.data)
         setLoading(false);

@@ -31,7 +31,7 @@ function CategoryForm({ setReload }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://192.168.1.23:8000/add-category/', formData, {
+      await axios.post('http://localhost:8000/add-category/', formData, {
         headers: {
           "Content-Type": "application/json"
         }
@@ -95,7 +95,7 @@ function CategoryList({ reload, setReload }) {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-category-list/')
+    axios.get('http://localhost:8000/get-category-list/')
       .then((response) => {
         setCategories(response.data)
         setLoading(false)
@@ -109,7 +109,7 @@ function CategoryList({ reload, setReload }) {
   const handleDelete = (category) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this category?");
     if (confirmDelete) {
-      axios.delete(`http://192.168.1.23:8000/delete-category/${category.category_id}/`)
+      axios.delete(`http://localhost:8000/delete-category/${category.category_id}/`)
         .then((response) =>
           setReload((prev) => !prev)
         ).catch((error) => {

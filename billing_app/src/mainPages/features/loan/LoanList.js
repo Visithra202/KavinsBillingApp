@@ -10,7 +10,7 @@ export default function LoanList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-loan-list/')
+    axios.get('http://localhost:8000/get-loan-list/')
       .then((response) => {
         setLoans(response.data)
         setLoading(false);

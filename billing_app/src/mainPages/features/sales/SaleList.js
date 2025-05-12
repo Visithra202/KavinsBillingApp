@@ -9,7 +9,7 @@ export default function SaleList() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-sale-list/')
+        axios.get('http://localhost:8000/get-sale-list/')
             .then((response) => {
                 setSaleList(response.data)
                 setLoading(false);

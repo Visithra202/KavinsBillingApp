@@ -20,7 +20,7 @@ export default function AddItem() {
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-category-list/')
+    axios.get('http://localhost:8000/get-category-list/')
       .then((response) => {
         setCategories(response.data)
       })
@@ -28,7 +28,7 @@ export default function AddItem() {
         console.error('Error Fetching Categories')
       })
 
-    axios.get('http://192.168.1.23:8000/get-brand-list/')
+    axios.get('http://localhost:8000/get-brand-list/')
       .then((response) => {
         setBrands(response.data)
       })
@@ -65,7 +65,7 @@ export default function AddItem() {
     // }
 
     try {
-      await axios.post('http://192.168.1.23:8000/add-item/', itemFormData, {
+      await axios.post('http://localhost:8000/add-item/', itemFormData, {
         headers: {
           "Content-Type": "application/json"
         }

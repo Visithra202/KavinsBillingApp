@@ -173,7 +173,7 @@ input:focus, select:focus {
   }
 
   .print-area, .print-area table, .print-area div{
-    padding: 0 !important;
+    padding: 5px !important;
     margin: 0 !important;
   }
 

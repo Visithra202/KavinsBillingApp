@@ -29,7 +29,7 @@ export default function AddPurchase() {
   }, [selectedProducts]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-purchase-bill-no/')
+    axios.get('http://localhost:8000/get-purchase-bill-no/')
       .then((response) => {
         setBillNo(response.data.bill_no);
       })
@@ -75,11 +75,11 @@ export default function AddPurchase() {
 
     };
 
-    axios.post('http://192.168.1.23:8000/add-purchase/', purchaseData)
+    axios.post('http://localhost:8000/add-purchase/', purchaseData)
       .then(response => {
         alert('Purchase added successfully')
         handleReset();
-        axios.get('http://192.168.1.23:8000/get-purchase-bill-no/')
+        axios.get('http://localhost:8000/get-purchase-bill-no/')
           .then((response) => {
             setBillNo(response.data.bill_no);
           })
@@ -279,7 +279,7 @@ function ProductSelection({ dropdown, setDropdown, searchProduct, setSearchProdu
 
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-stock-list/')
+    axios.get('http://localhost:8000/get-stock-list/')
       .then((response) => {
         setProducts(response.data);
         // setLoading(false);
@@ -401,7 +401,7 @@ function SellerSelection({ dropdown, setDropdown, searchSeller, setSearchSeller,
 
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-seller-list/')
+    axios.get('http://localhost:8000/get-seller-list/')
       .then((response) => {
         setSellers(response.data);
       })

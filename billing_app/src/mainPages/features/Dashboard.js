@@ -48,7 +48,7 @@ function IncomeSummary({ formatRupees }) {
   const [lastMonth, setLastMonth] = useState('')
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-income-summary/')
+    axios.get('http://localhost:8000/get-income-summary/')
       .then((response) => {
         setTodayIncome(response.data.today_income)
         setLastWeek(response.data.last_week_income)
@@ -89,7 +89,7 @@ function StockSummary({ formatRupees }) {
   const [accessoriesStock, setAccessoriesStock] = useState('')
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-stock-summary/')
+    axios.get('http://localhost:8000/get-stock-summary/')
       .then((response) => {
         setTotalStock(response.data.total_stock)
         setMobileStock(response.data.mobile_stock)
@@ -130,7 +130,7 @@ function PurchaseSummary({ formatRupees }) {
   const [lastMonth, setLastMonth] = useState('')
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-purchase-summary/')
+    axios.get('http://localhost:8000/get-purchase-summary/')
       .then((response) => {
         setTodayPurchase(response.data.today_purchase_amount)
         setLastWeek(response.data.last_week_purchase)
@@ -171,7 +171,7 @@ function SalesSummary({ formatRupees }) {
   const [lastMonth, setLastMonth] = useState('')
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-sales-summary/')
+    axios.get('http://localhost:8000/get-sales-summary/')
       .then((response) => {
         setTodaySales(response.data.today_sales_amount)
         setLastWeek(response.data.last_week_sales)
@@ -213,7 +213,7 @@ function CustomerBoard() {
   const [lastMonth, setLastMonth] = useState('')
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-dashboard-customer-details/')
+    axios.get('http://localhost:8000/get-dashboard-customer-details/')
       .then((response) => {
         setTotalCustomers(response.data.total_customers)
         setLastWeek(response.data.last_week_customers)
@@ -253,7 +253,7 @@ function Recentsales() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/recent-sales/')
+    axios.get('http://localhost:8000/recent-sales/')
       .then((response) => {
         setSale(response.data)
         setLoading(false)
@@ -303,7 +303,7 @@ function DashboardChart() {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/stats/last-10-days/')
+    axios.get('http://localhost:8000/stats/last-10-days/')
       .then(res => {
         setChartData(res.data);
       })

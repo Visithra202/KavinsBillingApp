@@ -35,7 +35,7 @@ function UserForm({ setReload }) {
     }
     
     try {
-      await axios.post('http://192.168.1.23:8000/add-user/', userFormData, {
+      await axios.post('http://localhost:8000/add-user/', userFormData, {
         headers: {
           "Content-Type": "application/json"
         }
@@ -90,7 +90,7 @@ function UserList({ reload, setReload }) {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-user-list/')
+    axios.get('http://localhost:8000/get-user-list/')
       .then((response) => {
         setUsers(response.data)
         setLoading(false)
@@ -113,7 +113,7 @@ function UserList({ reload, setReload }) {
   const handleDelete = (user) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if(confirmDelete){
-      axios.delete(`http://192.168.1.23:8000/delete-user/${user.user_id}/`)
+      axios.delete(`http://localhost:8000/delete-user/${user.user_id}/`)
         .then((response)=>
           setReload((prev)=>!prev)
         ).catch((error)=>{

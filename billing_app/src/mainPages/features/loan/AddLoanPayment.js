@@ -44,7 +44,7 @@ function PaymentForm({ collection }) {
         }
 
         try {
-            await axios.post('http://192.168.1.23:8000/add-loan-payment/', formData, {
+            await axios.post('http://localhost:8000/add-loan-payment/', formData, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -99,7 +99,7 @@ function DueDetails({ collection }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        axios.get(`http://192.168.1.23:8000/get-loan-bill/${collection.loan_accno}`)
+        axios.get(`http://localhost:8000/get-loan-bill/${collection.loan_accno}`)
             .then((response) => {
                 setLoanBills(response.data.loan_bills);
                 setLoading(false);

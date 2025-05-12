@@ -21,7 +21,7 @@ export default function PurchaseDetails() {
 
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-purchase-list/')
+    axios.get('http://localhost:8000/get-purchase-list/')
       .then((response) => {
         setPurchases(response.data)
         setLoading(false);

@@ -24,7 +24,7 @@ function Logo() {
     // const [loading,setLoading]=useState(false);
 
     useEffect(() => {
-        axios.get("http://192.168.1.23:8000/get-logo/")
+        axios.get("http://localhost:8000/get-logo/")
             .then(response => {
                 console.log(response.data.logo_path)
                 setLogo(`${response.data.logo_path}`);

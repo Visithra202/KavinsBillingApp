@@ -8,7 +8,7 @@ export default function CashReport() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-report-cash/')
+    axios.get('http://localhost:8000/get-report-cash/')
       .then((response) => {
         setCashList(response.data)
         setLoading(false);

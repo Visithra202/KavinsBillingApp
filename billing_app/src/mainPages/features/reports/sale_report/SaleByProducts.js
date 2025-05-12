@@ -8,7 +8,7 @@ export default function SaleByProducts() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-report-sales-by-products/')
+        axios.get('http://localhost:8000/get-report-sales-by-products/')
             .then((response) => {
                 setSales(response.data)
                 setLoading(false);

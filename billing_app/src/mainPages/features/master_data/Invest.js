@@ -43,7 +43,7 @@ function InvestForm({ setReload }) {
     }
     
     try {
-      await axios.post('http://192.168.1.23:8000/add-invest/', investData, {
+      await axios.post('http://localhost:8000/add-invest/', investData, {
         headers: {
           "Content-Type": "application/json"
         }
@@ -104,7 +104,7 @@ function InvestList({ reload, setReload }) {
   const [investList, setInvestList] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-invest-list/')
+    axios.get('http://localhost:8000/get-invest-list/')
       .then((response) => {
         setInvestList(response.data)
         setLoading(false)

@@ -8,7 +8,7 @@ export default function PurchaseByProducts() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-report-purchase-by-products/')
+        axios.get('http://localhost:8000/get-report-purchase-by-products/')
             .then((response) => {
                 setPurchases(response.data)
                 setLoading(false);

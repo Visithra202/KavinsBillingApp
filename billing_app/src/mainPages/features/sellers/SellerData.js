@@ -43,7 +43,7 @@ function SellerForm({ setReload }) {
             sellerFormData.seller_mph='+91 '+seller_mph;
 
         try {
-            await axios.post('http://192.168.1.23:8000/add-seller/', sellerFormData, {
+            await axios.post('http://localhost:8000/add-seller/', sellerFormData, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -113,7 +113,7 @@ function SellerList({ reload, setReload }) {
     const [sellers, setSellers] = useState([]);
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-seller-list/')
+        axios.get('http://localhost:8000/get-seller-list/')
             .then((response) => {
                 setSellers(response.data)
                 setLoading(false)
@@ -136,7 +136,7 @@ function SellerList({ reload, setReload }) {
     const handleDelete = (seller) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this seller?");
         if (confirmDelete) {
-            axios.delete(`http://192.168.1.23:8000/delete-seller/${seller.seller_id}/`)
+            axios.delete(`http://localhost:8000/delete-seller/${seller.seller_id}/`)
                 .then((response) =>
                     setReload((prev) => !prev)
                 ).catch((error) => {

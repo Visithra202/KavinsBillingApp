@@ -16,7 +16,7 @@ export default function Login({ setLogin }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
-        axios.post('http://192.168.1.23:8000/user-login/', loginFormData)
+        axios.post('http://localhost:8000/user-login/', loginFormData)
             .then((response) => {
                 setLoading(false)
                 navigate('/dashboard');

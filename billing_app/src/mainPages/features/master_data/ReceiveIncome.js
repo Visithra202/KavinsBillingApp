@@ -53,7 +53,7 @@ function ReceiveForm({ setReload, mobileIncome, accIncome, receiveAmt, setReceiv
       }
 
       try {
-        await axios.post('http://192.168.1.23:8000/receive-income/', receiveData, {
+        await axios.post('http://localhost:8000/receive-income/', receiveData, {
           headers: {
             "Content-Type": "application/json"
           }
@@ -110,7 +110,7 @@ function IncomeList({ reload, setReload, setMobileIncome, setAccIncome }) {
   const [accIncomeList, setAccIncomeList] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-income-list/')
+    axios.get('http://localhost:8000/get-income-list/')
       .then((response) => {
         setMobIncomeList(response.data.mobincome_list);
         setMobileIncome(response.data.mobile_income);

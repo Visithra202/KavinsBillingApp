@@ -25,7 +25,7 @@ export default function AddSale() {
   const [totAmt, setTotAmt] = useState(0);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-sale-bill-no/')
+    axios.get('http://localhost:8000/get-sale-bill-no/')
       .then((response) => {
         setBillNo(response.data.bill_no);
       })
@@ -84,13 +84,13 @@ export default function AddSale() {
     };
     // console.log(saleData)
 
-    axios.post('http://192.168.1.23:8000/add-sale/', saleData)
+    axios.post('http://localhost:8000/add-sale/', saleData)
       .then(response => {
         // console.log('Sale Submitted:', response.data);
         alert('Sale added successfully')
         handleReset();
 
-        axios.get('http://192.168.1.23:8000/get-sale-bill-no/').then((response) => {
+        axios.get('http://localhost:8000/get-sale-bill-no/').then((response) => {
           setBillNo(response.data.bill_no);
         })
           .catch((error) => {
@@ -303,7 +303,7 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
 
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-stock-list/')
+    axios.get('http://localhost:8000/get-stock-list/')
       .then((response) => {
         setProducts(response.data);
         // setLoading(false);
@@ -436,7 +436,7 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
   const dropdownRef = UseClickOutside(() => setActiveDropdown(null));
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-customer-list/')
+    axios.get('http://localhost:8000/get-customer-list/')
       .then((response) => {
         setCustomers(response.data);
       })

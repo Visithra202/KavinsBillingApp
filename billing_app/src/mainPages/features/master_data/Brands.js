@@ -34,7 +34,7 @@ function BrandForm({ setReload }) {
     setError('');
     
     try {
-      await axios.post('http://192.168.1.23:8000/add-brand/', formData, {
+      await axios.post('http://localhost:8000/add-brand/', formData, {
         headers: {
           "Content-Type": "application/json"
         }
@@ -95,7 +95,7 @@ function BrandList({ reload, setReload }) {
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-brand-list/')
+    axios.get('http://localhost:8000/get-brand-list/')
       .then((response) => {
         setBrands(response.data)
         setLoading(false)
@@ -118,7 +118,7 @@ function BrandList({ reload, setReload }) {
   const handleDelete = (brand) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this brand?");
     if (confirmDelete) {
-      axios.delete(`http://192.168.1.23:8000/delete-brand/${brand.brand_id}/`)
+      axios.delete(`http://localhost:8000/delete-brand/${brand.brand_id}/`)
         .then((response) =>
           setReload((prev) => !prev)
         ).catch((error) => {

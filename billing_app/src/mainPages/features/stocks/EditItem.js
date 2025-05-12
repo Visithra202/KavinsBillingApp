@@ -19,7 +19,7 @@ export default function EditItem() {
     },[])
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-category-list/')
+        axios.get('http://localhost:8000/get-category-list/')
             .then((response) => {
                 setCategories(response.data)
             })
@@ -27,7 +27,7 @@ export default function EditItem() {
                 console.error('Error Fetching Categories')
             })
 
-        axios.get('http://192.168.1.23:8000/get-brand-list/')
+        axios.get('http://localhost:8000/get-brand-list/')
             .then((response) => {
                 setBrands(response.data)
             })
@@ -52,7 +52,7 @@ export default function EditItem() {
         }
 
         try{
-            await axios.put(`http://192.168.1.23:8000/edit-item/${itemFormData.item_id}/`, itemFormData,{
+            await axios.put(`http://localhost:8000/edit-item/${itemFormData.item_id}/`, itemFormData,{
                 headers:{"Content-Type":"application/json"}
             });
             navigate('/stockList');

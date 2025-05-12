@@ -16,7 +16,7 @@ export default function LoanBill() {
 
     const loan=location.state?.loan||{}
 
-    axios.get(`http://192.168.1.23:8000/get-acc-loan-bills/${loan?.loan_accno}`)
+    axios.get(`http://localhost:8000/get-acc-loan-bills/${loan?.loan_accno}`)
       .then((response) => {
         setLoanBills(response.data)
       }).catch((error) => {

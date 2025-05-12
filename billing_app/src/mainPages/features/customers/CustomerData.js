@@ -43,7 +43,7 @@ function CustomerForm({ setReload }) {
             formData.mph='+91 '+mph;
 
         try {
-            await axios.post('http://192.168.1.23:8000/add-customer/', formData, {
+            await axios.post('http://localhost:8000/add-customer/', formData, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -113,7 +113,7 @@ function CustomerList({ reload, setReload }) {
     const [customers, setCustomers] = useState([]);
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-customer-list/')
+        axios.get('http://localhost:8000/get-customer-list/')
             .then((response) => {
                 setCustomers(response.data)
                 setLoading(false)
@@ -136,7 +136,7 @@ function CustomerList({ reload, setReload }) {
     const handleDelete = (customer) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this customer?");
         if (confirmDelete) {
-            axios.delete(`http://192.168.1.23:8000/delete-customer/${customer.customer_id}/`)
+            axios.delete(`http://localhost:8000/delete-customer/${customer.customer_id}/`)
                 .then((response) =>
                     setReload((prev) => !prev)
                 ).catch((error) => {

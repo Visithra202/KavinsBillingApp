@@ -10,7 +10,7 @@ export default function PurchaseList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-purchase-list/')
+    axios.get('http://localhost:8000/get-purchase-list/')
       .then((response) => {
         setPurchaseList(response.data)
         setLoading(false);

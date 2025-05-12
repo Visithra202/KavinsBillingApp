@@ -10,7 +10,7 @@ export default function LoanCollection() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://192.168.1.23:8000/get-collection-list/')
+    axios.get('http://localhost:8000/get-collection-list/')
       .then((response) => {
         const data = response.data.overdue_loans;
         setCollections(data);

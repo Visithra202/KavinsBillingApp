@@ -48,7 +48,7 @@ export default function CreateLoan() {
         }
 
         try {
-            await axios.post('http://192.168.1.23:8000/create-loan/', loanData, {
+            await axios.post('http://localhost:8000/create-loan/', loanData, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -226,7 +226,7 @@ function CustomerSelection({ searchCustomer, setSearchCustomer }) {
 
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-customer-list/')
+        axios.get('http://localhost:8000/get-customer-list/')
             .then((response) => {
                 setCustomers(response.data);
                 setLoading(false);

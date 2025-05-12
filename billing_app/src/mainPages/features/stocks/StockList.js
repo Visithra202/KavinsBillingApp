@@ -9,7 +9,7 @@ export default function StockList() {
     const navigate=useNavigate();
 
     useEffect(() => {
-        axios.get('http://192.168.1.23:8000/get-stock-list/')
+        axios.get('http://localhost:8000/get-stock-list/')
             .then((response) => {
                 setItemList(response.data)
             })
@@ -21,7 +21,7 @@ export default function StockList() {
     const handleDelete = (item) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this Item?");
         if (confirmDelete) {
-            axios.delete(`http://192.168.1.23:8000/delete-item/${item.item_id}/`)
+            axios.delete(`http://localhost:8000/delete-item/${item.item_id}/`)
                 .then((response) =>
                     setReload((prev) => !prev)
                 ).catch((error) => {
