@@ -1,0 +1,199 @@
+html, body, #root {
+  height: 100%;
+}
+
+
+.sidebar {
+  width: 250px !important;
+  font-weight: 500;
+}
+
+.logo_image {
+  width: 130px;
+}
+
+.navbar {
+  height: 65px;
+}
+
+.mainbar {
+  background-color: rgb(244, 242, 247);
+}
+
+.btn {
+  font-size: 14px !important;
+}
+
+.menu-icon,
+.menu-icon i {
+  font-size: 14px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+th {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+td {
+  font-size: 14px;
+}
+
+::-webkit-scrollbar {
+  background-color: transparent;
+  width: 7px; 
+}
+
+::-webkit-scrollbar-thumb{
+  background-color: rgba(72, 49, 77, 0.342);
+  border-radius: 5px;
+  max-height: 5%;
+}
+
+::-webkit-scrollbar-button{
+  display: inline;
+}
+::-webkit-scrollbar-thumb:hover{
+  background-color: rgba(37, 25, 39, 0.39);
+}
+
+.item-title, .loan-title{
+  position: absolute;
+  top: -12px;
+  left: 9px;
+  background-color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.form-control, .form-select, .loan-control{
+  font-size: 13px !important;
+  height: 35px;
+}
+
+.itmlst th{
+  border-bottom: none !important;
+  background-color: rgba(80, 77, 77, 0.73) !important; 
+}
+
+.itmlst thead{
+  background-color: white;
+}
+
+.custom-hover {
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* .custom-hover:hover {
+  background-color: #444b50 !important; 
+  color: white !important;
+} */
+
+.payment{
+  font-size: 14px;
+}
+
+.printContent span{
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+
+input:focus, select:focus {
+  box-shadow: 0 0 4px rgb(17, 117, 163) !important;
+}
+
+.list-item .menu:hover{
+  background-color: #666;
+  border-radius: 5px ;
+}
+
+.list-item a:hover{
+  background-color: #333;
+  border-radius: 5px ;
+}
+
+
+.list-item .isActive{
+  background-color: #666;
+  border-radius: 5px;
+}
+
+.report{
+  font-size: 14px;
+  color: black;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  text-decoration: none;
+}
+
+.reportby{
+  text-decoration: none;
+  color: black;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.report, .reportby:hover{
+  cursor: pointer;
+  background-color: #666;
+}
+
+.report i{
+  font-size: 12px;
+}
+
+.sidebar-menu{
+  color: white;
+  background: transparent;
+  border: none;
+  text-align: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  font-weight: 600;
+}
+
+.cashreport td{
+  border-bottom: 0;
+}
+
+@media print {
+  .print-area table, .print-area div{
+      outline: none !important;
+      border: none !important;
+      box-shadow: none !important;
+  }
+
+  .print-area, .print-area table, .print-area div{
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-area th,
+  .print-area td {
+    border: 1px solid black;
+    padding: 6px;
+    background: none !important;
+    color: black !important;
+    text-align: left;
+    font-size: 12px;
+  }
+
+  .print-area th {
+    font-weight: bold;
+  }
+
+  .print-area .btnrow{
+    visibility: hidden !important;
+  }
+}
+
+
