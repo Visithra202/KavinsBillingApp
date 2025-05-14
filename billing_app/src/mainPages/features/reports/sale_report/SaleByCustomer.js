@@ -13,7 +13,8 @@ export default function SaleByCustomer() {
                 setSales(response.data)
                 setLoading(false);
             }).catch((error) => {
-                console.error('Error fetching sales report ' + error.response.data)
+                // console.error('Error fetching sales report ' + error.response.data)
+                setLoading(false);
             })
     }, [])
 

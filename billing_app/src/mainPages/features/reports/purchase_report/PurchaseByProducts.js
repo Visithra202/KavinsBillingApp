@@ -13,7 +13,8 @@ export default function PurchaseByProducts() {
                 setPurchases(response.data)
                 setLoading(false);
             }).catch((error) => {
-                console.error('Error fetching purchases report ' + error.response.data)
+                // console.error('Error fetching purchases report ' + error.response.data)
+                setLoading(false);
             })
     }, [])
 

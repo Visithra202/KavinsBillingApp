@@ -21,17 +21,15 @@ export default function SideBar() {
 function Logo() {
 
     const [logo, setLogo] = useState(null);
-    // const [loading,setLoading]=useState(false);
 
     useEffect(() => {
         axios.get("http://localhost:8000/get-logo/")
             .then(response => {
-                console.log(response.data.logo_path)
+                // console.log(response.data.logo_path)
                 setLogo(`${response.data.logo_path}`);
-                // setLoading(true);
             })
             .catch(error => {
-                console.error("Error fetching logo:", error);
+                // console.error("Error fetching logo:", error);
             });
     }, []);
 

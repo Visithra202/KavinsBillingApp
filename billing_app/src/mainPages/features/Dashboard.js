@@ -21,7 +21,7 @@ export default function Dashboard() {
         {/* <CustomerBoard /> */}
         <SalesSummary formatRupees={formatRupees} />
         <PurchaseSummary formatRupees={formatRupees} />
-        <IncomeSummary formatRupees={formatRupees}/>
+        <IncomeSummary formatRupees={formatRupees} />
         <StockSummary formatRupees={formatRupees} />
       </div>
 
@@ -54,7 +54,7 @@ function IncomeSummary({ formatRupees }) {
         setLastWeek(response.data.last_week_income)
         setLastMonth(response.data.last_month_income)
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
       })
   }, [])
 
@@ -62,7 +62,7 @@ function IncomeSummary({ formatRupees }) {
     <>
       <div className='col shadow rounded-3 me-3 px-3 py-1' style={{ backgroundColor: 'rgb(65,139,202)' }}>
         <div className='d-flex align-items-center'>
-        <i class="bi bi-cash-coin me-4" style={{ fontSize: '2.5rem' }}></i>
+          <i class="bi bi-cash-coin me-4" style={{ fontSize: '2.5rem' }}></i>
           <div className='mt-3'>
             <p className='fw-bold mb-0' style={{ fontSize: '14px' }}>INCOME</p>
             <h5 className='text-center'>{formatRupees(todayIncome)}</h5>
@@ -95,7 +95,7 @@ function StockSummary({ formatRupees }) {
         setMobileStock(response.data.mobile_stock)
         setAccessoriesStock(response.data.accessories_stock)
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
       })
   }, [])
   return (
@@ -136,7 +136,7 @@ function PurchaseSummary({ formatRupees }) {
         setLastWeek(response.data.last_week_purchase)
         setLastMonth(response.data.last_month_purchase)
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
       })
   }, [])
 
@@ -177,7 +177,7 @@ function SalesSummary({ formatRupees }) {
         setLastWeek(response.data.last_week_sales)
         setLastMonth(response.data.last_month_sales)
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
       })
   }, [])
 
@@ -219,7 +219,7 @@ function CustomerBoard() {
         setLastWeek(response.data.last_week_customers)
         setLastMonth(response.data.last_month_customers)
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
       })
   }, [])
 
@@ -258,7 +258,8 @@ function Recentsales() {
         setSale(response.data)
         setLoading(false)
       }).catch((error) => {
-        console.log(error)
+        // console.log(error)
+        setLoading(false);
       })
   }, [])
 
@@ -308,7 +309,7 @@ function DashboardChart() {
         setChartData(res.data);
       })
       .catch(err => {
-        console.error('Failed to fetch chart data:', err);
+        // console.error('Failed to fetch chart data:', err);
       });
   }, []);
   return (

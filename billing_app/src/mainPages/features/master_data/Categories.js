@@ -101,7 +101,7 @@ function CategoryList({ reload, setReload }) {
         setLoading(false)
       })
       .catch((error) => {
-        console.error('Error Fetching Categories')
+        // console.error('Error Fetching Categories')
         setLoading(false)
       })
   }, [reload])

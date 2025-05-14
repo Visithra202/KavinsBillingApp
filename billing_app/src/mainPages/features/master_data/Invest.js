@@ -110,7 +110,7 @@ function InvestList({ reload, setReload }) {
         setLoading(false)
       })
       .catch((error) => {
-        console.error('Error Fetching Invest List')
+        // console.error('Error Fetching Invest List')
         setLoading(false)
       })
   }, [reload])

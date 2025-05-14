@@ -18,7 +18,7 @@ export default function LoanCollection() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching collections');
+        // console.error('Error Fetching collections');
         setLoading(false);
       });
   }, []);
@@ -95,7 +95,7 @@ export default function LoanCollection() {
                     style={{ cursor: 'pointer' }}
                     onClick={() => navigate('/addLoanPayment', { state: { collect } })}
                   >
-                    <button className='btn btn-primary py-0 px-2 rounded-pill'>+add</button>
+                    <button className='btn btn-primary py-0 px-2 rounded-pill'>+collect</button>
                   </td>
                 </tr>
               ))

@@ -31,6 +31,7 @@ import CashReport from './features/reports/cash_report/CashReport'
 import Invest from './features/master_data/Invest'
 import ReceiveIncome from './features/master_data/ReceiveIncome'
 import StockRequired from './features/reports/stock_report/StockRequired'
+import PayAdvanced from './features/loan/PayAdvanced'
 
 export default function AppRoutes() {
   return (
@@ -67,8 +68,8 @@ export default function AppRoutes() {
         <Route path='/categories' element={<Categories />}></Route>
         <Route path='/brands' element={<Brands />}></Route>
         <Route path='/users' element={<Users />}></Route>
-        <Route path='/invest' element={<Invest/>}></Route>
-        <Route path='/receiveIncome' element={<ReceiveIncome/>}></Route>
+        <Route path='/invest' element={<Invest />}></Route>
+        <Route path='/receiveIncome' element={<ReceiveIncome />}></Route>
 
         {/*customer */}
         <Route path='/customerData' element={<CustomerData />}></Route>
@@ -84,13 +85,14 @@ export default function AppRoutes() {
         <Route path='/loanCollection' element={<LoanCollection />}></Route>
         <Route path='/addLoanPayment' element={<AddLoanPayment />}></Route>
         <Route path='/loanBills' element={<LoanBill />}></Route>
+        <Route path='/payAdvanced' element={<PayAdvanced />}></Route>
 
         <Route path='/reports/sale/sale_by_customer' element={<SaleByCustomer />} />
         <Route path='/reports/sale/sale_by_products' element={<SaleByProducts />} />
-        <Route path='/reports/purchase/purchase_by_products' element={<PurchaseByProducts/>}></Route>
-        <Route path='/reports/purchase/purchase_by_seller' element={<PurchaseBySeller/>}></Route>
-        <Route path='/reports/cash_report' element={<CashReport/>} />
-        <Route path='/reports/stock/required_stock' element={<StockRequired/>} />
+        <Route path='/reports/purchase/purchase_by_products' element={<PurchaseByProducts />}></Route>
+        <Route path='/reports/purchase/purchase_by_seller' element={<PurchaseBySeller />}></Route>
+        <Route path='/reports/cash_report' element={<CashReport />} />
+        <Route path='/reports/stock/required_stock' element={<StockRequired />} />
 
       </Routes>
     </div>

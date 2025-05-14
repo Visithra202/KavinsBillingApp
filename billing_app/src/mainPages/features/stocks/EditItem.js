@@ -24,7 +24,7 @@ export default function EditItem() {
                 setCategories(response.data)
             })
             .catch((error) => {
-                console.error('Error Fetching Categories')
+                // console.error('Error Fetching Categories')
             })
 
         axios.get('http://localhost:8000/get-brand-list/')
@@ -32,7 +32,7 @@ export default function EditItem() {
                 setBrands(response.data)
             })
             .catch((error) => {
-                console.error('Error Fetching Brands')
+                // console.error('Error Fetching Brands')
             })
 
     }, [])

@@ -101,7 +101,7 @@ function BrandList({ reload, setReload }) {
         setLoading(false)
       })
       .catch((error) => {
-        console.error('Error Fetching Brands')
+        // console.error('Error Fetching Brands')
         setLoading(false)
       })
   }, [reload])

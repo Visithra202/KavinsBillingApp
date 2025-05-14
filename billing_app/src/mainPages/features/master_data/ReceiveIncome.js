@@ -119,7 +119,7 @@ function IncomeList({ reload, setReload, setMobileIncome, setAccIncome }) {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching Income List');
+        // console.error('Error Fetching Income List');
         setLoading(false);
       });
   }, [reload]);

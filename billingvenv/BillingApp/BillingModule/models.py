@@ -137,6 +137,9 @@ class PurchaseItem(TransactionItem):
 class Loan(models.Model):
     loan_accno=models.CharField(primary_key=True, max_length=15)
     customer=models.ForeignKey('Customer', on_delete=models.CASCADE)
+    total_payment=models.DecimalField(max_digits=10, decimal_places=2)
+    selling_price=models.DecimalField(max_digits=10, decimal_places=2)
+    advance_amt=models.DecimalField(max_digits=10, decimal_places=2)
     loan_amount=models.DecimalField(max_digits=10, decimal_places=2)
     payment_amount=models.DecimalField(max_digits=10, decimal_places=2)
     emi_amount=models.DecimalField(max_digits=10, decimal_places=2)
@@ -148,6 +151,9 @@ class Loan(models.Model):
     bal_amount=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     advance_bal=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     advance_paydate=models.DateField(null=True, blank=True)
+    lock_id=models.CharField(max_length=30)
+    ref_mph=models.CharField(max_length=255, null=True, blank=True)
+
 
     def __str__(self):
         return self.loan_accno

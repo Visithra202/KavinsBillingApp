@@ -34,7 +34,7 @@ export default function AddPurchase() {
         setBillNo(response.data.bill_no);
       })
       .catch((error) => {
-        console.error('Error Fetching Bill No');
+        // console.error('Error Fetching Bill No');
       });
   }, []);
 
@@ -70,7 +70,7 @@ export default function AddPurchase() {
         credit
       },
       total_amount: totalAmount,
-      paid_amount : cash+account+credit,
+      paid_amount: cash + account + credit,
       balance: totalAmount - (cash + account + credit)
 
     };
@@ -84,10 +84,13 @@ export default function AddPurchase() {
             setBillNo(response.data.bill_no);
           })
           .catch((error) => {
-            console.error('Error Fetching Bill No');
+            // console.error('Error Fetching Bill No');
           });
       })
-      .catch(error => console.error('Error submitting purchase:', error));
+      .catch((error) => {
+        alert('Error adding purchase')
+        // console.error('Error submitting purchase:', error)
+      });
   };
 
   const handleReset = () => {
@@ -117,7 +120,7 @@ export default function AddPurchase() {
         {/* Date */}
         <div className='col d-flex flex-column'>
           <label htmlFor='purchase_date' className='form-label'>Date</label>
-          <input  id='purchase_date' className='form-control border rounded-pill px-2' disabled value={date.toLocaleDateString()} style={{ width: '200px' }} />
+          <input id='purchase_date' className='form-control border rounded-pill px-2' disabled value={date.toLocaleDateString()} style={{ width: '200px' }} />
         </div>
 
         {/* Bill No */}
@@ -282,11 +285,9 @@ function ProductSelection({ dropdown, setDropdown, searchProduct, setSearchProdu
     axios.get('http://localhost:8000/get-stock-list/')
       .then((response) => {
         setProducts(response.data);
-        // setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching Items');
-        // setLoading(false);
+        // console.error('Error Fetching Items');
       });
   }, [])
 
@@ -345,7 +346,7 @@ function ProductSelection({ dropdown, setDropdown, searchProduct, setSearchProdu
 
 
         {dropdown === 'products' && searchProduct.length > 0 &&
-          <div ref={dropdownRef} className='dropdown-menu show mt-2' style={{  maxHeight: '35%', overflowY: 'auto' }} >
+          <div ref={dropdownRef} className='dropdown-menu show mt-2' style={{ maxHeight: '35%', overflowY: 'auto' }} >
             <table className='table table-hover' style={{ width: '250px' }}>
               <thead>
                 <tr>
@@ -358,28 +359,24 @@ function ProductSelection({ dropdown, setDropdown, searchProduct, setSearchProdu
               </thead>
               <tbody>
                 {
-                  products.length > 0 ? (
-                    loading ? (
-                      <tr><td colSpan='4'><Loader size='sm' message='Fetching products' /></td></tr>
-                    ) : (
-                      filteredProducts.length > 0 ? (
-                        filteredProducts.map((product, index) => (
-                          <tr key={index} className='custom-hover' onClick={() => handleProduct(product)}>
-                            <td>{product.item_name}</td>
-                            <td>{product.category}</td>
-                            <td>{product.brand}</td>
-                            <td>{product.purchase_price}</td>
-                            <td>{product.sale_price}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="4" className="text-center">No Matches Found</td>
-                        </tr>
-                      )
-                    )
+                  loading ? (
+                    <tr><td colSpan='4'><Loader size='sm' message='Fetching products' /></td></tr>
                   ) : (
-                    <tr><td colSpan="4" className="text-center">Products not found</td></tr>
+                    filteredProducts.length > 0 ? (
+                      filteredProducts.map((product, index) => (
+                        <tr key={index} className='custom-hover' onClick={() => handleProduct(product)}>
+                          <td>{product.item_name}</td>
+                          <td>{product.category}</td>
+                          <td>{product.brand}</td>
+                          <td>{product.purchase_price}</td>
+                          <td>{product.sale_price}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="text-center">No Matches Found</td>
+                      </tr>
+                    )
                   )
                 }
               </tbody>
@@ -406,7 +403,7 @@ function SellerSelection({ dropdown, setDropdown, searchSeller, setSearchSeller,
         setSellers(response.data);
       })
       .catch((error) => {
-        console.error('Error Fetching Sellers');
+        // console.error('Error Fetching Sellers');
       });
   }, [])
 
@@ -440,10 +437,10 @@ function SellerSelection({ dropdown, setDropdown, searchSeller, setSearchSeller,
     <>
       <label htmlFor='search_seller' className='form-label'>Seller</label>
       <input id='search_seller' className='form-control border rounded-pill px-2' placeholder='Search seller'
-        onChange={handleSellerChange} value={searchSeller} style={{ width: '250px' }} autoFocus/>
+        onChange={handleSellerChange} value={searchSeller} style={{ width: '250px' }} autoFocus />
 
       {dropdown === 'seller' && searchSeller.length > 0 &&
-        <div ref={dropdownRef} className='dropdown-menu show' style={{marginTop:'70px', width: '250px', maxHeight:'35%', overflowY:'auto' }} >
+        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', width: '250px', maxHeight: '35%', overflowY: 'auto' }} >
           <table className='table table-hover'>
             <thead>
               <tr>

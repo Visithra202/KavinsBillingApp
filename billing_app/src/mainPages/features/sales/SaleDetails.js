@@ -27,7 +27,8 @@ export default function SaleDetails() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching Sales')
+        setLoading(false);
+        // console.error('Error Fetching Sales')
       })
   }, [])
 

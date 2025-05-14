@@ -25,7 +25,7 @@ export default function AddItem() {
         setCategories(response.data)
       })
       .catch((error) => {
-        console.error('Error Fetching Categories')
+        // console.error('Error Fetching Categories')
       })
 
     axios.get('http://localhost:8000/get-brand-list/')
@@ -33,7 +33,7 @@ export default function AddItem() {
         setBrands(response.data)
       })
       .catch((error) => {
-        console.error('Error Fetching Brands')
+        // console.error('Error Fetching Brands')
       })
 
   }, [])
@@ -47,22 +47,6 @@ export default function AddItem() {
   const handleSubmit = async (e) => {
 
     e.preventDefault();
-
-    // const trimmedData = {};
-    // let hasEmptyField = false;
-
-    // for (const key in itemFormData) {
-    //   const trimmedValue = itemFormData[key].trim?.() || itemFormData[key]; // Use trim only on strings
-    //   if (trimmedValue === '') {
-    //     hasEmptyField = true;
-    //   }
-    //   trimmedData[key] = trimmedValue;
-    // }
-
-    // if (hasEmptyField) {
-    //   alert("All fields must be filled properly and cannot contain only spaces.");
-    //   return;
-    // }
 
     try {
       await axios.post('http://localhost:8000/add-item/', itemFormData, {
@@ -88,10 +72,10 @@ export default function AddItem() {
       brand: '',
       purchase_price: '',
       sale_price: '',
-      // tax_option: '',
+      tax_option: '',
       mrp: '',
-      // discount_type: '',
-      // discount: '',
+      discount_type: '',
+      discount: '',
       quantity: '',
       min_stock: ''
     })

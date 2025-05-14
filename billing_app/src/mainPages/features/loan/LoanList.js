@@ -15,7 +15,8 @@ export default function LoanList() {
         setLoans(response.data)
         setLoading(false);
       }).catch((error) => {
-        console.error('Error fetching Loans ' + error.response.data)
+        setLoading(false);
+        // console.error('Error fetching Loans ' + error.response.data)
       })
   }, [])
 

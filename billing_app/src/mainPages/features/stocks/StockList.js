@@ -2,21 +2,47 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 // import EditItem from './EditItem';
 import { useNavigate } from 'react-router-dom';
+import Loader from '../../components/Loader';
 
 export default function StockList() {
+    const [searchTerm, setSearchTerm] = useState('');
     const [itemList, setItemList] = useState([]);
-    const [reload,setReload] = useState(true)
-    const navigate=useNavigate();
+    const [reload, setReload] = useState(true)
+    const [loading, setLoading] = useState(true);
+    const [filteredItems, setFilteredItems] = useState([]);
+
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         axios.get('http://localhost:8000/get-stock-list/')
             .then((response) => {
-                setItemList(response.data)
+                setItemList(response.data);
+                setFilteredItems(response.data);
+                setLoading(false);
+
             })
             .catch((error) => {
-                console.error('Error Fetching Items')
+                // console.error('Error Fetching Items')
+                setLoading(false);
+
             })
     }, [reload])
+
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredItems(itemList);
+        } else {
+            const filtered = itemList.filter((item) => {
+                const name = item.item_name.toLowerCase();
+                const category = item.category.toLowerCase();
+                const brand = item.brand.toLowerCase();
+                const term = searchTerm.toLowerCase();
+                return name.includes(term) || brand.includes(term) || category.includes(term);
+            });
+            setFilteredItems(filtered);
+        }
+    }, [searchTerm, itemList]);
 
     const handleDelete = (item) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this Item?");
@@ -30,13 +56,28 @@ export default function StockList() {
         }
     }
 
-    return (
-        <div className='container'  style={{ height: 'calc(100vh - 85px)' }}>
+    const handleChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
 
-            <div className='border border-secondary bg-white rounded-5 shadow  my-2 scroll-bar' 
-            style={{minHeight:'100%', maxHeight: '100%', overflowY: 'auto' }}>
+    return (
+        <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
+
+            <div>
+                <input id='search'
+                    className='form-control border rounded px-2 my-3'
+                    type='text'
+                    placeholder='Search...'
+                    style={{ width: '300px' }}
+                    value={searchTerm}
+                    onChange={handleChange}
+                />
+            </div>
+
+            <div className='border border-secondary bg-white rounded-5 shadow  my-2 scroll-bar'
+                style={{ minHeight: '90%', maxHeight: '90%', overflowY: 'auto' }}>
                 <table className='itmlst table table-hover'>
-                    <thead className=' rounded-top-5' style={{ position: 'sticky', top: '0', zIndex: '1',}}>
+                    <thead className=' rounded-top-5' style={{ position: 'sticky', top: '0', zIndex: '1', }}>
                         <tr>
                             <th>Product name</th>
                             <th>Category</th>
@@ -51,27 +92,33 @@ export default function StockList() {
                     </thead>
 
                     <tbody className='px-4 py-1'>
-                        {itemList.length > 0 ? (
-                            itemList.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.item_name}</td>
-                                    <td>{item.category}</td>
-                                    <td>{item.brand}</td>
-                                    <td className='text-end'>{item.purchase_price}</td>
-                                    <td className='text-end'>{item.sale_price}</td>
-                                    <td className='text-end'>{item.mrp}</td>
-                                    <td className='text-center'>{item.quantity}</td>
-                                    <td className='text-end'>{(item.quantity*item.purchase_price).toFixed(2)}</td>
-                                    <td className='text-center'>
-                                        <i className="bi bi-pencil-square text-primary mx-1" style={{ cursor: 'pointer' }}
-                                        onClick={() => navigate('/editItem', {state : {item}}) }></i>
-                                        <i className="bi bi-trash-fill text-danger mx-1" style={{ cursor: 'pointer' }} onClick={() => handleDelete(item)}></i>
-                                    </td>
-                                </tr>
-                            ))
-
+                        {loading ? (
+                            <tr>
+                                <td><Loader message='Fetching Items' /></td>
+                            </tr>
                         ) : (
-                            <tr className='text-center'><td colSpan='9'>No Products Found</td></tr>
+                            filteredItems.length > 0 ? (
+                                filteredItems.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.item_name}</td>
+                                        <td>{item.category}</td>
+                                        <td>{item.brand}</td>
+                                        <td className='text-end'>{item.purchase_price}</td>
+                                        <td className='text-end'>{item.sale_price}</td>
+                                        <td className='text-end'>{item.mrp}</td>
+                                        <td className='text-center'>{item.quantity}</td>
+                                        <td className='text-end'>{(item.quantity * item.purchase_price).toFixed(2)}</td>
+                                        <td className='text-center'>
+                                            <i className="bi bi-pencil-square text-primary mx-1" style={{ cursor: 'pointer' }}
+                                                onClick={() => navigate('/editItem', { state: { item } })}></i>
+                                            <i className="bi bi-trash-fill text-danger mx-1" style={{ cursor: 'pointer' }} onClick={() => handleDelete(item)}></i>
+                                        </td>
+                                    </tr>
+                                ))
+
+                            ) : (
+                                <tr className='text-center'><td colSpan='9'>No Products Found</td></tr>
+                            )
                         )}
                     </tbody>
                 </table>

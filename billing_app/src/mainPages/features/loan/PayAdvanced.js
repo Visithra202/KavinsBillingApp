@@ -1,21 +1,26 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
-import Loader from '../../components/Loader';
 
-export default function AddLoanPayment() {
+export default function PayAdvanced() {
     const location = useLocation();
-    const collection = location.state?.collect || {};
+    const loan = location.state?.loan || {};
+    const loanBills = location.state.loanBills || [];
+
+    const unpaidBills = loanBills.filter(bill => !bill.paid_date);
+    const totalUnpaidDue = unpaidBills.reduce((sum, bill) => {
+        return sum + (parseFloat(bill.total_due) || 0);
+    }, 0);
 
     return (
         <div className='container '>
             <div className='row mt-4 mx-2'>
                 <div className='col'>
-                    <PaymentForm collection={collection} />
+                    <PaymentForm loan={loan} totalUnpaidDue={totalUnpaidDue}/>
                 </div>
 
                 <div className='col bg-light p-3 px-5 border rounded-5 shadow '>
-                    <DueDetails collection={collection} />
+                    <DueDetails unpaidBills={unpaidBills} />
                 </div>
             </div>
 
@@ -23,7 +28,7 @@ export default function AddLoanPayment() {
     )
 }
 
-function PaymentForm({ collection }) {
+function PaymentForm({ loan, totalUnpaidDue }) {
     const [amount, setAmount] = useState('');
     const navigate = useNavigate()
 
@@ -38,12 +43,12 @@ function PaymentForm({ collection }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if(amount<=0){
+        if (amount <= 0) {
             return;
         }
 
         const formData = {
-            loan_accno: collection.loan_accno,
+            loan_accno: loan.loan_accno,
             payment_amount: amount
         }
 
@@ -53,10 +58,9 @@ function PaymentForm({ collection }) {
                     "Content-Type": "application/json"
                 }
             })
-
             alert('Payment added Successfully')
             setAmount('')
-            navigate('/loanCollection')
+            navigate('/loanBills', { state: { loan } })
         } catch (error) {
             alert('Error adding loan payment');
         }
@@ -70,18 +74,18 @@ function PaymentForm({ collection }) {
             <form onSubmit={handleSubmit} className='py-3 px-4'>
                 <div className='d-flex flex-column'>
                     <label className='form-label'>Account no</label>
-                    <input type='text' className='form-control p-2' name='loan_accno' value={collection?.loan_accno || ''}
+                    <input type='text' className='form-control p-2' name='loan_accno' value={loan?.loan_accno || ''}
                         autoComplete="off" disabled></input>
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label className='form-label'>Customer name</label>
-                    <input type='text' className='form-control p-2' name='customer_name' value={collection?.customer?.customer_name || ''}
+                    <input type='text' className='form-control p-2' name='customer_name' value={loan?.customer?.customer_name || ''}
                         autoComplete='off' disabled></input>
                 </div>
                 <div className='d-flex flex-column mt-3'>
-                    <label className='form-label'>Due Amount</label>
-                    <input type='text' className='form-control p-2' name='due_amount' value={collection?(parseFloat(collection.due_amount) + parseFloat(collection.late_fee) ).toFixed(2): ''}
-                        autoComplete='off' disabled></input>
+                    <label className='form-label'>Outstanding</label>
+                    <input type='text' className='form-control p-2' name='tot_due' value={totalUnpaidDue}
+                        disabled></input>
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label className='form-label'>Payment amount</label>
@@ -97,29 +101,12 @@ function PaymentForm({ collection }) {
     )
 }
 
-function DueDetails({ collection }) {
-
-    const [loanBills, setLoanBills] = useState([]);
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        axios.get(`http://localhost:8000/get-loan-bill/${collection.loan_accno}`)
-            .then((response) => {
-                setLoanBills(response.data.loan_bills);
-                setLoading(false);
-            })
-            .catch((error) => {
-                // console.error('Error Fetching loan bills');
-                setLoading(false);
-            });
-    }, [collection.loan_accno]);
-
-
+function DueDetails({ unpaidBills }) {
 
     return (
-        <div className='container'  style={{ height: 'calc(100vh - 250px)' }}>
-            <div className='d-flex justify-content-center pb-2' ><h5>Due pending</h5></div>
-            <div className='scroll-bar' style={{minHeight:'50%', maxHeight: '90%', overflowY: 'auto' }}>
+        <div className='container' style={{ height: 'calc(100vh - 250px)' }}>
+            <div className='d-flex justify-content-center pb-2' ><h5>Loan bills</h5></div>
+            <div className='scroll-bar' style={{ minHeight: '50%', maxHeight: '90%', overflowY: 'auto' }}>
                 <table className="table table-hover table-light">
                     <thead className="table-head" style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                         <tr>
@@ -132,14 +119,9 @@ function DueDetails({ collection }) {
                         </tr>
                     </thead>
                     <tbody className="table-body">
-                        {loading ? (
-                            <tr className="text-center">
-                                <td colSpan="6">
-                                    <Loader message='Fetching details' />
-                                </td>
-                            </tr>
-                        ) : loanBills.length > 0 ? (
-                            loanBills.map((bill, index) => (
+
+                        {unpaidBills.length > 0 ? (
+                            unpaidBills.map((bill, index) => (
                                 <tr key={index}>
                                     <td>{bill.bill_seq}</td>
                                     <td>{bill.bill_date}</td>

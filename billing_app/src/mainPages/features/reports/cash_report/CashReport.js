@@ -13,7 +13,7 @@ export default function CashReport() {
         setCashList(response.data)
         setLoading(false);
       }).catch((error) => {
-        console.error('Error fetching Cash report ' + error.response.data)
+        // console.error('Error fetching Cash report ' + error.response.data)
         setLoading(false);
       })
   }, [])

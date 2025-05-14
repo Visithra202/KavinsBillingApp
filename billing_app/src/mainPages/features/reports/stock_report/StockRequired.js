@@ -16,7 +16,7 @@ export default function StockRequired() {
         setStockList(response.data)
         setLoading(false);
       }).catch((error) => {
-        console.error('Error fetching stock report ' + error.response.data)
+        // console.error('Error fetching stock report ' + error.response.data)
         setLoading(false);
       })
   }, [])
@@ -48,7 +48,7 @@ export default function StockRequired() {
 
           <tbody className='px-4 py-1'>
             {loading ?
-              <tr className='text-center'><td colSpan='8' ><Loader message='fetching stocks' /></td></tr>
+              <tr className='text-center'><td colSpan='5' ><Loader message='fetching stocks' /></td></tr>
               : stockList.length > 0 ? (
                 stockList.map((item, index) => (
                   <tr key={index}>
@@ -61,7 +61,7 @@ export default function StockRequired() {
                 ))
 
               ) : (
-                <tr className='text-center'><td colSpan='9'>Stock report not Found</td></tr>
+                <tr className='text-center'><td colSpan='5'>Stock report not Found</td></tr>
               )}
           </tbody>
         </table>

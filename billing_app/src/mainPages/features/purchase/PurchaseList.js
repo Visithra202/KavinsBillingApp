@@ -16,7 +16,8 @@ export default function PurchaseList() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching Purchase')
+        // console.error('Error Fetching Purchase')
+        setLoading(false);
       })
   }, [])
 

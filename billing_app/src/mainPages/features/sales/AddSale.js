@@ -30,7 +30,7 @@ export default function AddSale() {
         setBillNo(response.data.bill_no);
       })
       .catch((error) => {
-        console.error('Error Fetching Bill No');
+        // console.error('Error Fetching Bill No');
       });
   }, []);
 
@@ -94,10 +94,12 @@ export default function AddSale() {
           setBillNo(response.data.bill_no);
         })
           .catch((error) => {
-            console.error('Error Fetching Bill No');
+            // console.error('Error Fetching Bill No');
           });
       })
-      .catch(error => console.error('Error submitting sale:', error));
+      .catch(error => {
+        // console.error('Error submitting sale:', error)
+      });
   };
 
   const handleReset = () => {
@@ -306,11 +308,9 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
     axios.get('http://localhost:8000/get-stock-list/')
       .then((response) => {
         setProducts(response.data);
-        // setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching Items');
-        // setLoading(false);
+        // console.error('Error Fetching Items');
       });
   }, [])
 
@@ -441,7 +441,7 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
         setCustomers(response.data);
       })
       .catch((error) => {
-        console.error('Error Fetching Customers');
+        // console.error('Error Fetching Customers');
       });
   }, [])
 

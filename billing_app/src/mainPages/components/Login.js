@@ -24,8 +24,8 @@ export default function Login({ setLogin }) {
                 handleReset();
             }
             ).catch((error) => {
-                alert('Error in login')
-                console.log(error.response||error.response.data);
+                alert('Error in login ' +error.response||error.response.data)
+                // console.log(error.response||error.response.data);
                 setLoading(false);
             }
             )

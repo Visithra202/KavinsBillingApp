@@ -8,43 +8,87 @@ import UseClickOutside from '../../hooks/UseClickOutside';
 export default function CreateLoan() {
     const [loanFormData, setLoanFormData] = useState({});
     const [searchCustomer, setSearchCustomer] = useState({});
+    const [refContact, setRefContact] = useState('');
+    const [lockId, setLockId] = useState('');
     const date = new Date();
 
-    const calculateEmi = (amount, term, frequency) => {
-        const principal = parseFloat(amount);
-        const duration = frequency === 'Weekly' ? parseFloat(term) * 4 : parseFloat(term);
+    useEffect(() => {
+        const sellPrice = parseFloat(loanFormData.sell_prc) || 0;
+        const advanceAmt = parseFloat(loanFormData.advance_amt) || 0;
+        const advanceBal = parseFloat(loanFormData.advance_bal) || 0;
+        const totalPayment = parseFloat(loanFormData.total_payment) || 0;
+        const term = parseFloat(loanFormData.term) || 0;
+        const frequency = loanFormData.payment_frequency;
 
-        if (isNaN(principal) || isNaN(duration) || duration === 0) return null;
+        const loanAmount = sellPrice - advanceAmt - advanceBal;
+        const paymentAmount = totalPayment - advanceAmt - advanceBal;
+        const interest = paymentAmount - loanAmount;
 
-        return Math.round(principal / duration);
-    };
+        let emiAmount = 0;
+        const duration = frequency === 'Weekly' ? term * 4 : term;
+        if (paymentAmount > 0 && duration > 0) {
+            emiAmount = paymentAmount / duration;
+        }
+
+        setLoanFormData((prev) => ({
+            ...prev,
+            loan_amount: isNaN(loanAmount) || loanAmount <= 0 ? '' : loanAmount.toFixed(2),
+            payment_amount: isNaN(paymentAmount) || paymentAmount <= 0 ? '' : paymentAmount.toFixed(2),
+            interest: isNaN(interest) || interest <= 0 ? '' : interest.toFixed(2),
+            emi_amount: isNaN(emiAmount) || emiAmount <= 0 ? '' : emiAmount.toFixed(2),
+        }));
+    }, [
+        loanFormData.sell_prc,
+        loanFormData.advance_amt,
+        loanFormData.advance_bal,
+        loanFormData.total_payment,
+        loanFormData.term,
+        loanFormData.payment_frequency
+    ]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!searchCustomer.customer_name || !searchCustomer.mph) {
-            alert('Please select a customer or add customer')
+            alert('Please select a customer or add customer');
+            return;
+        }
+
+        if (searchCustomer.customer_id === 1) {
+            alert('Walkin customer not allowed');
             return;
         }
 
         if (Number(loanFormData.payment_amount) < Number(loanFormData.loan_amount)) {
-            alert('Loan amount is greater than payment amount')
+            alert('Loan amount is greater than payment amount');
             return;
         }
 
+        if (parseFloat(loanFormData.advance_amt) > 0 && !loanFormData.advance_paydate) {
+            alert("Enter advance paydate");
+            return;
+        }
+
+
         const loanData = {
+            total_payment: loanFormData.total_payment,
+            advance_amt: loanFormData.advance_amt,
+            selling_price: loanFormData.sell_prc,
             payment_amount: loanFormData.payment_amount,
             loan_amount: loanFormData.loan_amount,
-            interest: loanFormData.payment_amount - loanFormData.loan_amount,
+            interest: loanFormData.interest,
             payment_freq: loanFormData.payment_frequency,
             term: loanFormData.term,
-            emi_amount: calculateEmi(loanFormData.payment_amount, loanFormData.term, loanFormData.payment_frequency),
+            emi_amount: loanFormData.emi_amount,
             loan_date: date.toISOString().split('T')[0],
             next_pay_date: loanFormData.next_payment_date,
-            bal_amount: parseFloat(loanFormData.payment_amount) + parseFloat(loanFormData.advance_bal?loanFormData.advance_bal : 0),
-            advance_bal: loanFormData.advance_bal?loanFormData.advance_bal:0,
-            advance_paydate: loanFormData.advance_paydate?loanFormData.advance_paydate:null,
-            customer: searchCustomer
+            bal_amount: parseFloat(loanFormData.payment_amount) + parseFloat(loanFormData.advance_bal ? loanFormData.advance_bal : 0),
+            advance_bal: loanFormData.advance_bal ? loanFormData.advance_bal : 0,
+            advance_paydate: loanFormData.advance_paydate ? loanFormData.advance_paydate : null,
+            customer: searchCustomer,
+            lock_id:lockId,
+            ref_mph:refContact
         }
 
         try {
@@ -66,9 +110,14 @@ export default function CreateLoan() {
 
     const handleReset = () => {
         setLoanFormData({
+            total_payment: '',
+            advance_amt: '',
+            sell_prc: '',
             loan_amount: '',
             payment_amount: '',
             term: '',
+            emi_amount: '',
+            interest: '',
             payment_frequency: '',
             next_payment_date: '',
             advance_bal: '',
@@ -76,7 +125,7 @@ export default function CreateLoan() {
         });
         setSearchCustomer({});
     };
-    
+
 
     return (
         <div className='container'>
@@ -87,7 +136,7 @@ export default function CreateLoan() {
                 <div className='p-3'>
                     {/* customer */}
                     <div className='border rounded px-4 py-3 position-relative'>
-                        <CustomerSelection searchCustomer={searchCustomer} setSearchCustomer={setSearchCustomer} />
+                        <CustomerSelection searchCustomer={searchCustomer} setSearchCustomer={setSearchCustomer} refContact={refContact} setRefContact={setRefContact} lockId={lockId} setLockId={setLockId} />
                     </div>
 
                     {/* loan details */}
@@ -127,25 +176,46 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
             <h5 className="loan-title">Loan details</h5>
             <div className='row'>
                 <div className="col">
+                    <label htmlFor='total_payment' className="form-label">Total payment</label>
+                    <input id='total_payment' type="text" name="total_payment" className="form-control"
+                        value={loanFormData.total_payment || ''} onChange={handleChange} required />
+                </div>
+                <div className="col">
+                    <label htmlFor='advance_amt' className="form-label">Advance amount</label>
+                    <input id='advance_amt' type="text" name="advance_amt" className="form-control"
+                        value={loanFormData.advance_amt || ''} onChange={handleChange} required />
+                </div>
+                <div className="col">
+                    <label htmlFor='advance_bal' className="form-label">Advance Balance</label>
+                    <input id='advance_bal' type="text" name="advance_bal" className="form-control"
+                        value={loanFormData.advance_bal || ''} onChange={handleChange} required />
+                </div>
+            </div>
+
+            <div className='row'>
+                <div className="col-4">
+                    <label htmlFor='sell_prc' className="form-label">Selling price</label>
+                    <input id='sell_prc' type="text" name="sell_prc" className="form-control"
+                        value={loanFormData.sell_prc || ''} onChange={handleChange} required />
+                </div>
+                <div className="col">
                     <label htmlFor='loan_amount' className="form-label">Loan amount</label>
                     <input id='loan_amount' type="text" name="loan_amount" className="form-control"
-                        value={loanFormData.loan_amount || ''} onChange={handleChange} required />
+                        value={loanFormData.loan_amount || ''} onChange={handleChange} disabled />
                 </div>
                 <div className="col">
                     <label htmlFor='payment_amount' className="form-label">Payment amount</label>
                     <input id='payment_amount' type="text" name="payment_amount" className="form-control"
-                        value={loanFormData.payment_amount || ''} onChange={handleChange} required />
-                </div>
-                <div className="col">
-                    <label htmlFor='interest' className="form-label">Interest</label>
-                    <input id='interest' type="text" name="interest" className="form-control"
-                        value={loanFormData.payment_amount &&
-                            loanFormData.loan_amount &&
-                            (loanFormData.payment_amount - loanFormData.loan_amount).toFixed(2)} disabled />
+                        value={loanFormData.payment_amount || ''} onChange={handleChange} disabled />
                 </div>
             </div>
 
             <div className='row mt-2'>
+                <div className="col">
+                    <label htmlFor='interest' className="form-label">Interest</label>
+                    <input id='interest' type="text" name="interest" className="form-control"
+                        value={loanFormData.interest} disabled />
+                </div>
                 <div className="col">
                     <label htmlFor='payment_frequency' className="form-label">Payment frequency</label>
                     <select id='payment_frequency' name="payment_frequency" className="form-select"
@@ -160,68 +230,42 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                     <input id='term' type="text" name="term" className="form-control"
                         value={loanFormData.term || ''} onChange={handleChange} required />
                 </div>
-                <div className="col">
-                    <label htmlFor='emi_amount' className="form-label">Emi amount</label>
-                    <input id='emi_amount' type="text" name="emi_amount" className="form-control"
-                        value={
-                            loanFormData.payment_amount &&
-                                loanFormData.term &&
-                                loanFormData.payment_frequency
-                                ? (() => {
-                                    const principal = parseFloat(loanFormData.payment_amount);
-                                    const term =
-                                        loanFormData.payment_frequency === 'Weekly'
-                                            ? parseFloat(loanFormData.term) * 4
-                                            : parseFloat(loanFormData.term);
-
-                                    if (isNaN(principal) || isNaN(term) || term === 0) {
-                                        return '';
-                                    }
-
-                                    return (principal / term).toFixed(2);
-                                })()
-                                : ''
-                        } onChange={handleChange} disabled />
-                </div>
             </div>
 
             <div className='row mt-2'>
                 <div className="col-4">
+                    <label htmlFor='emi_amount' className="form-label">Emi amount</label>
+                    <input id='emi_amount' type="text" name="emi_amount" className="form-control"
+                        value={loanFormData.emi_amount || ''} onChange={handleChange} disabled />
+                </div>
+                <div className="col">
                     <label htmlFor='loan_date' className="form-label">Loan date</label>
                     <input id='loan_date' type="date" name="loan_date" className="form-control"
                         value={date.toISOString().split('T')[0] || ''}
                         disabled />
                 </div>
-                <div className="col-4">
+                <div className="col">
                     <label htmlFor='next_payment_date' className="form-label">Next payment date</label>
                     <input id='next_payment_date' type="date" name="next_payment_date" className="form-control" min={today}
                         value={loanFormData.next_payment_date || ''} onChange={handleChange} required />
                 </div>
-            </div>
-
-            <div className='row mt-2'>
-                <div className="col-4">
-                    <label htmlFor='advance_bal' className="form-label">Advance Balance</label>
-                    <input id='advance_bal' type="text" name="advance_bal" className="form-control"
-                        value={loanFormData.advance_bal || ''} onChange={handleChange} />
-                </div>
-                <div className="col-4">
+                <div className="col">
                     <label htmlFor='advance_paydate' className="form-label">Advance pay date</label>
                     <input id='advance_paydate' type="date" name="advance_paydate" className="form-control" min={today}
                         value={loanFormData.advance_paydate || ''} onChange={handleChange} />
                 </div>
             </div>
+
         </>
     );
 }
 
 
-function CustomerSelection({ searchCustomer, setSearchCustomer }) {
+function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setRefContact, lockId, setLockId }) {
     const [customers, setCustomers] = useState([]);
     const [customerDropdown, setCustomerDropdown] = useState(false);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
     const dropdownRef = UseClickOutside(() => setCustomerDropdown(false));
 
 
@@ -231,13 +275,13 @@ function CustomerSelection({ searchCustomer, setSearchCustomer }) {
                 setCustomers(response.data);
                 setLoading(false);
             }).catch((error) => {
-                console.error('Error Getting Customers:', error);
+                // console.error('Error Getting Customers:', error);
                 setLoading(false);
             });
     }, []);
 
     const handleCustomerChange = (e) => {
-        const search = e.target.value.trim().toLowerCase(); 
+        const search = e.target.value.trim().toLowerCase();
         setSearchCustomer((prev) => ({ ...prev, customer_name: e.target.value }));
         setCustomerDropdown(true);
 
@@ -266,20 +310,27 @@ function CustomerSelection({ searchCustomer, setSearchCustomer }) {
         <>
             <h5 className="loan-title">Customer details</h5>
             <div className='row '>
-                <div className="col col-md-4">
+                <div className="col-4">
                     <label htmlFor='customer_name' className="form-label">Customer name</label>
                     <input id='customer_name' type="text" name="customer_name" className="form-control"
                         value={searchCustomer.customer_name || ''} onChange={handleCustomerChange} required autoFocus />
                 </div>
-                <div className="col col-md-4">
+                <div className="col">
                     <label htmlFor='mph' className="form-label">Mobile number</label>
                     <input id='mph' type="text" name="mph" className="form-control"
                         value={searchCustomer.mph || ''} disabled />
                 </div>
-                <div className='col col-md-4 d-flex align-items-end' >
-                    <button type='button' className="btn mx-1" style={{ backgroundColor: 'antiquewhite' }}
-                        onClick={() => navigate('/customerData', { state: { from: '/createLoan' } })}>+ Add Customer</button>
+                <div className="col">
+                    <label htmlFor='refContact' className="form-label">Reference contact</label>
+                    <input id='refContact' type="text" name="refContact" className="form-control"
+                        value={refContact || ''} onChange={(e) => setRefContact(e.target.value)} />
                 </div>
+                <div className="col">
+                    <label htmlFor='lockId' className="form-label">Lock id</label>
+                    <input id='lockId' type="text" name="lockId" className="form-control"
+                        value={lockId || ''} onChange={(e) => setLockId(e.target.value)} />
+                </div>
+
             </div>
 
             {customerDropdown && searchCustomer?.customer_name?.length > 0 && (
@@ -293,10 +344,10 @@ function CustomerSelection({ searchCustomer, setSearchCustomer }) {
                         </thead>
                         <tbody>
                             {
-                                customers?.length > 0 ? (
-                                    loading ? (
-                                        <tr><td colSpan='2' ><Loader size='sm' message='Fetching customers' /></td></tr>
-                                    ) : (
+                                loading ? (
+                                    <tr><td colSpan='2' ><Loader size='sm' message='Fetching customers' /></td></tr>
+                                ) : (
+                                    customers?.length > 0 ? (
                                         filteredCustomers.length > 0 ? (
                                             filteredCustomers.map((customer, index) => (
                                                 <tr key={index} className='custom-hover' onClick={() => handleCustomer(customer)}>
@@ -309,10 +360,11 @@ function CustomerSelection({ searchCustomer, setSearchCustomer }) {
                                                 <td colSpan="2" className="text-center">Matches not found</td>
                                             </tr>
                                         )
+                                    ) : (
+                                        <tr><td colSpan="2" className="text-center">Customers not found</td></tr>
                                     )
-                                ) : (
-                                    <tr><td colSpan="2" className="text-center">Customers not found</td></tr>
                                 )
+
                             }
                         </tbody>
                     </table>

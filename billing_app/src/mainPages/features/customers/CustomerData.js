@@ -54,7 +54,7 @@ function CustomerForm({ setReload }) {
         } catch (error) {
             if (error.response && error.response.data) {
                 const errorMessages = error.response.data.errors || error.response.data;
-                console.log(errorMessages)
+                // console.log(errorMessages)
                 // Show all errors in an alert
                 let errorText = "Adding Customer Failed:\n";
                 Object.entries(errorMessages).forEach(([field, messages]) => {
@@ -119,7 +119,7 @@ function CustomerList({ reload, setReload }) {
                 setLoading(false)
             })
             .catch((error) => {
-                console.error('Error Fetching Customers')
+                // console.error('Error Fetching Customers')
                 setLoading(false)
             })
     }, [reload])

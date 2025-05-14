@@ -96,7 +96,7 @@ function UserList({ reload, setReload }) {
         setLoading(false)
       })
       .catch((error) => {
-        console.error('Error Fetching Users')
+        // console.error('Error Fetching Users')
         setLoading(false)
       })
   }, [reload])

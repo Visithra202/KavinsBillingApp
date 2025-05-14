@@ -28,12 +28,13 @@ export default function LoanDetails() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error Fetching Loan')
+        // console.error('Error Fetching Loan')
+        setLoading(false);
       })
   }, [])
 
   useEffect(() => {
-    if (loan?.loan_accno){
+    if (loan?.loan_accno) {
       setDetails(true);
       getJournals(loan.loan_accno)
     }
@@ -62,18 +63,18 @@ export default function LoanDetails() {
         setLoanJournal(response.data)
       })
       .catch((error) => {
-        console.error('Error Fetching Loan Journal')
+        // console.error('Error Fetching Loan Journal')
       })
 
   }
 
   return (
-    <div className='container' style={{ height: 'calc(100vh - 280px)' }}>
+    <div className='container' style={{ height: 'calc(100vh - 380px)' }}>
 
       {/* Search */}
       <div className='row mt-2 mb-1 mx-0'>
         <input id='search_loan' className='form-control border rounded px-2 ' type='text' placeholder='Search loan' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus/>
+          value={searchTerm} onChange={handleChange} autoFocus />
 
         {dropdown && searchTerm.length > 0 && (
           <div ref={dropdownRef} className='dropdown-menu show mt-5' style={{ maxHeight: '500px', overflowY: 'auto', width: '300px' }}>
@@ -110,7 +111,7 @@ export default function LoanDetails() {
         )}
       </div>
 
-      {!details && 
+      {!details &&
         <div className='text-center fs-5 mt-5'><i className='bi bi-search me-2'></i>Search loan to display</div>
       }
 
@@ -135,8 +136,8 @@ export default function LoanDetails() {
                 <span className='loan-control'>{loan.loan_date || ''}</span>
               </div>
               <div className='col d-flex flex-column'>
-                <span className='form-label'>Next payment date</span>
-                <span className='loan-control'>{loan.next_pay_date}</span>
+                <span className='form-label'>Total payment</span>
+                <span className='loan-control'>{loan.total_payment}</span>
               </div>
               <div className='col d-flex flex-column'>
                 <span className='form-label'>Payment amount</span>
@@ -150,6 +151,14 @@ export default function LoanDetails() {
                 <span className='loan-control'>{loan.loan_amount}</span>
               </div>
               <div className='col d-flex flex-column'>
+                <span className='form-label'>Advance amount</span>
+                <span className='loan-control'>{loan.advance_amt}</span>
+              </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Selling price</span>
+                <span className='loan-control'>{loan.selling_price}</span>
+              </div>
+              <div className='col d-flex flex-column'>
                 <span className='form-label'>Interest</span>
                 <span className='loan-control'>{loan.interest}</span>
               </div>
@@ -161,21 +170,41 @@ export default function LoanDetails() {
                 <span className='form-label'>Payment frequency</span>
                 <span className='loan-control'>{loan.payment_freq}</span>
               </div>
+            </div>
+
+            <div className='row'>
               <div className='col d-flex flex-column'>
                 <span className='form-label'>Term</span>
                 <span className='loan-control'>{loan.term}</span>
+              </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Advance balance</span>
+                <span className='loan-control'>{loan.advance_bal}</span>
+              </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Advance paydate</span>
+                <span className='loan-control'>{loan.advance_paydate}</span>
+              </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Lock id</span>
+                <span className='loan-control'>{loan.lock_id}</span>
+              </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Reference contant</span>
+                <span className='loan-control'>{loan.ref_mph}</span>
               </div>
               <div className='col d-flex align-items-center'>
                 <button className='btn btn-primary rounded-pill px-3 py-1' onClick={() => navigate('/loanBills', { state: { loan } })}>show bills</button>
               </div>
             </div>
 
+
           </div>
 
           {/* Loan History */}
           <div className='row mt-3' style={{ height: '100%' }}>
             <h6>Transaction history</h6>
-            <div className='scroll-bar px-3 ' style={{ minHeight: '90%', maxHeight: '90%', overflowY: 'auto' }}>
+            <div className='scroll-bar px-3 ' style={{ minHeight: '100%', maxHeight: '100%', overflowY: 'auto' }}>
               <table className='table shadow'>
                 <thead style={{ position: 'sticky', top: '0', zIndex: '1', backgroundColor: 'white' }}>
                   <tr>
