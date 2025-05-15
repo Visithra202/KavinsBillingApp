@@ -49,7 +49,7 @@ export default function Login({ setLogin }) {
                     <div className='d-flex flex-column'>
                         <label htmlFor='username' className='form-label'>Username</label>
                         <input type='text' id='username' className='form-control p-2'  name='username' value={loginFormData.username||''}
-                            onChange={handleChange} autoComplete="off" required ></input>
+                            onChange={handleChange} autoComplete="off" required />
                     </div>
                     <div className='d-flex flex-column mt-3'>
                         <label htmlFor='password' className='form-label'>Password</label>

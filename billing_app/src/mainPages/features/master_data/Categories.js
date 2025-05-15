@@ -72,13 +72,13 @@ function CategoryForm({ setReload }) {
         <div className='d-flex flex-column'>
           <label htmlFor='category_name' className='form-label'>Category name</label>
           <input id='category_name' type='text' className='form-control p-2' name='category_name' value={formData.category_name}
-            onChange={handleChange} autoComplete="off" required></input>
+            onChange={handleChange} autoComplete="off" required/>
           {error && <p style={{ color: 'red', fontSize:'12px' }}>{error}</p>}
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='description' className='form-label'>Description</label>
           <input id='description' type='text' className='form-control p-2' name='description' value={formData.description}
-            onChange={handleChange} autoComplete='off' required></input>
+            onChange={handleChange} autoComplete='off' required/>
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

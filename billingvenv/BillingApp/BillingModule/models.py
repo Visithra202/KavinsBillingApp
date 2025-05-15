@@ -10,6 +10,7 @@ class Compdet(models.Model):
 class Category(models.Model):
     category_id=models.AutoField(primary_key=True)
     category_name=models.CharField(max_length=255, unique=True)
+    min_stock=models.IntegerField(null=True, blank=True)
     description=models.TextField()
 
     def __str__(self):

@@ -52,6 +52,7 @@ export default function LoanCollection() {
           style={{ width: '300px' }}
           value={searchTerm}
           onChange={handleChange}
+          autoComplete="off"
         />
       </div>
 

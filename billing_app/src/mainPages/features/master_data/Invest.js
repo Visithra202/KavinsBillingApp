@@ -72,22 +72,22 @@ function InvestForm({ setReload }) {
         <div className='d-flex flex-column'>
           <label htmlFor='invest_date' className='form-label'>Date</label>
           <input id='invest_date'  type='date' className='form-control p-2' name='date' value={date.toISOString().split('T')[0] }
-            onChange={handleChange} autoComplete="off" disabled></input>
+            onChange={handleChange} autoComplete="off" disabled/>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='source' className='form-label'>Source</label>
           <input id='source' type='text' className='form-control p-2' name='source' value={investFormData.source}
-            onChange={handleChange} autoComplete='off' required></input>
+            onChange={handleChange} autoComplete='off' required/>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='invest_amt' className='form-label'>Invest Amount</label>
           <input id='invest_amt' type='number' className='form-control p-2' name='invest_amt' value={investFormData.invest_amt}
-            onChange={handleChange} autoComplete='off' required></input>
+            onChange={handleChange} autoComplete='off' required/>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='invest_desc' className='form-label'>Invest Description</label>
           <input id='invest_desc' type='text' className='form-control p-2' name='invest_desc' value={investFormData.invest_desc}
-            onChange={handleChange} autoComplete='off' required></input>
+            onChange={handleChange} autoComplete='off' required/>
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

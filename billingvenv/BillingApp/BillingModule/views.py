@@ -151,7 +151,6 @@ def get_sale_bill_no(request):
 # Sale
 @api_view(['POST'])
 def add_sale(request):
-    
     serializer=SaleSerializer(data= request.data)
     # print(request.data)
     if serializer.is_valid():
@@ -338,7 +337,7 @@ def add_loan_payment(request):
         balance_amount=previous_data - paid_amount
     )
 
-    create_cash_transaction(trans_amt=paid_amount, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
+    create_cash_transaction(trans_amt=paid_amount, cash=paid_amount, account=0, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
     return Response({'message': 'Payment added successfully'})
 
 
@@ -745,17 +744,47 @@ def purchase_by_seller(request):
 
 @api_view(['GET'])
 def cash_report(request):
-    cashgl=CashGl.objects.all().order_by('-seq_no')
+    cashgl=CashGl.objects.filter(accno='CASH001').order_by('-seq_no')
+    serializer = CashGlSerializer(cashgl, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def account_report(request):
+    cashgl=CashGl.objects.filter(accno='ACC001').order_by('-seq_no')
     serializer = CashGlSerializer(cashgl, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # Stock report
 @api_view(['GET'])
-def get_required_stock_list(request):
-    item= Item.objects.filter(quantity__lt=F('min_stock'))
-    serializer = ItemSerializer(item, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+def get_required_stock(request):
+    low_stock_categories = []
+
+    for category in Category.objects.all():
+        items=Item.objects.filter(category=category)
+        total_quantity = items.aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+
+        if category.min_stock:
+            if total_quantity < category.min_stock:
+                low_stock_categories.append({
+                    'item_name': "-",
+                    'category_name': category.category_name,
+                    'total_quantity': total_quantity,
+                    'min_stock': category.min_stock
+                })
+        else :
+            for item in items.filter(quantity__lt=F('min_stock')):
+                low_stock_categories.append({
+                    'item_name': item.item_name,
+                    'category_name': item.category,
+                    'total_quantity': item.quantity,
+                    'min_stock': item.min_stock
+                })
+
+
+    return Response({'low_stock_categories':low_stock_categories}, status=status.HTTP_200_OK)
 
 
 # Income
@@ -801,3 +830,12 @@ def receive_income(request):
 
     return Response({"message":"Income Received"}, status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+def get_last_balance(request):
+    cash_bal = GlBal.objects.filter(glac='CASH001').order_by('-date').first()
+    acc_bal = GlBal.objects.filter(glac='ACC001').order_by('-date').first()
+    return Response({
+        'cash_bal': cash_bal.balance if cash_bal else 0,
+        'acc_bal': acc_bal.balance if acc_bal else 0,
+    }, status=status.HTTP_200_OK)

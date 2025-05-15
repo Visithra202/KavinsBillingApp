@@ -201,14 +201,14 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount, di
       <div>
         <label htmlFor='cash' className='form-label'>Cash</label>
         <input id='cash' type="text" value={cash === 0 ? "" : cash} placeholder='0' className="payment border rounded ps-1 ms-2"
-          style={{ width: '70px' }} onChange={handleCashChange}
+          style={{ width: '70px' }} onChange={handleCashChange} autoComplete="off"
         />
       </div>
 
       <div>
         <label htmlFor='account' className='form-label ms-2'>Account</label>
         <input id='account' type="text" value={account === 0 ? "" : account} placeholder='0' className="payment border rounded ms-2 ps-1"
-          style={{ width: '70px' }} onChange={handleAccountChange}
+          style={{ width: '70px' }} onChange={handleAccountChange} autoComplete="off"
         />
       </div>
 
@@ -216,7 +216,7 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount, di
         <label htmlFor='credit' className='form-label ms-2'>Credit</label>
         <input id='credit'
           type="text" value={credit === 0 ? "" : credit} placeholder='0' className="payment border rounded ms-2 ps-1"
-          style={{ width: '70px' }} onChange={handleCreditChange}
+          style={{ width: '70px' }} onChange={handleCreditChange} autoComplete="off"
         />
       </div>
 
@@ -224,7 +224,7 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount, di
         <label htmlFor='discount' className='form-label ms-2'>Discount</label>
         <input id='discount'
           type="text" value={discount === 0 ? "" : discount} placeholder='0' className="payment border rounded ms-2 ps-1"
-          style={{ width: '70px' }} onChange={handleDiscountChange}
+          style={{ width: '70px' }} onChange={handleDiscountChange} autoComplete="off"
         />
       </div>
     </>
@@ -277,7 +277,7 @@ function SaleProducts({ selectedProducts, setSelectedProducts }) {
                 <td className='text-end'>{item.unit_price}</td>
                 <td className='text-end'>
                   <input type="text" value={item.sale_quantity} className="text-end border rounded pe-2"
-                    style={{ width: "60px" }} onChange={(e) => handleQuantityChange(index, e.target.value)} />
+                    style={{ width: "60px" }} onChange={(e) => handleQuantityChange(index, e.target.value)} autoComplete="off"/>
                 </td>
                 <td className='text-end'>{item.total_price.toFixed(2)}</td>
                 <td className='text-center'><i className="bi bi-trash-fill text-danger" style={{ cursor: 'pointer' }}
@@ -379,7 +379,7 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
     <>
       <label htmlFor='search_product' className='form-label'>Product</label>
       <input id='search_product' className='form-control border rounded-pill px-2' placeholder='Search Product'
-        onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} />
+        onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} autoComplete="off"/>
 
       {activeDropdown === 'product' && searchProduct.length > 0 &&
         <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px',  maxHeight: '35%', overflowY: 'auto'}} >
@@ -475,7 +475,7 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
     <>
       <label htmlFor='customer' className='form-label'>Customer</label>
       <input id='customer' className='form-control border rounded-pill px-2' placeholder='Search Customer'
-        onChange={handleCustomerChange} value={searchCustomer} style={{ width: '250px' }} autoFocus/>
+        onChange={handleCustomerChange} value={searchCustomer} style={{ width: '250px' }} autoFocus autoComplete="off"/>
 
       {activeDropdown === 'customer' && searchCustomer.length > 0 &&
         <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', height: '100px' }} >

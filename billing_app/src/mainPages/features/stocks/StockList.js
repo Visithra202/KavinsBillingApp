@@ -71,6 +71,7 @@ export default function StockList() {
                     style={{ width: '300px' }}
                     value={searchTerm}
                     onChange={handleChange}
+                    autoComplete="off"
                 />
             </div>
 

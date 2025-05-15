@@ -74,7 +74,7 @@ export default function LoanDetails() {
       {/* Search */}
       <div className='row mt-2 mb-1 mx-0'>
         <input id='search_loan' className='form-control border rounded px-2 ' type='text' placeholder='Search loan' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus />
+          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off"/>
 
         {dropdown && searchTerm.length > 0 && (
           <div ref={dropdownRef} className='dropdown-menu show mt-5' style={{ maxHeight: '500px', overflowY: 'auto', width: '300px' }}>

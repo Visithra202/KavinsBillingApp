@@ -181,7 +181,8 @@ class SaleSerializer(serializers.ModelSerializer):
 
         trans_amt = validated_data['paid_amount']
         trans_comment = f"Sale {bill_no} created, credited amount: {trans_amt:.2f}"
-        create_cash_transaction(trans_amt=trans_amt, trans_comment=trans_comment,trans_type='CREDIT')
+        paid=sale.payment
+        create_cash_transaction(trans_amt=trans_amt, cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='CREDIT')
 
         income_obj, created = Income.objects.get_or_create(
         income_date=date.today(),
@@ -270,7 +271,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
         trans_amt = validated_data['paid_amount']
         trans_comment = f"Purchase {purchase_id} created, Debited amount: {trans_amt:.2f}"
-        create_cash_transaction(trans_amt=trans_amt, trans_comment=trans_comment,trans_type='DEBIT')
+        paid=purchase.purchase_payment
+        create_cash_transaction(trans_amt=trans_amt, cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='DEBIT')
 
         return purchase
     
@@ -367,7 +369,7 @@ class LoanSerializer(serializers.ModelSerializer):
             balance_amount=Decimal(loan.payment_amount + loan.advance_bal)
         )
 
-        create_cash_transaction(trans_amt=loan.loan_amount+loan.advance_bal, trans_comment=f'Loan Issued - {loan.customer.customer_name}', trans_type="DEBIT")
+        create_cash_transaction(trans_amt=loan.loan_amount+loan.advance_bal, cash=loan.loan_amount+loan.advance_bal, account=0, trans_comment=f'Loan Issued - {loan.customer.customer_name}', trans_type="DEBIT")
         return loan
     
 class GlHistSerializer(serializers.ModelSerializer):
@@ -406,36 +408,46 @@ class InvestSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-def create_cash_transaction(trans_amt, trans_comment, trans_type):
+@transaction.atomic
+def create_cash_transaction(trans_amt, cash, account, trans_comment, trans_type):
     today = date.today()
-    last_glbal = GlBal.objects.filter(date__lte=today).order_by('-date').first()
-    last_balance = last_glbal.balance if last_glbal else 0
+    crdr = trans_type.upper() == 'CREDIT'
 
-    crdr = False if trans_type == 'DEBIT' else True
-    new_balance = last_balance + trans_amt if crdr else last_balance - trans_amt
+    def update_accounts(accno, amount):
+        if amount <= 0:
+            return None
+        
+        last_glbal = GlBal.objects.filter(date__lte=today, glac=accno).order_by('-date').first()
+        last_balance = last_glbal.balance if last_glbal else 0
+        new_balance = last_balance + amount if crdr else last_balance - amount
 
-    accno=f'CASH001'
-    cash_gl = CashGl.objects.create(
-        accno=accno,
-        date=today,
-        trans_amt=trans_amt,
-        crdr=crdr,
-        trans_comt=trans_comment,
-        end_balance=new_balance
-    )
+        gl_entry = CashGl.objects.create(
+            accno=accno,
+            date=today,
+            trans_amt=amount,
+            crdr=crdr,
+            trans_comt=trans_comment,
+            end_balance=new_balance
+        )
 
-    # Update or create GlBal
-    glbal_obj, created = GlBal.objects.get_or_create(
-        date=today,
-        defaults={'balance': new_balance, 'glac': accno}
-    )
-    if not created:
-        glbal_obj.balance = new_balance
-        glbal_obj.glac = accno
-        glbal_obj.save()
+        glbal_obj, created = GlBal.objects.get_or_create(
+            date=today,
+            glac=accno,
+            defaults={'balance': new_balance}
+        )
+        if not created:
+            glbal_obj.balance = new_balance
+            glbal_obj.save()
 
+        return gl_entry
 
-    return cash_gl
+    cash_gl_entry = update_accounts('CASH001', cash)
+    acc_gl_entry = update_accounts('ACC001', account)
+
+    return {
+        'cash_entry': cash_gl_entry,
+        'account_entry': acc_gl_entry
+    }
 
 class IncomeSerializer(serializers.ModelSerializer):
     class Meta:

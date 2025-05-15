@@ -6,16 +6,17 @@ import Loader from '../../components/Loader';
 export default function AddLoanPayment() {
     const location = useLocation();
     const collection = location.state?.collect || {};
+    const [totalDue, setTotalDue] = useState(0);
 
     return (
         <div className='container '>
             <div className='row mt-4 mx-2'>
                 <div className='col'>
-                    <PaymentForm collection={collection} />
+                    <PaymentForm collection={collection} totalDue={totalDue} />
                 </div>
 
                 <div className='col bg-light p-3 px-5 border rounded-5 shadow '>
-                    <DueDetails collection={collection} />
+                    <DueDetails collection={collection} setTotalDue={setTotalDue} />
                 </div>
             </div>
 
@@ -23,7 +24,7 @@ export default function AddLoanPayment() {
     )
 }
 
-function PaymentForm({ collection }) {
+function PaymentForm({ collection, totalDue }) {
     const [amount, setAmount] = useState('');
     const navigate = useNavigate()
 
@@ -38,7 +39,12 @@ function PaymentForm({ collection }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if(amount<=0){
+        if (Number(amount) <= 0) {
+            return;
+        }
+
+        if (Number(amount) > Number(totalDue)) {
+            alert('Enter valid amount');
             return;
         }
 
@@ -71,22 +77,22 @@ function PaymentForm({ collection }) {
                 <div className='d-flex flex-column'>
                     <label className='form-label'>Account no</label>
                     <input type='text' className='form-control p-2' name='loan_accno' value={collection?.loan_accno || ''}
-                        autoComplete="off" disabled></input>
+                        autoComplete="off" disabled />
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label className='form-label'>Customer name</label>
                     <input type='text' className='form-control p-2' name='customer_name' value={collection?.customer?.customer_name || ''}
-                        autoComplete='off' disabled></input>
+                        autoComplete='off' disabled />
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label className='form-label'>Due Amount</label>
-                    <input type='text' className='form-control p-2' name='due_amount' value={collection?(parseFloat(collection.due_amount) + parseFloat(collection.late_fee) ).toFixed(2): ''}
-                        autoComplete='off' disabled></input>
+                    <input type='text' className='form-control p-2' name='due_amount' value={collection ? (parseFloat(collection.due_amount) + parseFloat(collection.late_fee)).toFixed(2) : ''}
+                        autoComplete='off' disabled />
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label className='form-label'>Payment amount</label>
                     <input type='text' className='form-control p-2' name='payment_amount' value={amount} onChange={handleChange}
-                        autoComplete='off'></input>
+                        autoComplete='off' />
                 </div>
                 <div className='d-flex justify-content-center mt-4 '>
                     <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>
@@ -97,10 +103,19 @@ function PaymentForm({ collection }) {
     )
 }
 
-function DueDetails({ collection }) {
+function DueDetails({ collection, setTotalDue }) {
 
     const [loanBills, setLoanBills] = useState([]);
     const [loading, setLoading] = useState(true)
+    const [bills, setBills] = useState([]);
+
+    useEffect(() => {
+        const unpaidBills = bills.filter(bill => !bill.paid_date);
+        const totalUnpaidDue = unpaidBills.reduce((sum, bill) => {
+            return sum + (parseFloat(bill.total_due) || 0);
+        }, 0);
+        setTotalDue(totalUnpaidDue);
+    }, [bills]);
 
     useEffect(() => {
         axios.get(`http://localhost:8000/get-loan-bill/${collection.loan_accno}`)
@@ -112,14 +127,21 @@ function DueDetails({ collection }) {
                 // console.error('Error Fetching loan bills');
                 setLoading(false);
             });
+
+        axios.get(`http://localhost:8000/get-acc-loan-bills/${collection?.loan_accno}`)
+              .then((response) => {
+                setBills(response.data)
+              }).catch((error) => {
+                // console.error('Error fetching loan bills ' + error.response?.data)
+              });
     }, [collection.loan_accno]);
 
 
 
     return (
-        <div className='container'  style={{ height: 'calc(100vh - 250px)' }}>
+        <div className='container' style={{ height: 'calc(100vh - 250px)' }}>
             <div className='d-flex justify-content-center pb-2' ><h5>Due pending</h5></div>
-            <div className='scroll-bar' style={{minHeight:'50%', maxHeight: '90%', overflowY: 'auto' }}>
+            <div className='scroll-bar' style={{ minHeight: '50%', maxHeight: '90%', overflowY: 'auto' }}>
                 <table className="table table-hover table-light">
                     <thead className="table-head" style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                         <tr>

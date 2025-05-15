@@ -20,6 +20,9 @@ export default function AddPurchase() {
   const [credit, setCredit] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
 
+  const [lastCashBal, setLastCashBal] = useState(0);
+  const [lastAccBal, setLastAccBal] = useState(0);
+
   useEffect(() => {
     const newTotal = selectedProducts.reduce((sum, product) => {
       const totalPrice = isNaN(product.total_price) ? 0 : product.total_price;
@@ -36,9 +39,19 @@ export default function AddPurchase() {
       .catch((error) => {
         // console.error('Error Fetching Bill No');
       });
+    axios.get('http://localhost:8000/get-last-balance/')
+      .then((response) => {
+        setLastCashBal(response.data.cash_bal);
+        setLastAccBal(response.data.acc_bal);
+      })
+      .catch((error) => {
+        // console.error('Error Fetching Bill No');
+      });
   }, []);
 
   const handleSubmit = () => {
+
+
 
     if (!selectedSeller?.seller_id) {
       alert('Select a seller')
@@ -50,8 +63,19 @@ export default function AddPurchase() {
       return;
     }
 
-    if ((cash + account + credit) > totalAmount) {
-      alert('Entered Purchase Amount is more')
+    if ((cash + account + credit) !== totalAmount) {
+      alert('Entered valid amount')
+      return;
+    }
+
+
+    if (lastCashBal < cash) {
+      alert('Insufficient cash balance')
+      return;
+    }
+
+    if (lastAccBal < account) {
+      alert("Insufficient account balance")
       return;
     }
 
@@ -189,7 +213,7 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount }) 
         <label htmlFor='cash' className='form-label'>Cash</label>
         <input id='cash'
           type="text" value={cash === 0 ? "" : cash} placeholder='0' className="payment border rounded ps-1 ms-2"
-          style={{ width: '70px' }} onChange={handleCashChange}
+          style={{ width: '70px' }} onChange={handleCashChange} autoComplete="off"
         />
       </div>
 
@@ -197,7 +221,7 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount }) 
         <label htmlFor='account' className='form-label ms-2'>Account</label>
         <input id='account'
           type="text" value={account === 0 ? "" : account} placeholder='0' className="payment border rounded ms-2 ps-1"
-          style={{ width: '70px' }} onChange={handleAccountChange}
+          style={{ width: '70px' }} onChange={handleAccountChange} autoComplete="off"
         />
       </div>
 
@@ -205,7 +229,7 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount }) 
         <label htmlFor='credit' className='form-label ms-2'>Credit</label>
         <input id='credit'
           type="text" value={credit === 0 ? "" : credit} placeholder='0' className="payment border rounded ms-2 ps-1"
-          style={{ width: '70px' }} onChange={handleCreditChange}
+          style={{ width: '70px' }} onChange={handleCreditChange} autoComplete="off"
         />
       </div>
     </>
@@ -254,7 +278,7 @@ function PurchaseProducts({ selectedProducts, setSelectedProducts }) {
                 <td className='text-end'>{item.unit_price}</td>
                 <td className='text-end'>
                   <input type="text" value={item.purchase_quantity} className="text-end border rounded pe-2"
-                    style={{ width: "60px" }} onChange={(e) => handleQuantityChange(index, e.target.value)} />
+                    style={{ width: "60px" }} onChange={(e) => handleQuantityChange(index, e.target.value)} autoComplete="off" />
                 </td>
                 <td className='text-end'>{item.total_price.toFixed(2)}</td>
                 <td className='text-center'><i className="bi bi-trash-fill text-danger" style={{ cursor: 'pointer' }}
@@ -342,7 +366,7 @@ function ProductSelection({ dropdown, setDropdown, searchProduct, setSearchProdu
       <div>
         <label htmlFor='search_product' className='form-label'>Product</label>
         <input id='search_product' className='form-control border rounded-pill px-2' placeholder='Search Product'
-          onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} />
+          onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} autoComplete="off" />
 
 
         {dropdown === 'products' && searchProduct.length > 0 &&
@@ -437,7 +461,7 @@ function SellerSelection({ dropdown, setDropdown, searchSeller, setSearchSeller,
     <>
       <label htmlFor='search_seller' className='form-label'>Seller</label>
       <input id='search_seller' className='form-control border rounded-pill px-2' placeholder='Search seller'
-        onChange={handleSellerChange} value={searchSeller} style={{ width: '250px' }} autoFocus />
+        onChange={handleSellerChange} value={searchSeller} style={{ width: '250px' }} autoFocus autoComplete="off" />
 
       {dropdown === 'seller' && searchSeller.length > 0 &&
         <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', width: '250px', maxHeight: '35%', overflowY: 'auto' }} >

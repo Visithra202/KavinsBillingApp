@@ -54,7 +54,7 @@ export default function PurchaseDetails() {
       {/* Search */}
       <div className='row mt-2 mb-2 mx-0'>
         <input id='search' className='form-control border rounded px-2 ' type='text' placeholder='Search purchase' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus />
+          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off"/>
 
       {dropdown && searchTerm.length > 0 && (
         <div ref={dropdownRef} className='dropdown-menu show' style={{maxHeight:'35%', overflowY:'auto', width: '300px', marginTop:'50px'  }}>

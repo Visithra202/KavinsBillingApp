@@ -63,17 +63,17 @@ function UserForm({ setReload }) {
         <div className='d-flex flex-column'>
           <label htmlFor='username' className='form-label'>Username</label>
           <input id='username'  type='text' className='form-control p-2' name='username' value={userFormData.username}
-            onChange={handleChange} autoComplete="off" required></input>
+            onChange={handleChange} autoComplete="off" required/>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='password' className='form-label'>Password</label>
           <input id='password' type='password' className='form-control p-2' name='password' value={userFormData.password}
-            onChange={handleChange} autoComplete='off' required></input>
+            onChange={handleChange} autoComplete='off' required/>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='confirm_password' className='form-label'>Confirm password</label>
           <input id='confirm_password' type='password' className='form-control p-2' name='confirm_password' value={userFormData.confirm_password}
-            onChange={handleChange} autoComplete='off' required></input>
+            onChange={handleChange} autoComplete='off' required/>
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

@@ -81,7 +81,7 @@ export default function EditItem() {
                             <div className="col">
                                 <label className="form-label ">Item name</label>
                                 <input type="text" name="item_name" className="form-control"
-                                    value={itemFormData.item_name} onChange={handleChange} required />
+                                    value={itemFormData.item_name} onChange={handleChange} required autoComplete="off"/>
                             </div>
                             <div className='col'>
                                 <label htmlFor="category" className="form-label">Category</label>
@@ -128,12 +128,12 @@ export default function EditItem() {
                             <div className="col">
                                 <label className="form-label">Purchase Price</label>
                                 <input type="number" name="purchase_price" className="form-control"
-                                    value={itemFormData.purchase_price} onChange={handleChange} required />
+                                    value={itemFormData.purchase_price} onChange={handleChange} required autoComplete="off"/>
                             </div>
                             <div className="col">
                                 <label className="form-label">Sale Price</label>
                                 <input type="number" name="sale_price" className="form-control"
-                                    value={itemFormData.sale_price} onChange={handleChange} required />
+                                    value={itemFormData.sale_price} onChange={handleChange} required autoComplete="off"/>
                             </div>
                             <div className="col">
                                 <label className="form-label">Tax Option</label>
@@ -152,7 +152,7 @@ export default function EditItem() {
                             <div className='col'>
                                 <label className="form-label">MRP</label>
                                 <input type="number" name="mrp" className="form-control"
-                                    value={itemFormData.mrp} onChange={handleChange} required />
+                                    value={itemFormData.mrp} onChange={handleChange} required autoComplete="off"/>
                             </div>
                             <div className="col">
                                 <label className="form-label">Discount type</label>
@@ -167,7 +167,7 @@ export default function EditItem() {
                             <div className="col">
                                 <label className="form-label">Discount</label>
                                 <input type="number" name="discount" className="form-control"
-                                    value={itemFormData.discount} onChange={handleChange} />
+                                    value={itemFormData.discount} onChange={handleChange} autoComplete="off"/>
                             </div>
                         </div>
                     </div>
@@ -180,12 +180,12 @@ export default function EditItem() {
                             <div className="col-4">
                                 <label className="form-label">Quantity</label>
                                 <input type="number" name="quantity" className="form-control"
-                                    value={itemFormData.quantity} onChange={handleChange} required />
+                                    value={itemFormData.quantity} onChange={handleChange} required autoComplete="off"/>
                             </div>
                             <div className='col-4'>
                                 <label className="form-label">Minimum Stock Required</label>
                                 <input type="number" id="min_stock" name="min_stock" className="form-control"
-                                    value={itemFormData.min_stock} onChange={handleChange} required />
+                                    value={itemFormData.min_stock} onChange={handleChange} required autoComplete="off"/>
                             </div>
                         </div>
                     </div>

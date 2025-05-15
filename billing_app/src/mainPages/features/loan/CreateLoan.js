@@ -1,16 +1,35 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Loader from '../../components/Loader';
-import { useNavigate } from 'react-router-dom';
 import UseClickOutside from '../../hooks/UseClickOutside';
 
 
 export default function CreateLoan() {
-    const [loanFormData, setLoanFormData] = useState({});
-    const [searchCustomer, setSearchCustomer] = useState({});
+    const [loanFormData, setLoanFormData] = useState({
+        total_payment: '', advance_amt: '', advance_bal: '', sell_prc: '',
+        loan_amount: '', payment_amount: '', interest: '', payment_frequency: '',
+        term: '', emi_amount: '', next_payment_date: '', advance_paydate: ''
+    });
+
+    const [searchCustomer, setSearchCustomer] = useState({
+        customer_id: '', customer_name: '', mph: ''
+    });
+
     const [refContact, setRefContact] = useState('');
     const [lockId, setLockId] = useState('');
     const date = new Date();
+
+    const [lastCashBal, setLastCashBal] = useState(0);
+
+    useEffect(() => {
+        axios.get('http://localhost:8000/get-last-balance/')
+            .then((response) => {
+                setLastCashBal(response.data.cash_bal);
+            })
+            .catch((error) => {
+                // console.error('Error Fetching Bill No');
+            });
+    }, []);
 
     useEffect(() => {
         const sellPrice = parseFloat(loanFormData.sell_prc) || 0;
@@ -50,6 +69,11 @@ export default function CreateLoan() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (lastCashBal < Number(loanFormData.loan_amount) + Number(loanFormData.advance_bal)) {
+            alert('Insufficient cash balance')
+            return;
+        }
+
         if (!searchCustomer.customer_name || !searchCustomer.mph) {
             alert('Please select a customer or add customer');
             return;
@@ -65,7 +89,7 @@ export default function CreateLoan() {
             return;
         }
 
-        if (parseFloat(loanFormData.advance_amt) > 0 && !loanFormData.advance_paydate) {
+        if (Number(loanFormData.advance_bal) > 0 && !loanFormData.advance_paydate) {
             alert("Enter advance paydate");
             return;
         }
@@ -87,8 +111,8 @@ export default function CreateLoan() {
             advance_bal: loanFormData.advance_bal ? loanFormData.advance_bal : 0,
             advance_paydate: loanFormData.advance_paydate ? loanFormData.advance_paydate : null,
             customer: searchCustomer,
-            lock_id:lockId,
-            ref_mph:refContact
+            lock_id: lockId,
+            ref_mph: refContact
         }
 
         try {
@@ -121,8 +145,10 @@ export default function CreateLoan() {
             payment_frequency: '',
             next_payment_date: '',
             advance_bal: '',
-            advance_paydate: ''
+            advance_paydate: '',
         });
+        setLockId('');
+        setRefContact('');
         setSearchCustomer({});
     };
 
@@ -178,17 +204,17 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                 <div className="col">
                     <label htmlFor='total_payment' className="form-label">Total payment</label>
                     <input id='total_payment' type="text" name="total_payment" className="form-control"
-                        value={loanFormData.total_payment || ''} onChange={handleChange} required />
+                        autoComplete="off" value={loanFormData.total_payment || ''} onChange={handleChange} required />
                 </div>
                 <div className="col">
                     <label htmlFor='advance_amt' className="form-label">Advance amount</label>
                     <input id='advance_amt' type="text" name="advance_amt" className="form-control"
-                        value={loanFormData.advance_amt || ''} onChange={handleChange} required />
+                        autoComplete="off" value={loanFormData.advance_amt || ''} onChange={handleChange} required />
                 </div>
                 <div className="col">
                     <label htmlFor='advance_bal' className="form-label">Advance Balance</label>
                     <input id='advance_bal' type="text" name="advance_bal" className="form-control"
-                        value={loanFormData.advance_bal || ''} onChange={handleChange} required />
+                        autoComplete="off" value={loanFormData.advance_bal || ''} onChange={handleChange} />
                 </div>
             </div>
 
@@ -196,7 +222,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                 <div className="col-4">
                     <label htmlFor='sell_prc' className="form-label">Selling price</label>
                     <input id='sell_prc' type="text" name="sell_prc" className="form-control"
-                        value={loanFormData.sell_prc || ''} onChange={handleChange} required />
+                        autoComplete="off" value={loanFormData.sell_prc || ''} onChange={handleChange} required />
                 </div>
                 <div className="col">
                     <label htmlFor='loan_amount' className="form-label">Loan amount</label>
@@ -228,7 +254,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                 <div className="col">
                     <label htmlFor='term' className="form-label">Term (months)</label>
                     <input id='term' type="text" name="term" className="form-control"
-                        value={loanFormData.term || ''} onChange={handleChange} required />
+                        autoComplete="off" value={loanFormData.term || ''} onChange={handleChange} required />
                 </div>
             </div>
 
@@ -247,12 +273,12 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                 <div className="col">
                     <label htmlFor='next_payment_date' className="form-label">Next payment date</label>
                     <input id='next_payment_date' type="date" name="next_payment_date" className="form-control" min={today}
-                        value={loanFormData.next_payment_date || ''} onChange={handleChange} required />
+                        autoComplete="off" value={loanFormData.next_payment_date || ''} onChange={handleChange} required />
                 </div>
                 <div className="col">
                     <label htmlFor='advance_paydate' className="form-label">Advance pay date</label>
                     <input id='advance_paydate' type="date" name="advance_paydate" className="form-control" min={today}
-                        value={loanFormData.advance_paydate || ''} onChange={handleChange} />
+                        autoComplete="off" value={loanFormData.advance_paydate || ''} onChange={handleChange} />
                 </div>
             </div>
 
@@ -313,7 +339,7 @@ function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setR
                 <div className="col-4">
                     <label htmlFor='customer_name' className="form-label">Customer name</label>
                     <input id='customer_name' type="text" name="customer_name" className="form-control"
-                        value={searchCustomer.customer_name || ''} onChange={handleCustomerChange} required autoFocus />
+                        autoComplete="off" value={searchCustomer.customer_name || ''} onChange={handleCustomerChange} required autoFocus />
                 </div>
                 <div className="col">
                     <label htmlFor='mph' className="form-label">Mobile number</label>
@@ -323,12 +349,12 @@ function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setR
                 <div className="col">
                     <label htmlFor='refContact' className="form-label">Reference contact</label>
                     <input id='refContact' type="text" name="refContact" className="form-control"
-                        value={refContact || ''} onChange={(e) => setRefContact(e.target.value)} />
+                        autoComplete="off" value={refContact || ''} onChange={(e) => setRefContact(e.target.value)} />
                 </div>
                 <div className="col">
                     <label htmlFor='lockId' className="form-label">Lock id</label>
                     <input id='lockId' type="text" name="lockId" className="form-control"
-                        value={lockId || ''} onChange={(e) => setLockId(e.target.value)} />
+                        autoComplete="off" value={lockId || ''} onChange={(e) => setLockId(e.target.value)} required />
                 </div>
 
             </div>

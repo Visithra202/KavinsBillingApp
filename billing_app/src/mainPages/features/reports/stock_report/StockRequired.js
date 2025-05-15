@@ -13,7 +13,7 @@ export default function StockRequired() {
   useEffect(() => {
     axios.get('http://localhost:8000/get-required-stock-list/')
       .then((response) => {
-        setStockList(response.data)
+        setStockList(response.data.low_stock_categories)
         setLoading(false);
       }).catch((error) => {
         // console.error('Error fetching stock report ' + error.response.data)
@@ -35,14 +35,13 @@ export default function StockRequired() {
 
       <div className='border border-secondary bg-white rounded-2 shadow  my-2 scroll-bar'
         style={{ minHeight: '93%', maxHeight: '93%', overflowY: 'auto' }}>
-        <table  className='cashreport itmlst table table-hover'>
+        <table className='cashreport itmlst table table-hover'>
           <thead className=' rounded-top-5' style={{ position: 'sticky', top: '0', zIndex: '1', }}>
             <tr>
-              <th>Product name</th>
+              <th>Item name</th>
               <th>Category</th>
-              <th>Brand</th>
               <th className='text-center'>Quantity</th>
-              <th className='text-end'>Purchase price</th>
+              <th className='text-center'>Minimum Stock</th>
             </tr>
           </thead>
 
@@ -53,10 +52,9 @@ export default function StockRequired() {
                 stockList.map((item, index) => (
                   <tr key={index}>
                     <td>{item.item_name}</td>
-                    <td>{item.category}</td>
-                    <td>{item.brand}</td>
-                    <td className='text-center'>{item.quantity}</td>
-                    <td className='text-end'>{item.purchase_price}</td>
+                    <td>{item.category_name}</td>
+                    <td className='text-center'>{item.total_quantity}</td>
+                    <td className='text-center'>{item.min_stock}</td>
                   </tr>
                 ))
 

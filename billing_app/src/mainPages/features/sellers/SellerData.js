@@ -86,17 +86,17 @@ function SellerForm({ setReload }) {
                 <div className='d-flex flex-column'>
                     <label htmlFor='seller_name' className='form-label'>Seller name</label>
                     <input id='seller_name' type='text' className='form-control p-2' name='seller_name' value={sellerFormData?.seller_name||''}
-                        onChange={handleChange}  required autoComplete='off'></input>
+                        onChange={handleChange}  required autoComplete='off'/>
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label htmlFor='seller_mph' className='form-label'>Mobile Number</label>
                     <input id='seller_mph' type='text' className='form-control p-2' name='seller_mph' value={sellerFormData?.seller_mph||''}
-                        onChange={handleChange} required autoComplete='off'></input>
+                        onChange={handleChange} required autoComplete='off'/>
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label htmlFor='address' className='form-label'>Address</label>
                     <input id='address' type='text' className='form-control p-2' name='address' value={sellerFormData?.address||''}
-                        onChange={handleChange} required autoComplete='off'></input>
+                        onChange={handleChange} required autoComplete='off'/>
                 </div>
                 <div className='d-flex justify-content-center mt-4 '>
                     <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

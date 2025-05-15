@@ -84,7 +84,10 @@ urlpatterns=[
     path('get-report-purchase-by-products/', purchase_by_products, name='purchase_by_products'),
     path('get-report-purchase-by-seller/', purchase_by_seller, name='purchase_by_seller'),
     path('get-report-cash/', cash_report, name='cash-report'),
-    path('get-required-stock-list/', get_required_stock_list, name='get_required_stock_list'),
+    path('get-report-account/', account_report, name='account-report'),
+    path('get-required-stock-list/', get_required_stock, name='get_required_stock_list'),
+
+    path('get-last-balance/', get_last_balance, name='get_last_balance'),
 
     path('', TemplateView.as_view(template_name='index.html')), 
 

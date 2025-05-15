@@ -32,6 +32,7 @@ import Invest from './features/master_data/Invest'
 import ReceiveIncome from './features/master_data/ReceiveIncome'
 import StockRequired from './features/reports/stock_report/StockRequired'
 import PayAdvanced from './features/loan/PayAdvanced'
+import AccountReport from './features/reports/acc_report/AccountReport'
 
 export default function AppRoutes() {
   return (
@@ -92,6 +93,7 @@ export default function AppRoutes() {
         <Route path='/reports/purchase/purchase_by_products' element={<PurchaseByProducts />}></Route>
         <Route path='/reports/purchase/purchase_by_seller' element={<PurchaseBySeller />}></Route>
         <Route path='/reports/cash_report' element={<CashReport />} />
+        <Route path='/reports/account_report' element={<AccountReport />} />
         <Route path='/reports/stock/required_stock' element={<StockRequired />} />
 
       </Routes>

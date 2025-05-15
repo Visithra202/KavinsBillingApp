@@ -80,7 +80,7 @@ function ReceiveForm({ setReload, mobileIncome, accIncome, receiveAmt, setReceiv
         <div className='d-flex flex-column'>
           <label htmlFor='receive_date' className='form-label'>Receive Date</label>
           <input id='receive_date' type='date' className='form-control p-2' name='date' value={date.toISOString().split('T')[0] || ''}
-            autoComplete="off" disabled></input>
+            autoComplete="off" disabled/>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='income_type' className='form-label'>Income type</label>
@@ -93,7 +93,7 @@ function ReceiveForm({ setReload, mobileIncome, accIncome, receiveAmt, setReceiv
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='receive_amt' className='form-label'>Receive Amount</label>
           <input id='receive_amt' type='number' className='form-control p-2' name='receive_amt' value={receiveAmt || ''}
-            autoComplete='off' disabled></input>
+            autoComplete='off' disabled/>
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>
