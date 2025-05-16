@@ -94,8 +94,7 @@ export default function StockList() {
 
                     <tbody className='px-4 py-1'>
                         {loading ? (
-                            <tr>
-                                <td><Loader message='Fetching Items' /></td>
+                            <tr className='text-center'><td colSpan='9'><Loader message='Fetching Items' /></td>
                             </tr>
                         ) : (
                             filteredItems.length > 0 ? (

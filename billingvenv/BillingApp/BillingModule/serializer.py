@@ -403,7 +403,7 @@ class InvestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         trans_amt=validated_data.get('invest_amt')
         trans_comment=validated_data.get('invest_desc')
-        create_cash_transaction(trans_amt=trans_amt, trans_comment=trans_comment,trans_type='CREDIT')
+        create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment=trans_comment,trans_type='CREDIT')
 
         return super().create(validated_data)
 
@@ -453,3 +453,22 @@ class IncomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Income
         fields = '__all__'
+
+class AmountTransferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=AmountTransfer
+        fields='__all__'
+
+    def create(self, validated_data):
+        trans_amt=validated_data['amount']
+        trans_from=validated_data['trans_from']
+        trans_to=validated_data['trans_to']
+        
+        if trans_from=='Cash':
+            create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment='Amount Transfered from Cash to Account',trans_type='DEBIT')
+            create_cash_transaction(trans_amt=trans_amt, cash=0, account=trans_amt, trans_comment='Amount Transfered from Cash to Account',trans_type='CREDIT')
+        else:
+            create_cash_transaction(trans_amt=trans_amt, cash=0, account=trans_amt, trans_comment='Amount Transfered from Account to Cash',trans_type='DEBIT')
+            create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment='Amount Transfered from Account to Cash',trans_type='CREDIT')
+
+        return super().create(validated_data)

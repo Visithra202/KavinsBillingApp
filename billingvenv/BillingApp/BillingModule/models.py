@@ -240,3 +240,9 @@ class Income(models.Model):
     income_taken=models.BooleanField(default=False)
     received_date=models.DateField(null=True, blank=True)
 
+class AmountTransfer(models.Model):
+    trans_id= models.AutoField(primary_key=True)
+    date=models.DateField()
+    trans_from = models.CharField(max_length=30)
+    trans_to=models.CharField(max_length=30)
+    amount=models.DecimalField(max_digits=10, decimal_places=2)

@@ -33,6 +33,7 @@ import ReceiveIncome from './features/master_data/ReceiveIncome'
 import StockRequired from './features/reports/stock_report/StockRequired'
 import PayAdvanced from './features/loan/PayAdvanced'
 import AccountReport from './features/reports/acc_report/AccountReport'
+import TransferAmount from './features/master_data/TransferAmount'
 
 export default function AppRoutes() {
   return (
@@ -71,6 +72,7 @@ export default function AppRoutes() {
         <Route path='/users' element={<Users />}></Route>
         <Route path='/invest' element={<Invest />}></Route>
         <Route path='/receiveIncome' element={<ReceiveIncome />}></Route>
+        <Route path='/transferAmount' element={<TransferAmount/>}></Route>
 
         {/*customer */}
         <Route path='/customerData' element={<CustomerData />}></Route>

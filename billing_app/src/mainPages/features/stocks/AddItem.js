@@ -101,7 +101,7 @@ export default function AddItem() {
               <div className='col'>
                 <label htmlFor='category' className="form-label">Category</label>
                 <select id='category' name="category" className="form-select" value={itemFormData.category} onChange={handleChange} required>
-                  <option value="" disabled>Select Category</option>
+                  <option value="">Select Category</option>
                   {categories.length > 0 && (
                     <>
                       {categories.map((category, index) => (
@@ -117,7 +117,7 @@ export default function AddItem() {
               <div className='col'>
                 <label htmlFor="brand" className="form-label">Brand</label>
                 <select id='brand' name="brand" className="form-select" value={itemFormData.brand} onChange={handleChange} required>
-                  <option value="" disabled>Select Brand</option>
+                  <option value="">Select Brand</option>
                   {brands.length > 0 && (
                     <>
                       {brands.map((brand, index) => (

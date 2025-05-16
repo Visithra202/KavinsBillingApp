@@ -232,6 +232,11 @@ function MasterDataMenu({ location }) {
                     <span><i className="bi bi-wallet-fill me-2"></i>Receive Income </span>
                 </Link>
             </li>
+            <li className='pt-1'>
+                <Link to='/transferAmount' className={`text-decoration-none text-light py-1 px-3  ${location.pathname.includes("transferAmount") ? "isActive" : ""}`}>
+                    <span><i className="bi bi-wallet2 me-2"></i>Transfer Amount</span>
+                </Link>
+            </li>
         </ul>
     )
 }

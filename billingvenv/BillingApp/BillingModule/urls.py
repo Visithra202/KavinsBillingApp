@@ -88,6 +88,9 @@ urlpatterns=[
     path('get-required-stock-list/', get_required_stock, name='get_required_stock_list'),
 
     path('get-last-balance/', get_last_balance, name='get_last_balance'),
+    path('amount-transfer/', amount_transfer, name='amount_transfer'),
+    path('get-amount-transfer-list/', amount_transfer_list, name='amount_transfer_list'),
+
 
     path('', TemplateView.as_view(template_name='index.html')), 
 

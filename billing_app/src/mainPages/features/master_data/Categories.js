@@ -23,6 +23,11 @@ function CategoryForm({ setReload }) {
   const [formData, setFormData] = useState([]);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (!formData.category_name)
+      setError('')
+  }, [formData.category_name])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
@@ -30,8 +35,22 @@ function CategoryForm({ setReload }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.min_stock && (formData.min_stock < 0 || isNaN(formData.min_stock))) {
+      alert('Minimum stock must be positive');
+      return;
+    }
+
+
+
+    const categoryData = {
+      category_name: formData.category_name,
+      description: formData.description,
+      min_stock: formData.min_stock === '' ? null : formData.min_stock
+    }
+
     try {
-      await axios.post('http://localhost:8000/add-category/', formData, {
+      await axios.post('http://localhost:8000/add-category/', categoryData, {
         headers: {
           "Content-Type": "application/json"
         }
@@ -57,7 +76,8 @@ function CategoryForm({ setReload }) {
   const handleReset = () => {
     setFormData({
       category_name: '',
-      description: ''
+      description: '',
+      min_stock: ''
     })
   }
 
@@ -72,13 +92,18 @@ function CategoryForm({ setReload }) {
         <div className='d-flex flex-column'>
           <label htmlFor='category_name' className='form-label'>Category name</label>
           <input id='category_name' type='text' className='form-control p-2' name='category_name' value={formData.category_name}
-            onChange={handleChange} autoComplete="off" required/>
-          {error && <p style={{ color: 'red', fontSize:'12px' }}>{error}</p>}
+            onChange={handleChange} autoComplete="off" required />
+          {error && <p style={{ color: 'red', fontSize: '12px', paddingBottom: 0 }}>{error}</p>}
+        </div>
+        <div className='d-flex flex-column mt-3'>
+          <label htmlFor='min_stock' className='form-label'>Minimum stock</label>
+          <input id='min_stock' type='number' className='form-control p-2' name='min_stock' value={formData.min_stock}
+            onChange={handleChange} autoComplete='off' />
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='description' className='form-label'>Description</label>
           <input id='description' type='text' className='form-control p-2' name='description' value={formData.description}
-            onChange={handleChange} autoComplete='off' required/>
+            onChange={handleChange} autoComplete='off' required />
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

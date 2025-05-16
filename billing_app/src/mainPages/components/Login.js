@@ -24,7 +24,7 @@ export default function Login({ setLogin }) {
                 handleReset();
             }
             ).catch((error) => {
-                alert('Error in login ' +error.response||error.response.data)
+                alert('Invalid Credentials')
                 // console.log(error.response||error.response.data);
                 setLoading(false);
             }

@@ -85,7 +85,7 @@ function ReceiveForm({ setReload, mobileIncome, accIncome, receiveAmt, setReceiv
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='income_type' className='form-label'>Income type</label>
           <select id='income_type' name='income_type' className='form-select' value={incomeType || ''} onChange={handleChange} required>
-            <option value="" disabled>Select type</option>
+            <option value="">Select type</option>
             <option value="Mobile">Mobile</option>
             <option value="Accessories">Accessories</option>
           </select>

@@ -45,7 +45,7 @@ export default function AddPurchase() {
         setLastAccBal(response.data.acc_bal);
       })
       .catch((error) => {
-        // console.error('Error Fetching Bill No');
+        // console.error('Error Fetching balance');
       });
   }, []);
 
