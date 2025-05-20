@@ -56,12 +56,12 @@ export default function AddSale() {
       alert('Select atleast one product for sale')
       return;
     }
-    
-    if((cash+account+credit)!==totalAmount){
+
+    if ((cash + account + credit) !== totalAmount) {
       alert('Enter valid amount')
       return;
     }
-    
+
 
     const saleData = {
       bill_no: billNo,
@@ -79,8 +79,8 @@ export default function AddSale() {
       },
       total_amount: totalAmount,
       balance: totalAmount - (cash + account + credit),
-      paid_amount : cash+account+credit,
-      discount : discount
+      paid_amount: cash + account + credit,
+      discount: discount
     };
     // console.log(saleData)
 
@@ -115,7 +115,7 @@ export default function AddSale() {
 
 
   return (
-    <div className='container'>
+    <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
       <div className='row bg-light mt-1 mb-0 mx-0 p-2 border rounded shadow d-flex'>
         {/* Customer search*/}
         <div className='col d-flex flex-column'>
@@ -140,7 +140,7 @@ export default function AddSale() {
         </div>
       </div>
 
-      <div className='bg-white border rounded shadow p-3 mt-1'>
+      <div className='bg-white border rounded shadow p-3 pt-0 mt-1' style={{ maxHeight: '73%', overflowY: 'auto', backgroundColor: 'white' }}>
         <SaleProducts selectedProducts={selectedProducts} setSelectedProducts={setSelectedProducts} />
       </div>
 
@@ -149,8 +149,8 @@ export default function AddSale() {
 
         <div className='d-flex justify-content-between w-100 mx-5 px-4 '>
           <div className='d-flex rounded'>
-            <PaymentMode cash={cash} setCash={setCash} credit={credit} setCredit={setCredit} account={account} setAccount={setAccount} 
-            discount={discount} setDiscount={setDiscount} totalAmount={totalAmount} setTotalAmount={setTotalAmount} totAmt={totAmt}/>
+            <PaymentMode cash={cash} setCash={setCash} credit={credit} setCredit={setCredit} account={account} setAccount={setAccount}
+              discount={discount} setDiscount={setDiscount} totalAmount={totalAmount} setTotalAmount={setTotalAmount} totAmt={totAmt} />
           </div>
           <div className='d-flex'>
             <label htmlFor='total_amount' className='form-label d-flex align-items-end'>Total Amount</label>
@@ -193,7 +193,7 @@ function PaymentMode({ cash, setCash, credit, setCredit, account, setAccount, di
     if (isNaN(e.target.value)) return;
     const value = e.target.value === "" ? 0 : Number(e.target.value);
     setDiscount(value);
-    setTotalAmount(totAmt-value);
+    setTotalAmount(totAmt - value);
   };
 
   return (
@@ -258,7 +258,7 @@ function SaleProducts({ selectedProducts, setSelectedProducts }) {
   return (
     <>
       <table className='table'>
-        <thead>
+        <thead style={{ position: 'sticky', top: '0', zIndex: '1', }}>
           <tr>
             <th>#</th>
             <th>Product name</th>
@@ -273,11 +273,11 @@ function SaleProducts({ selectedProducts, setSelectedProducts }) {
             selectedProducts.map((item, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
-                <td>{item.product.brand + " "+item.product.category+" "+item.product.item_name}</td>
+                <td>{item.product.brand + " " + item.product.category + " " + item.product.item_name}</td>
                 <td className='text-end'>{item.unit_price}</td>
                 <td className='text-end'>
                   <input type="text" value={item.sale_quantity} className="text-end border rounded pe-2"
-                    style={{ width: "60px" }} onChange={(e) => handleQuantityChange(index, e.target.value)} autoComplete="off"/>
+                    style={{ width: "60px" }} onChange={(e) => handleQuantityChange(index, e.target.value)} autoComplete="off" />
                 </td>
                 <td className='text-end'>{item.total_price.toFixed(2)}</td>
                 <td className='text-center'><i className="bi bi-trash-fill text-danger" style={{ cursor: 'pointer' }}
@@ -379,10 +379,10 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
     <>
       <label htmlFor='search_product' className='form-label'>Product</label>
       <input id='search_product' className='form-control border rounded-pill px-2' placeholder='Search Product'
-        onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} autoComplete="off"/>
+        onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} autoComplete="off" />
 
       {activeDropdown === 'product' && searchProduct.length > 0 &&
-        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px',  maxHeight: '35%', overflowY: 'auto'}} >
+        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', maxHeight: '35%', overflowY: 'auto' }} >
           <table className='table table-hover'>
             <thead>
               <tr>
@@ -475,7 +475,7 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
     <>
       <label htmlFor='customer' className='form-label'>Customer</label>
       <input id='customer' className='form-control border rounded-pill px-2' placeholder='Search Customer'
-        onChange={handleCustomerChange} value={searchCustomer} style={{ width: '250px' }} autoFocus autoComplete="off"/>
+        onChange={handleCustomerChange} value={searchCustomer} style={{ width: '250px' }} autoFocus autoComplete="off" />
 
       {activeDropdown === 'customer' && searchCustomer.length > 0 &&
         <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', height: '100px' }} >

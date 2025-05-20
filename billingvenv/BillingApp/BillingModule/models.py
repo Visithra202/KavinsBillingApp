@@ -231,6 +231,7 @@ class Invest(models.Model):
     invest_amt=models.DecimalField(max_digits=10, decimal_places=2)
     invest_desc=models.TextField()
     source=models.TextField()
+    invest_to=models.CharField(max_length=30)
 
 class Income(models.Model):
     income_id=models.AutoField(primary_key=True)
@@ -246,3 +247,22 @@ class AmountTransfer(models.Model):
     trans_from = models.CharField(max_length=30)
     trans_to=models.CharField(max_length=30)
     amount=models.DecimalField(max_digits=10, decimal_places=2)
+
+class Service(models.Model):
+    service_id=models.AutoField(primary_key=True)
+    date=models.DateField()
+    customer=models.TextField()
+    mph=models.CharField(max_length=255)
+    brand=models.CharField(max_length=255)
+    model_name=models.CharField(max_length=255)
+    issue_details=models.TextField()
+    password=models.CharField(max_length=30)
+    paid_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    paid_date=models.DateField(null=True, blank=True)
+    received_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    received_date=models.DateField(null=True, blank=True)
+    discount=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    balance=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    income=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    receivable_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    service_status=models.CharField(max_length=30, default='Opened')

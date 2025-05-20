@@ -91,6 +91,11 @@ urlpatterns=[
     path('amount-transfer/', amount_transfer, name='amount_transfer'),
     path('get-amount-transfer-list/', amount_transfer_list, name='amount_transfer_list'),
 
+    # service
+    path('add-service/', add_service, name='add_service'),
+    path('get-service-list/', get_service_list, name='get_service_list'),
+    path('add-service-paid-amount/', add_service_paidamt, name='add_service_paidamt'),
+    path('add-service-receive-amount/', add_service_receiveamt, name='add_service_receiveamt'),
 
     path('', TemplateView.as_view(template_name='index.html')), 
 

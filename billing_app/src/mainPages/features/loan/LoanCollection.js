@@ -9,17 +9,27 @@ export default function LoanCollection() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const [loans, setLoans] = useState([]);
+
   useEffect(() => {
     axios.get('http://localhost:8000/get-collection-list/')
       .then((response) => {
         const data = response.data.overdue_loans;
         setCollections(data);
-        setFilteredCollections(data); 
+        setFilteredCollections(data);
         setLoading(false);
       })
       .catch((error) => {
         // console.error('Error Fetching collections');
         setLoading(false);
+      });
+
+      axios.get('http://localhost:8000/get-loan-list/')
+      .then((response) => {
+        setLoans(response.data)
+      })
+      .catch((error) => {
+        // console.error('Error Fetching loans');
       });
   }, []);
 
@@ -41,6 +51,11 @@ export default function LoanCollection() {
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
   };
+
+  const handleNavigate = (accno) =>{
+    const loan= loans.find(loan=>loan.loan_accno=accno);
+    navigate('/loanDetails', {state:{loan}})
+  }
 
   return (
     <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
@@ -83,7 +98,7 @@ export default function LoanCollection() {
             ) : filteredCollections.length > 0 ? (
               filteredCollections.map((collect, index) => (
                 <tr key={index}>
-                  <td>{collect.loan_accno}</td>
+                  <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => handleNavigate(collect.loan_accno)}>{collect.loan_accno}</td>
                   <td>{collect.customer.customer_name}</td>
                   <td>{collect.customer.mph}</td>
                   <td className='text-end'>{collect.due_amount}</td>
@@ -96,7 +111,7 @@ export default function LoanCollection() {
                     style={{ cursor: 'pointer' }}
                     onClick={() => navigate('/addLoanPayment', { state: { collect } })}
                   >
-                    <button className='btn btn-primary py-0 px-2 rounded-pill'>+collect</button>
+                    <button className='btn btn-primary py-0 px-2 rounded-pill'>Collect</button>
                   </td>
                 </tr>
               ))

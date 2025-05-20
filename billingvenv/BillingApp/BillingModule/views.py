@@ -163,7 +163,7 @@ def add_sale(request):
 
 @api_view(['GET'])
 def get_sale_list(request):
-    sales=Sale.objects.all().order_by('sale_seq')
+    sales=Sale.objects.all().order_by('-sale_seq')
     serializer = SaleSerializer(sales, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -201,7 +201,7 @@ def create_loan(request):
 
 @api_view(['GET'])
 def get_loan_list(request):
-    loanList=Loan.objects.all()
+    loanList=Loan.objects.all().order_by('-loan_date')
     serializer = LoanSerializer(loanList, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -357,7 +357,7 @@ def add_purchase(request):
 
 @api_view(['GET'])
 def get_purchase_list(request):
-    purchase=Purchase.objects.all().order_by('purchase_seq')
+    purchase=Purchase.objects.all().order_by('-purchase_seq')
     serializer = PurchaseSerializer(purchase, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -849,8 +849,8 @@ def amount_transfer(request):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    print(serializer.data)
-    print(serializer.errors)
+    # print(serializer.data)
+    # print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -858,3 +858,81 @@ def amount_transfer_list(request):
     transactions=AmountTransfer.objects.order_by('-trans_id')
     serializer= AmountTransferSerializer(transactions, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+# service
+@api_view(['POST'])
+def add_service(request):
+    serializer=ServiceSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    print(serializer.data)
+    print(serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_service_list(request):
+    services = Service.objects.filter(~Q(service_status='Closed')).order_by('-service_id')
+    serializer = ServiceSerializer(services, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+def add_service_paidamt(request):
+    data = request.data
+    # print(data)
+
+    service_id=data.get('service_id')
+    paid_amt=data.get('paid_amt')
+    receivable_amt=data.get('receivable_amt')
+
+    if not all([service_id, paid_amt, receivable_amt]):
+        return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        service=Service.objects.get(service_id=service_id)
+
+        service.paid_amt=paid_amt
+        service.paid_date=get_today()
+        service.receivable_amt=receivable_amt
+        service.service_status='Paid'
+
+        service.save()
+        return Response({"message": "Payment updated successfully."}, status=status.HTTP_200_OK)
+
+    except Service.DoesNotExist:
+        return Response({"error": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PATCH'])
+def add_service_receiveamt(request):
+    data = request.data
+    # print(data)
+
+    service_id=data.get('service_id')
+    received_amt=data.get('received_amt')
+    discount=data.get('discount')
+
+    if not all([service_id, received_amt]):
+        return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        service=Service.objects.get(service_id=service_id)
+
+        service.received_amt+=received_amt
+        service.received_date=get_today()
+        service.discount+=discount
+        
+        if(service.receivable_amt==service.received_amt+service.discount):
+            service.service_status='Closed'
+        else:
+            service.service_status='Pending'
+            service.balance=service.receivable_amt-service.received_amt-service.discount
+
+        service.save()
+        return Response({"message": "Payment updated successfully."}, status=status.HTTP_200_OK)
+
+    except Service.DoesNotExist:
+        return Response({"error": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

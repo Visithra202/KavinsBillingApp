@@ -7,7 +7,7 @@ export default function Invest() {
     <div className='container'>
       <div className='row overflow-hidden'>
         <div className='col bg-light m-4 mt-4 me-0 p-3 px-5 border rounded-5 shadow ' >
-          <InvestList reload={reload} setReload={setReload}/>
+          <InvestList reload={reload} setReload={setReload} />
         </div>
 
         <div className='col h-75 '>
@@ -26,22 +26,23 @@ function InvestForm({ setReload }) {
     const { name, value } = e.target
 
     if (name === 'invest_amt' && !/^\d*$/.test(value)) {
-        return;
+      return;
     }
-    
+
     setInvestFormData({ ...investFormData, [name]: value })
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const investData={
-        date:date.toISOString().split('T')[0],
-        invest_amt:investFormData.invest_amt,
-        invest_desc:investFormData.invest_desc,
-        source:investFormData.source
+    const investData = {
+      date: date.toISOString().split('T')[0],
+      invest_amt: investFormData.invest_amt,
+      invest_desc: investFormData.invest_desc,
+      invest_to:investFormData.invest_to,
+      source: investFormData.source
     }
-    
+
     try {
       await axios.post('http://localhost:8000/add-invest/', investData, {
         headers: {
@@ -58,9 +59,10 @@ function InvestForm({ setReload }) {
   const handleReset = () => {
     setInvestFormData({
       invest_date: date.toISOString().split('T')[0],
-      source:'',
+      source: '',
       invest_amt: '',
-      invest_desc:''
+      invest_desc: '',
+      invest_to:''
     })
   }
 
@@ -71,23 +73,31 @@ function InvestForm({ setReload }) {
       <form onSubmit={handleSubmit} className='py-3 px-4'>
         <div className='d-flex flex-column'>
           <label htmlFor='invest_date' className='form-label'>Date</label>
-          <input id='invest_date'  type='date' className='form-control p-2' name='date' value={date.toISOString().split('T')[0] }
-            onChange={handleChange} autoComplete="off" disabled/>
+          <input id='invest_date' type='date' className='form-control p-2' name='date' value={date.toISOString().split('T')[0]}
+            onChange={handleChange} autoComplete="off" disabled />
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='source' className='form-label'>Source</label>
           <input id='source' type='text' className='form-control p-2' name='source' value={investFormData.source}
-            onChange={handleChange} autoComplete='off' required/>
+            onChange={handleChange} autoComplete='off' required />
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='invest_amt' className='form-label'>Invest Amount</label>
           <input id='invest_amt' type='number' className='form-control p-2' name='invest_amt' value={investFormData.invest_amt}
-            onChange={handleChange} autoComplete='off' required/>
+            onChange={handleChange} autoComplete='off' required />
+        </div>
+        <div className='d-flex flex-column mt-3'>
+          <label htmlFor='invest_to' className='form-label'>Invest to</label>
+          <select id='invest_to' className='form-select' name='invest_to' value={investFormData.invest_to} onChange={handleChange} required>
+            <option value="">Select option</option>
+            <option value="Cash">Cash</option>
+            <option value="Account">Account</option>
+          </select>
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='invest_desc' className='form-label'>Invest Description</label>
           <input id='invest_desc' type='text' className='form-control p-2' name='invest_desc' value={investFormData.invest_desc}
-            onChange={handleChange} autoComplete='off' required/>
+            onChange={handleChange} autoComplete='off' required />
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>
@@ -125,9 +135,9 @@ function InvestList({ reload, setReload }) {
   );
 
   return (
-    <div className='container' style={{ height: 'calc(100vh - 150px)'}}>
+    <div className='container' style={{ height: 'calc(100vh - 150px)' }}>
       <div className='d-flex justify-content-center pb-2' ><h5>Investments</h5></div>
-      <div className='scroll-bar' style={{ minHeight:'50%', maxHeight: '90%', overflowY: 'auto' }}>
+      <div className='scroll-bar' style={{ minHeight: '50%', maxHeight: '90%', overflowY: 'auto' }}>
         <table className="table table-light">
           <thead className="table-head" style={{ position: 'sticky', top: '0', zIndex: '1' }}>
             <tr>

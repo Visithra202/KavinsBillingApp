@@ -176,7 +176,7 @@ select:focus {
 
 @media print {
 
-  .print-area{
+  .print-area {
     width: 100% !important;
     overflow: hidden !important;
   }
@@ -220,4 +220,10 @@ select:focus {
   .print-area .btnrow {
     visibility: hidden !important;
   }
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

@@ -129,7 +129,7 @@ export default function AddPurchase() {
 
 
   return (
-    <div className='container'>
+    <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
 
       <div className='row bg-light mt-1 mb-0 mx-0 p-2 border rounded shadow d-flex'>
 
@@ -156,7 +156,7 @@ export default function AddPurchase() {
       </div>
 
       {/* selected products */}
-      <div className='bg-white border rounded shadow p-3 mt-1'>
+      <div className='bg-white border rounded shadow p-3 pt-0 mt-1' style={{ maxHeight: '73%', overflowY: 'auto', backgroundColor: 'white' }} >
         <PurchaseProducts selectedProducts={selectedProducts} setSelectedProducts={setSelectedProducts} />
       </div>
 
@@ -259,7 +259,7 @@ function PurchaseProducts({ selectedProducts, setSelectedProducts }) {
   return (
     <>
       <table className='table'>
-        <thead>
+        <thead style={{ position: 'sticky', top: '0', zIndex: '1', }}>
           <tr>
             <th>#</th>
             <th>Product name</th>

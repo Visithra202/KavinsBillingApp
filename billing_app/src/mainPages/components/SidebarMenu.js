@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useLocation } from "react-router-dom";
 
 export default function SidebarMenu() {
-    const [openMenu, setOpenMenu] = useState("");
+    const [openMenu, setOpenMenu] = useState('');
     const location = useLocation();
 
     const handleMenu = (menu) => {
@@ -43,6 +43,18 @@ export default function SidebarMenu() {
 
                     <div id='purchase' className={`collapse ${openMenu === "purchase" ? "show" : ""}`}>
                         <PurchaseMenu location={location} />
+                    </div>
+                </li>
+
+                {/* Service */}
+                <li className='list-item '>
+                    <button className='sidebar-menu menu w-100 p-2' onClick={() => handleMenu('service')}>
+                        <span><i class="bi bi-tools me-3"></i> Service</span>
+                        <i className={`bi ${openMenu === "service" ? "bi-chevron-up" : "bi-chevron-down"}`} style={{ fontSize: '12px' }}></i>
+                    </button>
+
+                    <div id='service' className={`collapse ${openMenu === "service" ? "show" : ""}`}>
+                        <ServiceMenu location={location} />
                     </div>
                 </li>
 
@@ -186,6 +198,22 @@ function PurchaseMenu({ location }) {
     )
 }
 
+function ServiceMenu({ location }) {
+    return (
+        <ul className='menu-icon list-unstyled ps-2 ms-2'>
+            <li className='pt-1'>
+                <Link to='/serviceEntry' className={`text-decoration-none text-light py-1 px-3  ${location.pathname.includes("serviceEntry") ? "isActive" : ""}`}>
+                    <span><i className="bi bi-bag-plus me-2"></i>Service Entry</span>
+                </Link>
+            </li>
+            <li className='pt-1'>
+                <Link to='/serviceList' className={`text-decoration-none text-light py-1 px-3  ${location.pathname.includes("serviceList") ? "isActive" : ""}`}>
+                    <span><i className="bi bi-list-check me-2"></i>Service list</span>
+                </Link>
+            </li>
+        </ul>
+    )
+}
 
 function StocksMenu({ location }) {
     return (

@@ -155,7 +155,8 @@ class SaleSerializer(serializers.ModelSerializer):
                     item_name=product_data['item_name'],
                     category=product_data['category'],
                     brand=product_data['brand'],
-                    sale_price=product_data['sale_price']
+                    sale_price=product_data['sale_price'],
+                    purchase_price=product_data['purchase_price']
                 )
 
                 if item.quantity >= item_data['quantity']:
@@ -253,7 +254,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
                     item_name=product_data['item_name'],
                     category=product_data['category'],
                     brand=product_data['brand'],
-                    sale_price=product_data['sale_price']
+                    sale_price=product_data['sale_price'],
+                    purchase_price=product_data['purchase_price']
                 )
 
                 item.quantity += item_data['quantity']
@@ -403,7 +405,14 @@ class InvestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         trans_amt=validated_data.get('invest_amt')
         trans_comment=validated_data.get('invest_desc')
-        create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment=trans_comment,trans_type='CREDIT')
+        invest_to=validated_data.get('invest_to')
+        cash=0
+        account=0
+        if invest_to=='Cash':
+            cash=trans_amt
+        else:
+            account=trans_amt
+        create_cash_transaction(trans_amt=trans_amt, cash=cash, account=account, trans_comment=trans_comment,trans_type='CREDIT')
 
         return super().create(validated_data)
 
@@ -472,3 +481,8 @@ class AmountTransferSerializer(serializers.ModelSerializer):
             create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment='Amount Transfered from Account to Cash',trans_type='CREDIT')
 
         return super().create(validated_data)
+    
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = '__all__'
