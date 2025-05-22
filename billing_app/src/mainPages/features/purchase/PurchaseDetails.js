@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { useLocation} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Loader from '../../components/Loader';
 import UseClickOutside from '../../hooks/UseClickOutside';
 
@@ -36,10 +36,16 @@ export default function PurchaseDetails() {
     const search = e.target.value;
     setSearchTerm(search);
     setDropdown(true);
-    const filtered = purchases.filter((purch) =>
-      (`${purch.purchase_id} ${purch.seller?.seller_name} ${purch.purchase_date} `.toLowerCase().includes(search.toLowerCase()))
-    );
+    const terms = search.toLowerCase().split(/\s+/);
+
+    const filtered = purchases.filter((purch) => {
+      const combined = `${purch.purchase_id} ${purch.seller?.seller_name || ''} ${purch.purchase_date}`.toLowerCase();
+
+      return terms.some(term => combined.includes(term));
+    });
+
     setFilteredPurchase(filtered);
+
   };
 
   const handleDisplayPurchases = (purchase) => {
@@ -54,43 +60,43 @@ export default function PurchaseDetails() {
       {/* Search */}
       <div className='row mt-2 mb-2 mx-0'>
         <input id='search' className='form-control border rounded px-2 ' type='text' placeholder='Search purchase' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off"/>
+          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
 
-      {dropdown && searchTerm.length > 0 && (
-        <div ref={dropdownRef} className='dropdown-menu show' style={{maxHeight:'35%', overflowY:'auto', width: '300px', marginTop:'50px'  }}>
-          <table className='table table-hover'>
-            <thead>
-              <tr>
-                <th>Purchase Id</th>
-                <th>Seller</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <Loader message='Fetching purchases' />
-              ) :
-                (
-                purchases.length>0?(
-                  filteredPurchase.length>0?(
-                    filteredPurchase.map((pur, index)=>(
-                      <tr key={index} onClick={()=>handleDisplayPurchases(pur)}>
-                        <td>{pur.purchase_id}</td>
-                        <td>{pur.seller?.seller_name}</td>
-                      </tr>
-                    ))
-                  ):(
-                    <tr className='text-center'><td colSpan='2'>Matches not found</td></tr>
-                  )
-                ):(
-                  <tr className='text-center'><td colSpan='2'>Purchase not found</td></tr>
-                )
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+        {dropdown && searchTerm.length > 0 && (
+          <div ref={dropdownRef} className='dropdown-menu show' style={{ maxHeight: '35%', overflowY: 'auto', width: '300px', marginTop: '50px' }}>
+            <table className='table table-hover'>
+              <thead>
+                <tr>
+                  <th>Purchase Id</th>
+                  <th>Seller</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <Loader message='Fetching purchases' />
+                ) :
+                  (
+                    purchases.length > 0 ? (
+                      filteredPurchase.length > 0 ? (
+                        filteredPurchase.map((pur, index) => (
+                          <tr key={index} onClick={() => handleDisplayPurchases(pur)}>
+                            <td>{pur.purchase_id}</td>
+                            <td>{pur.seller?.seller_name}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr className='text-center'><td colSpan='2'>Matches not found</td></tr>
+                      )
+                    ) : (
+                      <tr className='text-center'><td colSpan='2'>Purchase not found</td></tr>
+                    )
+                  )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      
+
       {/* Invoice and Seller */}
       <div className='row bg-light mt-1 mb-0 mx-0 p-2 border rounded shadow d-flex'>
         <div className='col'>
@@ -128,10 +134,10 @@ export default function PurchaseDetails() {
               purchase.purchase_products.map((item, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{item.product.item_name||''}</td>
-                  <td className='text-end'>{item.unit_price||''}</td>
-                  <td className='text-end'>{item.quantity||''}</td>
-                  <td className='text-end'>{item.total_price||''}</td>
+                  <td>{item.product.item_name || ''}</td>
+                  <td className='text-end'>{item.unit_price || ''}</td>
+                  <td className='text-end'>{item.quantity || ''}</td>
+                  <td className='text-end'>{item.total_price || ''}</td>
                 </tr>
               ))
             ) : (

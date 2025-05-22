@@ -87,6 +87,8 @@ urlpatterns=[
     path('get-report-account/', account_report, name='account-report'),
     path('get-required-stock-list/', get_required_stock, name='get_required_stock_list'),
 
+    path('get-balance-sheet-report/', get_balancesheet_report, name='get_balancesheet_report'),
+
     path('get-last-balance/', get_last_balance, name='get_last_balance'),
     path('amount-transfer/', amount_transfer, name='amount_transfer'),
     path('get-amount-transfer-list/', amount_transfer_list, name='amount_transfer_list'),
@@ -99,8 +101,6 @@ urlpatterns=[
 
     path('', TemplateView.as_view(template_name='index.html')), 
 
-
-
     # invest
     path('add-invest/',add_invest, name='add_invest'),
     path('get-invest-list/', get_invest_list, name='get_invest_list'),
@@ -108,5 +108,4 @@ urlpatterns=[
     # Income
     path('get-income-list/', get_income_list, name='get_income_list'),
     path('receive-income/', receive_income, name='receive_income'),
-
 ]

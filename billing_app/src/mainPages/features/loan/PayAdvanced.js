@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
+import PaymentOption from '../payment/PaymentOption.js';
 
 export default function PayAdvanced() {
     const location = useLocation();
@@ -30,6 +31,7 @@ export default function PayAdvanced() {
 
 function PaymentForm({ loan, totalUnpaidDue }) {
     const [amount, setAmount] = useState('');
+    const [payment, setPayment] = useState('');
     const navigate = useNavigate()
 
     const handleChange = (e) => {
@@ -52,9 +54,15 @@ function PaymentForm({ loan, totalUnpaidDue }) {
             return;
         }
 
+        if (payment === '') {
+            alert('Select payment type')
+            return;
+        }
+
         const formData = {
             loan_accno: loan.loan_accno,
-            payment_amount: amount
+            payment_amount: amount,
+            payment: payment
         }
 
         try {
@@ -96,6 +104,9 @@ function PaymentForm({ loan, totalUnpaidDue }) {
                     <label className='form-label'>Payment amount</label>
                     <input type='text' className='form-control p-2' name='payment_amount' value={amount} onChange={handleChange}
                         autoComplete='off' />
+                </div>
+                <div className='d-flex flex-column mt-3'>
+                    <PaymentOption payment={payment} setPayment={setPayment} />
                 </div>
                 <div className='d-flex justify-content-center mt-4 '>
                     <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

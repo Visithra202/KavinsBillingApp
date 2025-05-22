@@ -74,6 +74,10 @@ function ReportBy() {
                     Account report
                 </div>
 
+                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => navigate('/reports/balancesheet_report')}>
+                    Balance sheet report
+                </div>
+
             </div>
         </>
     )

@@ -37,6 +37,7 @@ import TransferAmount from './features/master_data/TransferAmount'
 import ServiceEntry from './features/service/ServiceEntry'
 import ServiceList from './features/service/ServiceList'
 import ServiceDetails from './features/service/ServiceDetails'
+import BalanceSheetReport from './features/reports/balancesheet_report/BalanceSheetReport'
 
 export default function AppRoutes() {
   return (
@@ -105,6 +106,7 @@ export default function AppRoutes() {
         <Route path='/reports/purchase/purchase_by_seller' element={<PurchaseBySeller />}></Route>
         <Route path='/reports/cash_report' element={<CashReport />} />
         <Route path='/reports/account_report' element={<AccountReport />} />
+        <Route path='/reports/balancesheet_report' element={<BalanceSheetReport />} />
         <Route path='/reports/stock/required_stock' element={<StockRequired />} />
 
       </Routes>

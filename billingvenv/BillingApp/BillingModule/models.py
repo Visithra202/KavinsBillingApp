@@ -249,7 +249,7 @@ class AmountTransfer(models.Model):
     amount=models.DecimalField(max_digits=10, decimal_places=2)
 
 class Service(models.Model):
-    service_id=models.AutoField(primary_key=True)
+    service_id=models.CharField(max_length=30, primary_key=True)
     date=models.DateField()
     customer=models.TextField()
     mph=models.CharField(max_length=255)
@@ -259,10 +259,16 @@ class Service(models.Model):
     password=models.CharField(max_length=30)
     paid_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     paid_date=models.DateField(null=True, blank=True)
+    paidpayment_type=models.CharField(max_length=30, null=True, blank=True)
     received_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     received_date=models.DateField(null=True, blank=True)
+    receivedpayment_type=models.CharField(max_length=30, null=True, blank=True)
     discount=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     balance=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     income=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     receivable_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     service_status=models.CharField(max_length=30, default='Opened')
+
+class ServiceBill(models.Model):
+    year=models.IntegerField()
+    bill=models.IntegerField()

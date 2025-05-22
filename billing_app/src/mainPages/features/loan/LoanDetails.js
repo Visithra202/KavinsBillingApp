@@ -44,9 +44,13 @@ export default function LoanDetails() {
     const search = e.target.value;
     setSearchTerm(search);
     setDropdown(true);
-    const filtered = loanList.filter((loanData) =>
-      (`${loanData.loan_accno} ${loanData.customer?.customer_name} ${loan.loan_date} `.toLowerCase().includes(search.toLowerCase()))
-    );
+    const terms = search.toLowerCase().split(/\s+/); 
+
+    const filtered = loanList.filter((loanData) => {
+      const loanString = `${loanData.loan_accno} ${loanData.customer?.customer_name || ''} ${loanData.loan_date}`.toLowerCase();
+      return terms.some(term => loanString.includes(term));
+    });
+
     setFilteredLoan(filtered);
   };
 
@@ -74,7 +78,7 @@ export default function LoanDetails() {
       {/* Search */}
       <div className='row mt-2 mb-1 mx-0'>
         <input id='search_loan' className='form-control border rounded px-2 ' type='text' placeholder='Search loan' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off"/>
+          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
 
         {dropdown && searchTerm.length > 0 && (
           <div ref={dropdownRef} className='dropdown-menu show mt-5' style={{ maxHeight: '500px', overflowY: 'auto', width: '300px' }}>

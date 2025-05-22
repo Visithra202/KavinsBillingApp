@@ -78,10 +78,23 @@ def delete_brand(request, brand_id):
 #Item
 @api_view(['POST'])
 def add_item(request):
-    serializer= ItemSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
+    data = request.data
+
+    if Item.objects.filter(
+        item_name__iexact=data.get('item_name', '').strip(),
+        category__iexact=data.get('category', '').strip(),
+        brand__iexact=data.get('brand', '').strip(),
+        purchase_price=data.get('purchase_price'),
+        sale_price=data.get('sale_price'),
+    ).exists():
+        return Response({"detail": "Item already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = ItemSerializer(data=data)
+    if serializer.is_valid():
         item = serializer.save()
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
 @api_view(['GET'])
 def get_stock_list(request):
@@ -268,6 +281,7 @@ def add_loan_payment(request):
     loan_accno = data.get('loan_accno')
     
     payment_amount = Decimal(data.get('payment_amount'))
+    payment=data.get('payment')
     
     paid_amount=payment_amount
     loan = Loan.objects.get(loan_accno=loan_accno)
@@ -338,8 +352,15 @@ def add_loan_payment(request):
         trans_amt=paid_amount,
         balance_amount=previous_data - paid_amount
     )
+    cash=0
+    account=0
 
-    create_cash_transaction(trans_amt=paid_amount, cash=paid_amount, account=0, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
+    if(payment=='Cash'):
+        cash=paid_amount
+    else:
+        account=paid_amount
+
+    create_cash_transaction(cash=cash, account=account, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
     return Response({'message': 'Payment added successfully'})
 
 
@@ -581,10 +602,7 @@ def get_purchase_summary(request):
         'last_month_purchase': last_month_total,
     })
 
-@api_view(['GET'])
-def get_stock_summary(request):
-    today = get_today()
-
+def calculate_stock_summary():
     value_expr = ExpressionWrapper(F('quantity') * F('purchase_price'), output_field=DecimalField())
 
     total_stock = Item.objects.aggregate(
@@ -599,11 +617,17 @@ def get_stock_summary(request):
         total=Sum(value_expr)
     )['total'] or 0
 
-    return JsonResponse({
+    return {
         'total_stock': total_stock,
         'mobile_stock': mobile_stock,
         'accessories_stock': accessories_stock,
-    })
+    }
+
+@api_view(['GET'])
+def get_stock_summary(request):
+    stock_data = calculate_stock_summary()
+    return JsonResponse(stock_data)
+
 
 @api_view(['GET'])
 def get_income_summary(request):
@@ -825,7 +849,8 @@ def receive_income(request):
 
     
     create_cash_transaction(
-        trans_amt=receive_amt,
+        cash=receive_amt,
+        account=0,
         trans_comment=f"{inc_type} Income Received",
         trans_type="DEBIT"
     )
@@ -884,8 +909,9 @@ def add_service_paidamt(request):
     service_id=data.get('service_id')
     paid_amt=data.get('paid_amt')
     receivable_amt=data.get('receivable_amt')
+    payment=data.get('payment')
 
-    if not all([service_id, paid_amt, receivable_amt]):
+    if not all([service_id, paid_amt, receivable_amt, payment]):
         return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
@@ -895,8 +921,19 @@ def add_service_paidamt(request):
         service.paid_date=get_today()
         service.receivable_amt=receivable_amt
         service.service_status='Paid'
+        service.paidpayment_type=payment
 
         service.save()
+        cash=0
+        account=0
+
+        if(payment=='Cash'):
+            cash=paid_amt
+        else:
+            account=paid_amt
+
+        trans_comment=f"Service {service.service_id} amount paid"
+        create_cash_transaction(cash=cash, account=account, trans_comment=trans_comment, trans_type='DEBIT')
         return Response({"message": "Payment updated successfully."}, status=status.HTTP_200_OK)
 
     except Service.DoesNotExist:
@@ -912,8 +949,9 @@ def add_service_receiveamt(request):
     service_id=data.get('service_id')
     received_amt=data.get('received_amt')
     discount=data.get('discount')
+    payment=data.get('payment')
 
-    if not all([service_id, received_amt]):
+    if not all([service_id, received_amt, payment]):
         return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
@@ -922,17 +960,55 @@ def add_service_receiveamt(request):
         service.received_amt+=received_amt
         service.received_date=get_today()
         service.discount+=discount
+        service.receivedpayment_type=payment
         
         if(service.receivable_amt==service.received_amt+service.discount):
             service.service_status='Closed'
+            service.balance=service.receivable_amt-service.received_amt-service.discount
+            if service.received_amt>service.paid_amt:
+                service.income=service.received_amt-service.paid_amt
         else:
             service.service_status='Pending'
             service.balance=service.receivable_amt-service.received_amt-service.discount
+            if service.received_amt>service.paid_amt:
+                service.income=service.received_amt-service.paid_amt
 
         service.save()
+        cash=0
+        account=0
+
+        if(payment=='Cash'):
+            cash=received_amt
+        else:
+            account=received_amt
+        
+        trans_comment=f"Service {service.service_id} amount Received"
+        create_cash_transaction(cash=cash, account=account, trans_comment=trans_comment, trans_type='CREDIT' )
+
         return Response({"message": "Payment updated successfully."}, status=status.HTTP_200_OK)
 
     except Service.DoesNotExist:
         return Response({"error": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_balancesheet_report(request):
+    today = get_today()
+
+    glbal_cash = GlBal.objects.filter(glac='CASH001', date=today).first()
+    cash_balance = glbal_cash.balance if glbal_cash else 0
+
+    glbal_account = GlBal.objects.filter(glac='ACC001', date=today).first()
+    account_balance = glbal_account.balance if glbal_account else 0
+
+    stock_summary = calculate_stock_summary() 
+
+    return Response({
+        'cash_balance': cash_balance,
+        'account_balance': account_balance,
+        'stock': stock_summary['total_stock'],
+        'mobile': stock_summary['mobile_stock'],
+        'accessories': stock_summary['accessories_stock']
+    })
+

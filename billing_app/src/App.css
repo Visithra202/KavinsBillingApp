@@ -76,7 +76,7 @@ td {
 
 .form-control,
 .form-select,
-.loan-control {
+.loan-control, .service-control {
   font-size: 13px !important;
   height: 35px;
 }
@@ -226,4 +226,9 @@ input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.balance-report{
+  margin-top: 15px !important;
+  font-size: 14px;
 }

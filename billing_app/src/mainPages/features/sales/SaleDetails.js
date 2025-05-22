@@ -36,10 +36,16 @@ export default function SaleDetails() {
     const search = e.target.value;
     setSearchTerm(search);
     setDropdown(true);
-    const filtered = sales.filter((sale) =>
-      (`${sale.bill_no} ${sale.customer?.customer_name} ${sale.sale_date} `.toLowerCase().includes(search.toLowerCase()))
-    );
+    const terms = search.toLowerCase().split(/\s+/);
+
+    const filtered = sales.filter((sale) => {
+      const combined = `${sale.bill_no} ${sale.customer?.customer_name || ''} ${sale.sale_date}`.toLowerCase();
+
+      return terms.some(term => combined.includes(term));
+    });
+
     setFilteredSales(filtered);
+
   };
 
   const handleDisplaySales = (sale) => {
@@ -54,10 +60,10 @@ export default function SaleDetails() {
       {/* Search */}
       <div className='row mt-2 mb-2 mx-0'>
         <input id='search' className='form-control border rounded px-2 ' type='text' placeholder='Search bill' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off"/>
+          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
 
         {dropdown && searchTerm.length > 0 && (
-          <div ref={dropdownRef} className='dropdown-menu show' style={{ maxHeight: '35%', overflowY: 'auto',  width: '300px', marginTop:'50px'  }}>
+          <div ref={dropdownRef} className='dropdown-menu show' style={{ maxHeight: '35%', overflowY: 'auto', width: '300px', marginTop: '50px' }}>
             <table className='table table-hover' >
               <thead>
                 <tr>

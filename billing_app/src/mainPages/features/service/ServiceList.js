@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader';
+import PaymentOption from '../payment/PaymentOption';
 
 export default function ServiceList() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,6 +22,8 @@ export default function ServiceList() {
     const [discount, setDiscount] = useState('');
     const [selectedReceiveService, setSelectedReceiveService] = useState(null);
 
+    const [payment, setPayment] = useState('');
+
     useEffect(() => {
         axios.get('http://localhost:8000/get-service-list/')
             .then((response) => {
@@ -38,16 +41,24 @@ export default function ServiceList() {
         if (searchTerm.trim() === '') {
             setFilteredServices(serviceList);
         } else {
+            const terms = searchTerm.toLowerCase().split(/\s+/); 
+
             const filtered = serviceList.filter((ser) => {
                 const customer = ser.customer.toLowerCase();
-                const mph = ser.mph;
+                const mph = ser.mph.toLowerCase();
                 const brand = ser.brand.toLowerCase();
                 const model = ser.model_name.toLowerCase();
                 const issue_details = ser.issue_details.toLowerCase();
 
-                const term = searchTerm.toLowerCase();
-                return customer.includes(term) || brand.includes(term) || mph.includes(term) || model.includes(term) || issue_details.includes(term);
+                return terms.some(term =>
+                    customer.includes(term) ||
+                    brand.includes(term) ||
+                    mph.includes(term) ||
+                    model.includes(term) ||
+                    issue_details.includes(term)
+                );
             });
+
             setFilteredServices(filtered);
         }
     }, [searchTerm, serviceList]);
@@ -56,6 +67,7 @@ export default function ServiceList() {
         setSelectedPayService(service);
         setPaidAmount('');
         setReceivableAmount('');
+        setPayment('');
         setShowPayModal(true);
     };
 
@@ -63,6 +75,7 @@ export default function ServiceList() {
         setSelectedReceiveService(service);
         setReceivedAmount('');
         setDiscount('');
+        setPayment('');
         setShowReceiveModal(true);
     }
 
@@ -80,7 +93,7 @@ export default function ServiceList() {
         }
 
         if (!receivableAmount || isNaN(receivableAmount) || Number(receivableAmount) <= 0) {
-            alert('Enter valid service charge')
+            alert('Enter valid Recceivable amount')
             return;
         }
 
@@ -89,11 +102,16 @@ export default function ServiceList() {
             return;
         }
 
+        if (payment === '') {
+            alert("Select payment type")
+            return;
+        }
+
         const formData = {
             service_id: selectedPayService.service_id,
             paid_amt: Number(paidAmount),
             receivable_amt: Number(receivableAmount),
-
+            payment: payment
         };
 
         // console.log(selectedPayService)
@@ -136,15 +154,21 @@ export default function ServiceList() {
             return;
         }
 
-        if (Number(receivedAmount) + Number(discount) + Number(selectedReceiveService.received_amt) + Number(selectedReceiveService.discount)> Number(selectedReceiveService.receivable_amt)) {
+        if (Number(receivedAmount) + Number(discount) + Number(selectedReceiveService.received_amt) + Number(selectedReceiveService.discount) > Number(selectedReceiveService.receivable_amt)) {
             alert(`Receivable amount is ${selectedReceiveService.receivable_amt}`)
+            return;
+        }
+
+        if (payment === '') {
+            alert("Select payment type")
             return;
         }
 
         const formData = {
             service_id: selectedReceiveService.service_id,
             received_amt: Number(receivedAmount),
-            discount: Number(discount)
+            discount: Number(discount),
+            payment: payment
         };
 
         try {
@@ -181,6 +205,7 @@ export default function ServiceList() {
                 <table className='itmlst table table-hover'>
                     <thead className=' rounded-top-5' style={{ position: 'sticky', top: '0', zIndex: '1', }}>
                         <tr>
+                            <th>Service id</th>
                             <th>Date</th>
                             <th>Customer</th>
                             <th>Contact</th>
@@ -200,8 +225,9 @@ export default function ServiceList() {
                             filteredServices.length > 0 ? (
                                 filteredServices.map((ser, index) => (
                                     <tr key={index}>
+                                        <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => navigate('/serviceDetails', { state: { service: ser } })}>{ser.service_id}</td>
                                         <td>{ser.date}</td>
-                                        <td onClick={() => navigate('/serviceDetails', { state: { service: ser } })}>{ser.customer}</td>
+                                        <td>{ser.customer}</td>
                                         <td>{ser.mph}</td>
                                         <td>{ser.brand}</td>
                                         <td>{ser.model_name}</td>
@@ -236,8 +262,11 @@ export default function ServiceList() {
                                     <input type="number" className="form-control" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} required />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label">Service Charge</label>
+                                    <label className="form-label">Receivable amount</label>
                                     <input type="number" className="form-control" value={receivableAmount} onChange={(e) => setReceivableAmount(e.target.value)} required />
+                                </div>
+                                <div className='mb-3'>
+                                    <PaymentOption payment={payment} setPayment={setPayment} />
                                 </div>
                             </div>
                             <div className="modal-footer d-flex justify-content-center">
@@ -265,6 +294,9 @@ export default function ServiceList() {
                                     <label className="form-label">Discount</label>
                                     <input type="text" className="form-control" value={discount} onChange={(e) => setDiscount(e.target.value)} />
                                 </div>
+                                <div className='mb-3'>
+                                    <PaymentOption payment={payment} setPayment={setPayment} />
+                                </div>
                             </div>
                             <div className="modal-footer d-flex justify-content-center">
                                 <button type="button" className="btn btn-primary" onClick={handleReceiveModalSubmit}>Submit</button>
@@ -277,3 +309,4 @@ export default function ServiceList() {
         </div>
     )
 }
+

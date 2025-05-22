@@ -33,14 +33,20 @@ export default function StockList() {
         if (searchTerm.trim() === '') {
             setFilteredItems(itemList);
         } else {
+            const terms = searchTerm.toLowerCase().split(/\s+/);
+
             const filtered = itemList.filter((item) => {
                 const name = item.item_name.toLowerCase();
                 const category = item.category.toLowerCase();
                 const brand = item.brand.toLowerCase();
-                const term = searchTerm.toLowerCase();
-                return name.includes(term) || brand.includes(term) || category.includes(term);
+
+                return terms.some(term =>
+                    name.includes(term) || category.includes(term) || brand.includes(term)
+                );
             });
+
             setFilteredItems(filtered);
+
         }
     }, [searchTerm, itemList]);
 

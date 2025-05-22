@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader';
+import PaymentOption from '../payment/PaymentOption';
 
 export default function AddLoanPayment() {
     const location = useLocation();
@@ -27,6 +28,7 @@ export default function AddLoanPayment() {
 function PaymentForm({ collection, totalDue }) {
     const [amount, setAmount] = useState('');
     const navigate = useNavigate()
+    const [payment, setPayment] = useState('');
 
     const handleChange = (e) => {
         const val = e.target.value
@@ -48,9 +50,15 @@ function PaymentForm({ collection, totalDue }) {
             return;
         }
 
+        if (payment === '') {
+            alert('Select payment type')
+            return;
+        }
+
         const formData = {
             loan_accno: collection.loan_accno,
-            payment_amount: amount
+            payment_amount: amount,
+            payment: payment
         }
 
         try {
@@ -94,6 +102,9 @@ function PaymentForm({ collection, totalDue }) {
                     <input type='text' className='form-control p-2' name='payment_amount' value={amount} onChange={handleChange}
                         autoComplete='off' />
                 </div>
+                <div className='d-flex flex-column mt-3'>
+                    <PaymentOption payment={payment} setPayment={setPayment} />
+                </div>
                 <div className='d-flex justify-content-center mt-4 '>
                     <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>
                 </div>
@@ -129,11 +140,11 @@ function DueDetails({ collection, setTotalDue }) {
             });
 
         axios.get(`http://localhost:8000/get-acc-loan-bills/${collection?.loan_accno}`)
-              .then((response) => {
+            .then((response) => {
                 setBills(response.data)
-              }).catch((error) => {
+            }).catch((error) => {
                 // console.error('Error fetching loan bills ' + error.response?.data)
-              });
+            });
     }, [collection.loan_accno]);
 
 

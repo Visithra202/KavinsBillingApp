@@ -46,18 +46,6 @@ export default function SidebarMenu() {
                     </div>
                 </li>
 
-                {/* Service */}
-                <li className='list-item '>
-                    <button className='sidebar-menu menu w-100 p-2' onClick={() => handleMenu('service')}>
-                        <span><i class="bi bi-tools me-3"></i> Service</span>
-                        <i className={`bi ${openMenu === "service" ? "bi-chevron-up" : "bi-chevron-down"}`} style={{ fontSize: '12px' }}></i>
-                    </button>
-
-                    <div id='service' className={`collapse ${openMenu === "service" ? "show" : ""}`}>
-                        <ServiceMenu location={location} />
-                    </div>
-                </li>
-
                 {/* Stocks */}
                 <li className='list-item '>
                     <button className='sidebar-menu menu w-100 p-2' onClick={() => handleMenu('stocks')}>
@@ -67,6 +55,18 @@ export default function SidebarMenu() {
 
                     <div id='stocks' className={`collapse ${openMenu === "stocks" ? "show" : ""}`}>
                         <StocksMenu location={location} />
+                    </div>
+                </li>
+
+                {/* Service */}
+                <li className='list-item '>
+                    <button className='sidebar-menu menu w-100 p-2' onClick={() => handleMenu('service')}>
+                        <span><i class="bi bi-tools me-3"></i> Service</span>
+                        <i className={`bi ${openMenu === "service" ? "bi-chevron-up" : "bi-chevron-down"}`} style={{ fontSize: '12px' }}></i>
+                    </button>
+
+                    <div id='service' className={`collapse ${openMenu === "service" ? "show" : ""}`}>
+                        <ServiceMenu location={location} />
                     </div>
                 </li>
 
@@ -209,6 +209,11 @@ function ServiceMenu({ location }) {
             <li className='pt-1'>
                 <Link to='/serviceList' className={`text-decoration-none text-light py-1 px-3  ${location.pathname.includes("serviceList") ? "isActive" : ""}`}>
                     <span><i className="bi bi-list-check me-2"></i>Service list</span>
+                </Link>
+            </li>
+            <li className='pt-1'>
+                <Link to='/serviceDetails' className={`text-decoration-none text-light py-1 px-3  ${location.pathname.includes("serviceDetails") ? "isActive" : ""}`}>
+                    <span><i className="bi bi-ticket-detailed me-2"></i>Service details</span>
                 </Link>
             </li>
         </ul>

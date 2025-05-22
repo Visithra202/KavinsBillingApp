@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from .models import *
+from .views import *
 from datetime import timedelta
 from datetime import datetime
+from django.utils.timezone import now
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
@@ -110,7 +112,7 @@ class SaleSerializer(serializers.ModelSerializer):
         model = Sale
         fields = ['bill_no', 'sale_date', 'customer', 'payment', 'total_amount', 'discount', 'sale_products', 'balance', 'paid_amount', 'income']
 
-    @transaction.atomic
+    @transaction.atomic()
     def create(self, validated_data):
         customer_data = validated_data.pop('customer')
         payment_data = validated_data.pop('payment')
@@ -183,7 +185,7 @@ class SaleSerializer(serializers.ModelSerializer):
         trans_amt = validated_data['paid_amount']
         trans_comment = f"Sale {bill_no} created, credited amount: {trans_amt:.2f}"
         paid=sale.payment
-        create_cash_transaction(trans_amt=trans_amt, cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='CREDIT')
+        create_cash_transaction(cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='CREDIT')
 
         income_obj, created = Income.objects.get_or_create(
         income_date=date.today(),
@@ -214,7 +216,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = ['purchase_id', 'purchase_date', 'seller', 'purchase_payment', 'total_amount','paid_amount', 'discount', 'purchase_products', 'balance']
 
-    @transaction.atomic
+    @transaction.atomic()
     def create(self, validated_data):
         seller_data = validated_data.pop('seller')
         payment_data = validated_data.pop('purchase_payment')
@@ -274,7 +276,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         trans_amt = validated_data['paid_amount']
         trans_comment = f"Purchase {purchase_id} created, Debited amount: {trans_amt:.2f}"
         paid=purchase.purchase_payment
-        create_cash_transaction(trans_amt=trans_amt, cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='DEBIT')
+        create_cash_transaction(cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='DEBIT')
 
         return purchase
     
@@ -291,7 +293,7 @@ class LoanSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['loan_accno']  
 
-    @transaction.atomic
+    @transaction.atomic()
     def create(self, validated_data):
         """Creates a Loan and auto-generates LoanBill entries"""
         today = date.today().strftime("%Y%m%d")  
@@ -371,7 +373,7 @@ class LoanSerializer(serializers.ModelSerializer):
             balance_amount=Decimal(loan.payment_amount + loan.advance_bal)
         )
 
-        create_cash_transaction(trans_amt=loan.loan_amount+loan.advance_bal, cash=loan.loan_amount+loan.advance_bal, account=0, trans_comment=f'Loan Issued - {loan.customer.customer_name}', trans_type="DEBIT")
+        create_cash_transaction(cash=loan.loan_amount+loan.advance_bal, account=0, trans_comment=f'Loan Issued - {loan.customer.customer_name}', trans_type="DEBIT")
         return loan
     
 class GlHistSerializer(serializers.ModelSerializer):
@@ -401,7 +403,7 @@ class InvestSerializer(serializers.ModelSerializer):
         model = Invest
         fields = '__all__'
 
-    @transaction.atomic
+    @transaction.atomic()
     def create(self, validated_data):
         trans_amt=validated_data.get('invest_amt')
         trans_comment=validated_data.get('invest_desc')
@@ -412,13 +414,13 @@ class InvestSerializer(serializers.ModelSerializer):
             cash=trans_amt
         else:
             account=trans_amt
-        create_cash_transaction(trans_amt=trans_amt, cash=cash, account=account, trans_comment=trans_comment,trans_type='CREDIT')
+        create_cash_transaction(cash=cash, account=account, trans_comment=trans_comment,trans_type='CREDIT')
 
         return super().create(validated_data)
 
 
-@transaction.atomic
-def create_cash_transaction(trans_amt, cash, account, trans_comment, trans_type):
+@transaction.atomic()
+def create_cash_transaction(cash, account, trans_comment, trans_type):
     today = date.today()
     crdr = trans_type.upper() == 'CREDIT'
 
@@ -474,11 +476,11 @@ class AmountTransferSerializer(serializers.ModelSerializer):
         trans_to=validated_data['trans_to']
         
         if trans_from=='Cash':
-            create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment='Amount Transfered from Cash to Account',trans_type='DEBIT')
-            create_cash_transaction(trans_amt=trans_amt, cash=0, account=trans_amt, trans_comment='Amount Transfered from Cash to Account',trans_type='CREDIT')
+            create_cash_transaction(cash=trans_amt, account=0, trans_comment='Amount Transfered from Cash to Account',trans_type='DEBIT')
+            create_cash_transaction(cash=0, account=trans_amt, trans_comment='Amount Transfered from Cash to Account',trans_type='CREDIT')
         else:
-            create_cash_transaction(trans_amt=trans_amt, cash=0, account=trans_amt, trans_comment='Amount Transfered from Account to Cash',trans_type='DEBIT')
-            create_cash_transaction(trans_amt=trans_amt, cash=trans_amt, account=0, trans_comment='Amount Transfered from Account to Cash',trans_type='CREDIT')
+            create_cash_transaction(cash=0, account=trans_amt, trans_comment='Amount Transfered from Account to Cash',trans_type='DEBIT')
+            create_cash_transaction(cash=trans_amt, account=0, trans_comment='Amount Transfered from Account to Cash',trans_type='CREDIT')
 
         return super().create(validated_data)
     
@@ -486,3 +488,34 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = '__all__'
+        read_only_fields = ['service_id'] 
+
+    def create(self, validated_data):
+        today = now().date()
+        year = today.year
+
+        with transaction.atomic():
+            bill_obj, created = ServiceBill.objects.get_or_create(
+                year=year,
+                defaults={'bill': 1}
+            )
+
+            if not created:
+                bill_obj.bill += 1
+                bill_obj.save()
+
+            bill_number = bill_obj.bill
+            service_id = f"SER-{year}-{bill_number:04d}" 
+
+            service=Service.objects.create(
+                service_id=service_id,
+                **validated_data
+            )
+
+            return service
+        
+class ServiceBillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ServiceBill
+        fields='__all__'
+        

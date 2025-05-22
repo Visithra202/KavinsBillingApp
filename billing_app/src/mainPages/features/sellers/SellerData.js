@@ -50,6 +50,7 @@ function SellerForm({ setReload }) {
             })
             setReload((prev) => !prev)
             handleReset();
+            alert("Seller added successfully")
             navigate(location.state?.from || '');
         } catch (error) {
             if (error.response && error.response.data) {

@@ -58,7 +58,13 @@ export default function AddItem() {
       handleReset();
     } catch (error) {
       if (error.response && error.response.data) {
-        alert(error.response.data.non_field_errors);
+        if (error.response.data.detail === "Item already exists.") {
+          alert("Item already exists.");
+        } else if (error.response.data.non_field_errors) {
+          alert(error.response.data.non_field_errors);
+        } else {
+          alert("Error: " + JSON.stringify(error.response.data));
+        }
       } else {
         alert("Something went wrong!");
       }
@@ -96,7 +102,7 @@ export default function AddItem() {
               <div className="col">
                 <label htmlFor='item_name' className="form-label ">Item name</label>
                 <input id='item_name' type="text" name="item_name" className="form-control"
-                  value={itemFormData.item_name} onChange={handleChange} required autoFocus autoComplete="off"/>
+                  value={itemFormData.item_name} onChange={handleChange} required autoFocus autoComplete="off" />
               </div>
               <div className='col'>
                 <label htmlFor='category' className="form-label">Category</label>
@@ -142,12 +148,12 @@ export default function AddItem() {
               <div className="col">
                 <label htmlFor='purchase_price' className="form-label">Purchase Price</label>
                 <input id='purchase_price' type="number" name="purchase_price" className="form-control"
-                  value={itemFormData.purchase_price} onChange={handleChange} required autoComplete="off"/>
+                  value={itemFormData.purchase_price} onChange={handleChange} required autoComplete="off" />
               </div>
               <div className="col">
                 <label htmlFor='sale_price' className="form-label">Sale Price</label>
                 <input id='sale_price' type="number" name="sale_price" className="form-control"
-                  value={itemFormData.sale_price} onChange={handleChange} required autoComplete="off"/>
+                  value={itemFormData.sale_price} onChange={handleChange} required autoComplete="off" />
               </div>
               <div className="col">
                 <label htmlFor='tax_option' className="form-label">Tax Option</label>
@@ -166,7 +172,7 @@ export default function AddItem() {
               <div className='col'>
                 <label htmlFor='mrp' className="form-label">MRP</label>
                 <input id='mrp' type="number" name="mrp" className="form-control"
-                  value={itemFormData.mrp} onChange={handleChange} required autoComplete="off"/>
+                  value={itemFormData.mrp} onChange={handleChange} required autoComplete="off" />
               </div>
               <div className="col">
                 <label htmlFor='discount_type' className="form-label">Discount type</label>
@@ -181,7 +187,7 @@ export default function AddItem() {
               <div className="col">
                 <label htmlFor='discount' className="form-label">Discount</label>
                 <input id='discount' type="number" name="discount" className="form-control"
-                  value={itemFormData.discount} onChange={handleChange} autoComplete="off"/>
+                  value={itemFormData.discount} onChange={handleChange} autoComplete="off" />
               </div>
             </div>
           </div>
@@ -194,12 +200,12 @@ export default function AddItem() {
               <div className="col-4">
                 <label htmlFor='quantity' className="form-label">Quantity</label>
                 <input id='quantity' type="number" name="quantity" className="form-control"
-                  value={itemFormData.quantity} onChange={handleChange} required autoComplete="off"/>
+                  value={itemFormData.quantity} onChange={handleChange} required autoComplete="off" />
               </div>
               <div className='col-4'>
                 <label htmlFor='min_stock' className="form-label">Minimum Stock Required</label>
                 <input id='min_stock' type="number" name="min_stock" className="form-control"
-                  value={itemFormData.min_stock} onChange={handleChange} required autoComplete="off"/>
+                  value={itemFormData.min_stock} onChange={handleChange} required autoComplete="off" />
               </div>
             </div>
           </div>

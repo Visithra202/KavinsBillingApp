@@ -41,6 +41,7 @@ function BrandForm({ setReload }) {
       })
       setReload((prev) => !prev)
       handleReset();
+      alert('Brand added successfully')
     } catch (err) {
       if (err.response && err.response.data) {
         const data = err.response.data;

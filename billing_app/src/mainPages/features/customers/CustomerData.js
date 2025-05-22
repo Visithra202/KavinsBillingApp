@@ -21,26 +21,26 @@ export default function CustomerData() {
 
 function CustomerForm({ setReload }) {
     const [formData, setFormData] = useState([]);
-    const location=useLocation();
-    const navigate=useNavigate();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-    
+
         if (name === 'mph' && !/^\d*$/.test(value)) {
             return;
         }
-    
+
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
-    
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        const mph=formData.mph;
-        if(!mph.startsWith('+91 '))
-            formData.mph='+91 '+mph;
+
+        const mph = formData.mph;
+        if (!mph.startsWith('+91 '))
+            formData.mph = '+91 ' + mph;
 
         try {
             await axios.post('http://localhost:8000/add-customer/', formData, {
@@ -50,6 +50,7 @@ function CustomerForm({ setReload }) {
             })
             setReload((prev) => !prev)
             handleReset();
+            alert('Customer added successfully')
             navigate(location.state?.from || '');
         } catch (error) {
             if (error.response && error.response.data) {
@@ -60,7 +61,7 @@ function CustomerForm({ setReload }) {
                 Object.entries(errorMessages).forEach(([field, messages]) => {
                     errorText += `${field}: ${messages.join(", ")}\n`;
                 });
-    
+
                 alert(errorText);
             } else {
                 alert.error("Error:", error.message);
@@ -72,7 +73,7 @@ function CustomerForm({ setReload }) {
         setFormData({
             customer_name: '',
             mph: '',
-            address:''
+            address: ''
         })
     }
 
@@ -85,18 +86,18 @@ function CustomerForm({ setReload }) {
             <form onSubmit={handleSubmit} className='p-3 px-5'>
                 <div className='d-flex flex-column'>
                     <label htmlFor='customer_name' className='form-label'>Customer name</label>
-                    <input id='customer_name' type='text' className='form-control p-2' name='customer_name' value={formData?.customer_name||''}
-                        onChange={handleChange}  required autoComplete='off'/>
+                    <input id='customer_name' type='text' className='form-control p-2' name='customer_name' value={formData?.customer_name || ''}
+                        onChange={handleChange} required autoComplete='off' />
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label htmlFor='mph' className='form-label'>Mobile Number</label>
-                    <input id='mph' type='text' className='form-control p-2' name='mph' value={formData?.mph||''}
-                        onChange={handleChange} required autoComplete='off'/>
+                    <input id='mph' type='text' className='form-control p-2' name='mph' value={formData?.mph || ''}
+                        onChange={handleChange} required autoComplete='off' />
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label htmlFor='address' className='form-label'>Address</label>
-                    <input id='address' type='text' className='form-control p-2' name='address' value={formData?.address||''}
-                        onChange={handleChange} required autoComplete='off'/>
+                    <input id='address' type='text' className='form-control p-2' name='address' value={formData?.address || ''}
+                        onChange={handleChange} required autoComplete='off' />
                 </div>
                 <div className='d-flex justify-content-center mt-4 '>
                     <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>
@@ -146,9 +147,9 @@ function CustomerList({ reload, setReload }) {
     }
 
     return (
-        <div className='container'  style={{ height: 'calc(100vh - 150px)' }}>
+        <div className='container' style={{ height: 'calc(100vh - 150px)' }}>
             <div className='d-flex justify-content-center pb-2' ><h5>Customer list</h5></div>
-            <div className='scroll-bar' style={{  minHeight:'50%', maxHeight: '90%', overflowY: 'auto' }}>
+            <div className='scroll-bar' style={{ minHeight: '50%', maxHeight: '90%', overflowY: 'auto' }}>
                 <table className="table table-light">
                     <thead className="table-head" style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                         <tr>
