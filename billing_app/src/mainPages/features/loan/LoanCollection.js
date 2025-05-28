@@ -53,7 +53,8 @@ export default function LoanCollection() {
   };
 
   const handleNavigate = (accno) =>{
-    const loan= loans.find(loan=>loan.loan_accno=accno);
+    const loan= loans.find(loan=>loan.loan_accno===accno);
+    console.log(loan);
     navigate('/loanDetails', {state:{loan}})
   }
 
