@@ -1,41 +1,31 @@
-from datetime import datetime
-from django.db.models import F
-from BillingModule.models import LoanBill  # Replace `your_app_name` with your Django app name
+# BillingModule/latefeeupd.py
 
-        
 import schedule
 import threading
 import time
 from datetime import date
-
-def start_task():
-    schedule.every().day.at("12:15").do(apply_task)
-    
-    def run_scheduler():
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
-
-    scheduler_threading = threading.Thread(target=run_scheduler, daemon=True)
-    scheduler_threading.start()
+from BillingModule.models import LoanBill
 
 def apply_task():
     today = date.today()
     bills = LoanBill.objects.all()
 
     for bill in bills:
-        if (bill.bill_date and bill.bill_date < today and not bill.paid_date):
+        if bill.bill_date and bill.bill_date < today and not bill.paid_date:
             print(f"Late bill found: {bill.loan_acc} | Due: {bill.bill_date}")
-            bill.late_fee += 100
-            bill.total_due=bill.due_amount+bill.late_fee
+            if bill.due_type == 'Advance' or bill.loan_acc.payment_freq == 'Weekly':
+                bill.late_fee += 100
+            else:
+                bill.late_fee += 300
+            bill.total_due = bill.due_amount + bill.late_fee
             bill.save()
-        
-if __name__ == '__main__':
-    start_task()
-    while True:
-        time.sleep(1)
-        
-# execution in shell
-from BillingModule.models import LoanBill
-from BillingModule.latefeeupd import start_task
-start_task()
+
+def start_task():
+    schedule.every().day.at("09:00").do(apply_task)
+
+    def run_scheduler():
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
+    threading.Thread(target=run_scheduler, daemon=True).start()
