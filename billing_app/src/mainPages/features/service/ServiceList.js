@@ -287,6 +287,10 @@ export default function ServiceList() {
                             </div>
                             <div className="modal-body">
                                 <div className="mb-3">
+                                    <label className="form-label">Receivable amount</label>
+                                    <input type="text" className="form-control" value={selectedReceiveService.receivable_amt} disabled />
+                                </div>
+                                <div className="mb-3">
                                     <label className="form-label">Received amount</label>
                                     <input type="text" className="form-control" value={receivedAmount} onChange={(e) => setReceivedAmount(e.target.value)} required />
                                 </div>
