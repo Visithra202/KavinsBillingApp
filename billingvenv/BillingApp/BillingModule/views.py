@@ -819,43 +819,64 @@ def get_income_list(request):
     today=get_today()
     mobile_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Mobile')
     acc_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Accessories')
+    ser_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Service')
 
     serializer_mob = IncomeSerializer(mobile_income, many=True)
     serializer_acc = IncomeSerializer(acc_income, many=True)
+    serializer_ser = IncomeSerializer(ser_income, many=True)
 
     totmob_income = mobile_income.aggregate(total=Sum('income_amt'))['total'] or 0
     totacc_income = acc_income.aggregate(total=Sum('income_amt'))['total'] or 0
+    totser_income = ser_income.aggregate(total=Sum('income_amt'))['total'] or 0
 
     return Response({
         'mobincome_list': serializer_mob.data,
         'mobile_income': totmob_income,
         'accincome_list': serializer_acc.data,
         'acc_income': totacc_income,
+        'serincome_list':serializer_ser.data,
+        'ser_income':totser_income
     })
 
 @api_view(['POST'])
 def receive_income(request):
-    today=get_today()
     receive_amt = request.data.get('receive_amt')
     receive_date = request.data.get('date')
-    inc_type=request.data.get('income_type')
+    inc_type = request.data.get('income_type')
+    payment = request.data.get('payment')
 
-    income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype=inc_type)
+    if not receive_amt or not receive_date or not inc_type:
+        return Response({"message": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
 
-    for inc in income: 
-        inc.income_taken=True
-        inc.received_date=receive_date
-        inc.save()
+    try:
+        income = Income.objects.get(
+            income_taken=False,
+            income_date=receive_date,
+            inctype=inc_type
+        )
+    except Income.DoesNotExist:
+        return Response({"message": "Income already received or does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-    
+    income.income_taken = True
+    income.received_date =get_today()
+    income.save()
+
+    cash=0
+    account=0
+
+    if(payment=='Cash'):
+        cash=receive_amt
+    else:
+        account=receive_amt
+
     create_cash_transaction(
-        cash=receive_amt,
-        account=0,
+        cash=cash,
+        account=account,
         trans_comment=f"{inc_type} Income Received",
         trans_type="DEBIT"
     )
 
-    return Response({"message":"Income Received"}, status=status.HTTP_200_OK)
+    return Response({"message": "Income Received"}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -966,7 +987,16 @@ def add_service_receiveamt(request):
             service.service_status='Closed'
             service.balance=service.receivable_amt-service.received_amt-service.discount
             if service.received_amt>service.paid_amt:
-                service.income=service.received_amt-service.paid_amt
+                service.income=service.received_amt-service.paid_amt            
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype='Service',
+                    defaults={'income_amt': service.income}
+                    )
+
+                if not created:
+                    income_obj.income_amt += service.income
+                    income_obj.save()
         else:
             service.service_status='Pending'
             service.balance=service.receivable_amt-service.received_amt-service.discount
