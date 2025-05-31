@@ -825,17 +825,10 @@ def get_income_list(request):
     serializer_acc = IncomeSerializer(acc_income, many=True)
     serializer_ser = IncomeSerializer(ser_income, many=True)
 
-    totmob_income = mobile_income.aggregate(total=Sum('income_amt'))['total'] or 0
-    totacc_income = acc_income.aggregate(total=Sum('income_amt'))['total'] or 0
-    totser_income = ser_income.aggregate(total=Sum('income_amt'))['total'] or 0
-
     return Response({
         'mobincome_list': serializer_mob.data,
-        'mobile_income': totmob_income,
         'accincome_list': serializer_acc.data,
-        'acc_income': totacc_income,
         'serincome_list':serializer_ser.data,
-        'ser_income':totser_income
     })
 
 @api_view(['POST'])

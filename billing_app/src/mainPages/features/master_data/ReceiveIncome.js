@@ -5,10 +5,7 @@ import PaymentOption from '../payment/PaymentOption';
 
 export default function ReceiveIncome() {
   const [reload, setReload] = useState(false);
-  const [mobileIncome, setMobileIncome] = useState(0);
-  const [accIncome, setAccIncome] = useState(0);
   const [receiveAmt, setReceiveAmt] = useState(0);
-  const [serIncome, setSerIncome] = useState(0);
 
   const [mobIncomeList, setMobIncomeList] = useState([]);
   const [accIncomeList, setAccIncomeList] = useState([]);
@@ -20,11 +17,8 @@ export default function ReceiveIncome() {
     axios.get('http://localhost:8000/get-income-list/')
       .then((response) => {
         setMobIncomeList(response.data.mobincome_list);
-        setMobileIncome(response.data.mobile_income);
         setAccIncomeList(response.data.accincome_list);
-        setAccIncome(response.data.acc_income);
         setSerIncomeList(response.data.serincome_list);
-        setSerIncome(response.data.ser_income);
         setLoading(false);
       })
       .catch((error) => {
