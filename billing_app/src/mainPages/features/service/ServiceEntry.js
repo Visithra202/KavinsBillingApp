@@ -81,21 +81,21 @@ export default function ServiceEntry() {
                                 onChange={handleChange} autoComplete='off' required />
                         </div>
                         <div className='col d-flex flex-column'>
-                            <label htmlFor='brand' className='form-label'>Brand</label>
-                            <input id='brand' type='text' className='form-control p-2' name='brand' value={serviceFormData.brand}
+                            <label htmlFor='password' className='form-label'>Password</label>
+                            <input id='password' type='text' className='form-control p-2' name='password' value={serviceFormData.password}
                                 onChange={handleChange} autoComplete='off' required />
                         </div>
                     </div>
 
                     <div className='row mt-4'>
                         <div className='col d-flex flex-column'>
-                            <label htmlFor='model_name' className='form-label'>Model</label>
-                            <input id='model_name' type='text' className='form-control p-2' name='model_name' value={serviceFormData.model_name}
+                            <label htmlFor='brand' className='form-label'>Brand</label>
+                            <input id='brand' type='text' className='form-control p-2' name='brand' value={serviceFormData.brand}
                                 onChange={handleChange} autoComplete='off' required />
                         </div>
                         <div className='col d-flex flex-column'>
-                            <label htmlFor='password' className='form-label'>Password</label>
-                            <input id='password' type='text' className='form-control p-2' name='password' value={serviceFormData.password}
+                            <label htmlFor='model_name' className='form-label'>Model</label>
+                            <input id='model_name' type='text' className='form-control p-2' name='model_name' value={serviceFormData.model_name}
                                 onChange={handleChange} autoComplete='off' required />
                         </div>
                     </div>

@@ -8,7 +8,7 @@ export default function CreateLoan() {
     const [loanFormData, setLoanFormData] = useState({
         total_payment: '', advance_amt: '', advance_bal: '', sell_prc: '',
         loan_amount: '', payment_amount: '', interest: '', payment_frequency: '',
-        term: '', emi_amount: '', next_payment_date: '', advance_paydate: ''
+        term: '', emi_amount: '', next_payment_date: '', advance_paydate: '',
     });
 
     const [searchCustomer, setSearchCustomer] = useState({
@@ -17,6 +17,7 @@ export default function CreateLoan() {
 
     const [refContact, setRefContact] = useState('');
     const [lockId, setLockId] = useState('');
+    const [loanType, setLoanType] = useState('');
     const date = new Date();
 
     const [lastCashBal, setLastCashBal] = useState(0);
@@ -112,7 +113,8 @@ export default function CreateLoan() {
             advance_paydate: loanFormData.advance_paydate ? loanFormData.advance_paydate : null,
             customer: searchCustomer,
             lock_id: lockId,
-            ref_mph: refContact
+            ref_mph: refContact,
+            ln_typ: loanType
         }
 
         try {
@@ -150,6 +152,7 @@ export default function CreateLoan() {
         setLockId('');
         setRefContact('');
         setSearchCustomer({});
+        setLoanType('');
     };
 
 
@@ -162,7 +165,7 @@ export default function CreateLoan() {
                 <div className='p-3'>
                     {/* customer */}
                     <div className='border rounded px-4 py-3 position-relative'>
-                        <CustomerSelection searchCustomer={searchCustomer} setSearchCustomer={setSearchCustomer} refContact={refContact} setRefContact={setRefContact} lockId={lockId} setLockId={setLockId} />
+                        <CustomerSelection searchCustomer={searchCustomer} setSearchCustomer={setSearchCustomer} refContact={refContact} setRefContact={setRefContact} lockId={lockId} setLockId={setLockId} loanType={loanType} setLoanType={setLoanType} />
                     </div>
 
                     {/* loan details */}
@@ -246,7 +249,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                     <label htmlFor='payment_frequency' className="form-label">Payment frequency</label>
                     <select id='payment_frequency' name="payment_frequency" className="form-select"
                         value={loanFormData.payment_frequency || ''} onChange={handleChange} required>
-                        <option disabled value="">Select Frequency</option>
+                        <option value="">Select Frequency</option>
                         <option value="Weekly">Weekly</option>
                         <option value="Monthly">Monthly</option>
                     </select>
@@ -287,7 +290,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
 }
 
 
-function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setRefContact, lockId, setLockId }) {
+function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setRefContact, lockId, setLockId, loanType, setLoanType }) {
     const [customers, setCustomers] = useState([]);
     const [customerDropdown, setCustomerDropdown] = useState(false);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
@@ -355,6 +358,15 @@ function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setR
                     <label htmlFor='lockId' className="form-label">Lock id</label>
                     <input id='lockId' type="text" name="lockId" className="form-control"
                         autoComplete="off" value={lockId || ''} onChange={(e) => setLockId(e.target.value)} required />
+                </div>
+                <div className="col">
+                    <label htmlFor='loanType' className="form-label">Loan type</label>
+                    <select id='loanType' name='loanType' className='form-select' onChange={(e) => setLoanType(e.target.value)} required value={loanType || ''}>
+                        <option value=''>Select Type</option>
+                        <option value='MOB'>Mobile</option>
+                        <option value='ACC'>Accessories</option>
+                        <option value='OLD'>Old</option>
+                    </select>
                 </div>
 
             </div>

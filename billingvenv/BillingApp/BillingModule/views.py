@@ -1035,3 +1035,133 @@ def get_balancesheet_report(request):
         'accessories': stock_summary['accessories_stock']
     })
 
+
+# @api_view(['POST'])
+# @transaction.atomic
+# def add_loan_payment(request):
+#     today = date.today()
+#     data = request.data
+
+#     loan_accno = data.get('loan_accno')
+    
+#     payment_amount = Decimal(data.get('payment_amount'))
+#     payment=data.get('payment')
+#     discount=data.get('discount')
+    
+#     paid_amount=payment_amount
+#     loan = Loan.objects.get(loan_accno=loan_accno)
+#     # prev_loanbalance=loan.bal_amount
+    
+#     loan_bills = LoanBill.objects.filter(
+#         loan_acc__loan_accno=loan_accno,
+#         paid_date__isnull=True
+#     ).order_by('bill_date')
+
+#     for bill in loan_bills:
+
+#         if discount > 0:
+#             applicable_discount = min(discount, bill.total_due-bill.discount)
+#             bill.discount += applicable_discount
+#             discount -= applicable_discount
+#             bill.save(update_fields=['discount'])
+
+#         discounted_due=bill.total_due-bill.discount
+#         remaining_due = discounted_due- bill.paid_amount
+#         principal_due = bill.due_amount - min(bill.paid_amount, bill.due_amount)
+
+#         if payment_amount >= remaining_due:
+#             bill.paid_amount += remaining_due
+#             bill.paid_date = today
+#             loan.bal_amount -= principal_due
+#             payment_amount -= remaining_due
+
+#         else:
+#             bill.paid_amount += payment_amount
+#             if bill.paid_amount >= discounted_due:
+#                 bill.paid_date = today
+
+#             # Pay principal first
+#             amount_toward_due = min(payment_amount, principal_due)
+#             loan.bal_amount -= amount_toward_due
+#             payment_amount = Decimal('0.00')
+
+#         bill.save()
+#         if payment_amount + discount == 0:
+#             break
+
+#     loan.save()
+
+#     if paid_amount > 0 :
+#         last_hist = GlHist.objects.order_by('-trans_seq').first()
+
+#         prev_balance = last_hist.balance if last_hist else Decimal('0.00')
+#         new_balance = prev_balance + paid_amount
+
+#         GlHist.objects.create(
+#             date=today,
+#             loan_acc=loan,
+#             credit=1, 
+#             trans_command=f"{paid_amount} credited",
+#             trans_amount=paid_amount,
+#             balance=new_balance
+#         )
+    
+#         latest_journal_entry = LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno).order_by('-journal_id').first() 
+
+#         if latest_journal_entry:
+#             previous_data = latest_journal_entry.new_data
+#             last_seq=latest_journal_entry.journal_seq 
+#         else:
+#             previous_data = Decimal('0.00')
+#             last_seq=1
+                
+            
+#         loan_journal=LoanJournal.objects.create(
+#             loan=loan,
+#             journal_date=today,
+#             journal_seq=last_seq+1,
+#             action_type='PAYMENT',
+#             description="Due payment added",
+#             old_data=previous_data,
+#             new_data=previous_data-paid_amount,
+#             crdr=True,
+#             trans_amt=paid_amount,
+#             balance_amount=previous_data - paid_amount
+#         )
+
+#         cash=0
+#         account=0
+
+#         if(payment=='Cash'):
+#             cash=paid_amount
+#         else:
+#             account=paid_amount
+
+#         create_cash_transaction(cash=cash, account=account, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
+    
+#     if discount > 0:
+#         latest_journal_entry = LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno).order_by('-journal_id').first() 
+
+#         if latest_journal_entry:
+#             previous_data = latest_journal_entry.new_data
+#             last_seq=latest_journal_entry.journal_seq 
+#         else:
+#             previous_data = Decimal('0.00')
+#             last_seq=1
+                
+            
+#         loan_journal=LoanJournal.objects.create(
+#             loan=loan,
+#             journal_date=today,
+#             journal_seq=last_seq+1,
+#             action_type='DISCOUNT',
+#             description="Discount added",
+#             old_data=previous_data,
+#             new_data=previous_data-discount,
+#             crdr=False,
+#             trans_amt=discount,
+#             balance_amount=previous_data - discount
+#         )
+    
+#     return Response({'message': 'Payment added successfully'})
+

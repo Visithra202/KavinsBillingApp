@@ -138,6 +138,7 @@ class PurchaseItem(TransactionItem):
 class Loan(models.Model):
     loan_accno=models.CharField(primary_key=True, max_length=15)
     customer=models.ForeignKey('Customer', on_delete=models.CASCADE)
+    ln_typ=models.CharField(max_length=50)
     total_payment=models.DecimalField(max_digits=10, decimal_places=2)
     selling_price=models.DecimalField(max_digits=10, decimal_places=2)
     advance_amt=models.DecimalField(max_digits=10, decimal_places=2)
@@ -168,6 +169,7 @@ class LoanBill(models.Model):
     due_type=models.CharField(max_length=20)
     late_fee=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_due=models.DecimalField(max_digits=10, decimal_places=2)
+    discount=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     paid_amount=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     prin=models.DecimalField(max_digits=10, decimal_places=2)
     int = models.DecimalField(max_digits=10, decimal_places=2)
