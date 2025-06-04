@@ -33,7 +33,7 @@ export default function StockRequired() {
         <button className='btn btn-primary ' onClick={handlePrint}>Print</button>
       </div>
 
-      <div className='border border-secondary bg-white rounded-2 shadow  my-2 scroll-bar'
+      <div  className='border border-secondary bg-white rounded-2 shadow  my-2 scroll-bar'
         style={{ minHeight: '93%', maxHeight: '93%', overflowY: 'auto' }}>
         <table className='cashreport itmlst table table-hover'>
           <thead className=' rounded-top-5' style={{ position: 'sticky', top: '0', zIndex: '1', }}>

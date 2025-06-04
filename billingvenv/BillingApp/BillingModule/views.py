@@ -16,8 +16,6 @@ from django.utils import timezone
 from django.db.models import Sum, Count, Max, F, Q, ExpressionWrapper, DecimalField
 
 
-
-
 @api_view(['GET'])
 def get_logo(request):
     compdet = Compdet.objects.first()
@@ -285,6 +283,8 @@ def add_loan_payment(request):
     
     paid_amount=payment_amount
     loan = Loan.objects.get(loan_accno=loan_accno)
+    loan.bal_amount-=paid_amount
+    loan.save()
     # prev_loanbalance=loan.bal_amount
     
     loan_bills = LoanBill.objects.filter(
@@ -292,14 +292,17 @@ def add_loan_payment(request):
         paid_date__isnull=True
     ).order_by('bill_date')
 
+    lateFee=0
+    seq_lst=[]
+
     for bill in loan_bills:
         remaining_due = bill.total_due - bill.paid_amount
-        principal_due = bill.due_amount - min(bill.paid_amount, bill.due_amount)
+        # principal_due = bill.due_amount - min(bill.paid_amount, bill.due_amount)
 
         if payment_amount >= remaining_due:
             bill.paid_amount += remaining_due
             bill.paid_date = today
-            loan.bal_amount -= principal_due
+            # loan.bal_amount -= principal_due
             payment_amount -= remaining_due
         else:
             bill.paid_amount += payment_amount
@@ -307,15 +310,19 @@ def add_loan_payment(request):
                 bill.paid_date = today
 
             # Pay principal first
-            amount_toward_due = min(payment_amount, principal_due)
-            loan.bal_amount -= amount_toward_due
+            # amount_toward_due = min(payment_amount, principal_due)
+            # loan.bal_amount -= amount_toward_due
             payment_amount = Decimal('0.00')
 
         bill.save()
+
+        if bill.paid_amount==bill.total_due and bill.late_fee>0:
+            create_cash_transaction(penalty=bill.late_fee, trans_comment= f'Accno : {loan_accno}, Bill seq : {bill.bill_seq}', trans_type='CREDIT')
+
+
         if payment_amount == 0:
             break
 
-    loan.save()
     last_hist = GlHist.objects.order_by('-trans_seq').first()
 
     prev_balance = last_hist.balance if last_hist else Decimal('0.00')
@@ -330,6 +337,7 @@ def add_loan_payment(request):
         balance=new_balance
     )
     
+    
     latest_journal_entry = LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno).order_by('-journal_id').first() 
 
     if latest_journal_entry:
@@ -337,7 +345,7 @@ def add_loan_payment(request):
         last_seq=latest_journal_entry.journal_seq 
     else:
         previous_data = Decimal('0.00')
-        last_seq=1
+        last_seq=0 
             
             
     loan_journal=LoanJournal.objects.create(
@@ -361,6 +369,7 @@ def add_loan_payment(request):
         account=paid_amount
 
     create_cash_transaction(cash=cash, account=account, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
+    
     return Response({'message': 'Payment added successfully'})
 
 
@@ -1019,10 +1028,10 @@ def add_service_receiveamt(request):
 def get_balancesheet_report(request):
     today = get_today()
 
-    glbal_cash = GlBal.objects.filter(glac='CASH001', date=today).first()
+    glbal_cash = GlBal.objects.filter(glac='CASH001').first()
     cash_balance = glbal_cash.balance if glbal_cash else 0
 
-    glbal_account = GlBal.objects.filter(glac='ACC001', date=today).first()
+    glbal_account = GlBal.objects.filter(glac='ACC001').first()
     account_balance = glbal_account.balance if glbal_account else 0
 
     stock_summary = calculate_stock_summary() 
@@ -1036,7 +1045,7 @@ def get_balancesheet_report(request):
     })
 
 
-# @api_view(['POST'])
+# @api_view(['POST'])    
 # @transaction.atomic
 # def add_loan_payment(request):
 #     today = date.today()

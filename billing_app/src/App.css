@@ -175,52 +175,70 @@ select:focus {
 
 
 @media print {
-
   .print-area {
+    margin: 0 !important;
+    padding: 3% !important;
     width: 100% !important;
-    overflow: hidden !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    background: white !important;
+    display: block !important;
   }
 
-
-  .print-area table,
-  .print-area div {
+  .print-area div, .print-area table{
     width: 100% !important;
     outline: none !important;
-    border: none !important;
+    border:none !important;
     box-shadow: none !important;
   }
 
-  .print-area,
-  .print-area table,
-  .print-area div {
-    padding: 0 !important;
-    margin: 0 !important;
+  .print-area .btnrow,
+  button, .no-print {  
+    display: none !important;
+    visibility: hidden !important;
   }
 
-  .print-area {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .print-area table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: auto !important;
   }
 
   .print-area th,
   .print-area td {
-    border: 1px solid black;
-    padding: 2px;
-    background: none !important;
+    border: 1px solid black !important;
+    padding: 4px !important;
+    font-size: 14px !important;
+    text-align: left !important;
     color: black !important;
-    text-align: left;
-    font-size: 14px;
+    background: none !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
   }
 
   .print-area th {
-    font-weight: bold;
+    font-weight: bold !important;
   }
 
-  .print-area .btnrow {
-    visibility: hidden !important;
+  .print-area table,
+  .print-area thead,
+  .print-area tbody,
+  .print-area tr,
+  .print-area td,
+  .print-area th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
+
+  .scroll-bar {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
 }
+
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {

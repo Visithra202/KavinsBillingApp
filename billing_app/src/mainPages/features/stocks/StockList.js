@@ -1,8 +1,9 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 // import EditItem from './EditItem';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader';
+import { useReactToPrint } from 'react-to-print';
 
 export default function StockList() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -12,7 +13,7 @@ export default function StockList() {
     const [filteredItems, setFilteredItems] = useState([]);
 
     const navigate = useNavigate();
-
+    const contentRef = useRef();
 
     useEffect(() => {
         axios.get('http://localhost:8000/get-stock-list/')
@@ -66,10 +67,14 @@ export default function StockList() {
         setSearchTerm(e.target.value);
     };
 
-    return (
-        <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
+    const handlePrint = useReactToPrint({
+        contentRef
+    });
 
-            <div>
+    return (
+        <div ref={contentRef} className='print-area container' style={{ height: 'calc(100vh - 85px)' }}>
+
+            <div className='d-flex justify-content-between align-items-center btnrow'>
                 <input id='search'
                     className='form-control border rounded px-2 my-3'
                     type='text'
@@ -79,6 +84,8 @@ export default function StockList() {
                     onChange={handleChange}
                     autoComplete="off"
                 />
+                <button className='btn btn-primary ' onClick={handlePrint}>Print</button>
+
             </div>
 
             <div className='border border-secondary bg-white rounded-5 shadow  my-2 scroll-bar'
@@ -94,7 +101,7 @@ export default function StockList() {
                             <th className='text-end'>MRP</th>
                             <th className='text-center'>Quantity</th>
                             <th className='text-end'>Total</th>
-                            <th className='text-center'>Action</th>
+                            <th className='text-center no-print'>Action</th>
                         </tr>
                     </thead>
 
@@ -114,7 +121,7 @@ export default function StockList() {
                                         <td className='text-end'>{item.mrp}</td>
                                         <td className='text-center'>{item.quantity}</td>
                                         <td className='text-end'>{(item.quantity * item.purchase_price).toFixed(2)}</td>
-                                        <td className='text-center'>
+                                        <td className='text-center no-print'>
                                             <i className="bi bi-pencil-square text-primary mx-1" style={{ cursor: 'pointer' }}
                                                 onClick={() => navigate('/editItem', { state: { item } })}></i>
                                             <i className="bi bi-trash-fill text-danger mx-1" style={{ cursor: 'pointer' }} onClick={() => handleDelete(item)}></i>

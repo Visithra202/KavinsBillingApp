@@ -420,7 +420,7 @@ class InvestSerializer(serializers.ModelSerializer):
 
 
 @transaction.atomic()
-def create_cash_transaction(cash, account, trans_comment, trans_type):
+def create_cash_transaction(cash = 0, account = 0, penalty = 0, trans_comment='', trans_type='CREDIT'):
     today = date.today()
     crdr = trans_type.upper() == 'CREDIT'
 
@@ -454,10 +454,12 @@ def create_cash_transaction(cash, account, trans_comment, trans_type):
 
     cash_gl_entry = update_accounts('CASH001', cash)
     acc_gl_entry = update_accounts('ACC001', account)
+    penalty_entry = update_accounts('PENL001', penalty)
 
     return {
         'cash_entry': cash_gl_entry,
-        'account_entry': acc_gl_entry
+        'account_entry': acc_gl_entry,
+        'penalty_entry' :penalty_entry
     }
 
 class IncomeSerializer(serializers.ModelSerializer):
