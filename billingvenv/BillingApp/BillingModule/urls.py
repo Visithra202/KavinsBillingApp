@@ -1,6 +1,6 @@
-from django.urls import path
+from django.urls import path, re_path
 from .views import *
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 urlpatterns=[
     path('get-logo/', get_logo, name='get_logo'),
@@ -100,7 +100,10 @@ urlpatterns=[
     path('add-service-paid-amount/', add_service_paidamt, name='add_service_paidamt'),
     path('add-service-receive-amount/', add_service_receiveamt, name='add_service_receiveamt'),
 
-    path('', TemplateView.as_view(template_name='index.html')), 
+    # path('', TemplateView.as_view(template_name='index.html')), 
+    # path('kavins-billing-app/', TemplateView.as_view(template_name='index.html')),
+    # path('', RedirectView.as_view(url='/kavins-billing-app/login/', permanent=False)),
+    # re_path(r'^kavins-billing-app/.*$', TemplateView.as_view(template_name='index.html')),
 
     # invest
     path('add-invest/',add_invest, name='add_invest'),
@@ -109,4 +112,6 @@ urlpatterns=[
     # Income
     path('get-income-list/', get_income_list, name='get_income_list'),
     path('receive-income/', receive_income, name='receive_income'),
+
+    
 ]

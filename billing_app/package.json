@@ -1,6 +1,7 @@
 {
   "name": "billing_app",
   "version": "0.1.0",
+  "homepage": "/kavins-billing-app",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.0",

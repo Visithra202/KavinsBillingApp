@@ -221,7 +221,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-STATIC_URL = '/static/'
+STATIC_URL = '/kavins-billing-app/static/'
 
 STATICFILES_DIRS = [
     PROJECT_ROOT / 'billing_app' / 'build' / 'static'

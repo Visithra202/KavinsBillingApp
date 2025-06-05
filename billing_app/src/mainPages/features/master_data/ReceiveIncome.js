@@ -49,20 +49,20 @@ export default function ReceiveIncome() {
 function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accIncomeList, serIncomeList }) {
   const [incomeType, setIncomeType] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [incomeDates, setIncomeDates] = useState([]);
+  // const [incomeDates, setIncomeDates] = useState([]);
   const [payment, setPayment] = useState('');
   const [lastCashBal, setLastCashBal] = useState(0);
   const [lastAccBal, setLastAccBal] = useState(0);
 
-  useEffect(() => {
-    const allDates = [
-      ...mobIncomeList.map(i => i.income_date),
-      ...accIncomeList.map(i => i.income_date),
-      ...serIncomeList.map(i => i.income_date)
-    ];
-    const uniqueDates = [...new Set(allDates)];
-    setIncomeDates(uniqueDates);
-  }, [mobIncomeList, accIncomeList, serIncomeList]);
+  // useEffect(() => {
+  //   const allDates = [
+  //     ...mobIncomeList.map(i => i.income_date),
+  //     ...accIncomeList.map(i => i.income_date),
+  //     ...serIncomeList.map(i => i.income_date)
+  //   ];
+  //   const uniqueDates = [...new Set(allDates)];
+  //   setIncomeDates(uniqueDates);
+  // }, [mobIncomeList, accIncomeList, serIncomeList]);
 
   const handleTypeChange = (e) => {
     setIncomeType(e.target.value);
@@ -146,13 +146,9 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
       <form onSubmit={handleSubmit} className='py-3 px-4'>
         <div className='d-flex flex-column'>
           <label htmlFor='income_date' className='form-label'>Income Date</label>
-          <select id='income_date' className='form-select' value={selectedDate} onChange={handleDateChange} required>
-            <option value="">Select Date</option>
-            {incomeDates.map((date, idx) => (
-              <option key={idx} value={date}>{date}</option>
-            ))}
-          </select>
+          <input id='income_date' type='date' className='form-control' value={selectedDate} onChange={handleDateChange} required/>
         </div>
+
 
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='income_type' className='form-label'>Income Type</label>

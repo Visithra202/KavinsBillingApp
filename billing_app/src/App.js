@@ -11,7 +11,7 @@ function App() {
   const [showReports, setShowReports] = useState(false);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename='/kavins-billing-app'>
       <Routes>
         <Route
           path="/login"

@@ -8,6 +8,8 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
 import math
+from dateutil.relativedelta import relativedelta
+
 
 
 class CompdetSerializer(serializers.ModelSerializer):
@@ -317,11 +319,13 @@ class LoanSerializer(serializers.ModelSerializer):
 
         due_date = loan.next_pay_date
         frequency_map = {"Monthly": 30, "Weekly": 7}
-        interval = timedelta(days=frequency_map.get(loan.payment_freq, 30))
+        # interval = timedelta(days=frequency_map.get(loan.payment_freq, 30))
 
         if loan.payment_freq == "Weekly":
+            interval = timedelta(weeks=1)
             total_bills = loan.term * 4 
-        else:
+        else:  
+            interval = relativedelta(months=1)
             total_bills = loan.term
 
         billSeq=1
