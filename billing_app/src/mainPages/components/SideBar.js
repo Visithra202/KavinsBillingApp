@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from "axios";
 import SidebarMenu from './SidebarMenu';
 
-export default function SideBar() {
+export default function SideBar({setShowReports}) {
 
     return (
 
@@ -12,7 +12,7 @@ export default function SideBar() {
             </div>
             <hr className='mt-3 border-light' />
             <div className='p-2'>
-                <SidebarMenu/>
+                <SidebarMenu setShowReports={setShowReports}/>
             </div>
         </>
     );

@@ -10,11 +10,10 @@ from decimal import Decimal
 
 def apply_task():
     today = date.today()
-    yesterday = today - timedelta(days=1)
 
     bills = LoanBill.objects.filter(
-        loan_acc__ln_typ='Mobile',
-        bill_date=yesterday,
+        loan_acc__ln_typ='MOB',
+        bill_date__lt=today,
         paid_date__isnull=True,
         late_fee=0
     )
@@ -56,7 +55,7 @@ def apply_task():
         )
 
 def start_task():
-    schedule.every().day.at("09:00").do(apply_task)
+    schedule.every().day.at("12:46").do(apply_task)
 
     def run_scheduler():
         while True:

@@ -4,20 +4,20 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import PurchaseReport from './purchase_report/PurchaseReport';
 import StockReport from './stock_report/StockReport';
 
-export default function Reports() {
+export default function Reports({setShowReports}) {
     return (
         <div className='container p-0 d-flex' style={{ height: 'calc(100vh - 65px)' }}>
 
             <div className='bg-white' style={{ width: '230px' }}>
                 <div className='report bg-secondary text-white p-2' >Reports</div>
-                <ReportBy />
+                <ReportBy setShowReports={setShowReports}/>
             </div>
 
         </div>
     )
 }
 
-function ReportBy() {
+function ReportBy({setShowReports}) {
     const [openMenu, setOpenMenu] = useState("");
     const location = useLocation();
     const navigate= useNavigate();
@@ -25,6 +25,12 @@ function ReportBy() {
     const handleMenu = (menu) => {
         setOpenMenu(openMenu === menu ? "" : menu);
     };
+
+    const handleNavigate = (navTo)=>{
+        setShowReports(false);
+        navigate(navTo);
+    }
+
     return (
         <>
             {/* Sales */}
@@ -37,7 +43,7 @@ function ReportBy() {
                 </button>
 
                 <div id='sales_report' className={`collapse ${openMenu === "sales_report" ? "show border-bottom" : ""}`}>
-                    <SalesReport location={location} />
+                    <SalesReport location={location} setShowReports={setShowReports}/>
                 </div>
 
                 {/* Purchase */}
@@ -49,7 +55,7 @@ function ReportBy() {
                 </button>
 
                 <div id='purchase_report' className={`collapse ${openMenu === "purchase_report" ? "show border-bottom" : ""}`}>
-                    <PurchaseReport location={location} />
+                    <PurchaseReport location={location} setShowReports={setShowReports}/>
                 </div>
 
                 {/* /Stock Report */}
@@ -61,20 +67,22 @@ function ReportBy() {
                 </button>
 
                 <div id='stock_report' className={`collapse ${openMenu === "stock_report" ? "show border-bottom" : ""}`}>
-                    <StockReport location={location} />
+                    <StockReport location={location} setShowReports={setShowReports}/>
                 </div>
 
-
-
-                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => navigate('/reports/cash_report')}>
+                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => handleNavigate('/reports/cash_report')}>
                     Cash report
                 </div>
 
-                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => navigate('/reports/account_report')}>
+                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => handleNavigate('/reports/account_report')}>
                     Account report
                 </div>
 
-                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => navigate('/reports/balancesheet_report')}>
+                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => handleNavigate('/reports/penalty_report')}>
+                    Penalty report
+                </div>
+
+                <div className='report px-3 py-2 bg-transparent border-bottom' onClick={() => handleNavigate('/reports/balancesheet_report')}>
                     Balance sheet report
                 </div>
 

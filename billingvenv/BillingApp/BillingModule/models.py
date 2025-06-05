@@ -147,7 +147,7 @@ class Loan(models.Model):
     emi_amount=models.DecimalField(max_digits=10, decimal_places=2)
     term=models.IntegerField()
     payment_freq=models.CharField(max_length=15)
-    interest=models.DecimalField(max_digits=10, decimal_places=2)
+    interest=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     loan_date=models.DateField(default=date.today)
     next_pay_date=models.DateField()
     bal_amount=models.DecimalField(max_digits=10, decimal_places=2, default=0)

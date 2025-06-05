@@ -8,6 +8,7 @@ import SideBar from './mainPages/components/SideBar.js';
 
 function App() {
   const [login, setLogin] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   return (
     <BrowserRouter>
@@ -23,10 +24,10 @@ function App() {
             login ? (
               <div className='App container-fluid row vh-100 p-0 m-0'>
                 <div className='sidebar bg-dark col-auto text-light px-2'>
-                  <SideBar />
+                  <SideBar setShowReports={setShowReports}/>
                 </div>
                 <div className='mainbar col p-0' style={{ height: '100%' }}>
-                  <MainBar setLogin={setLogin} />
+                  <MainBar setLogin={setLogin} showReports={showReports} setShowReports={setShowReports}/>
                 </div>
               </div>
             ) : (

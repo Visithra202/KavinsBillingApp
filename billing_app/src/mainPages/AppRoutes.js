@@ -38,6 +38,7 @@ import ServiceEntry from './features/service/ServiceEntry'
 import ServiceList from './features/service/ServiceList'
 import ServiceDetails from './features/service/ServiceDetails'
 import BalanceSheetReport from './features/reports/balancesheet_report/BalanceSheetReport'
+import PenaltyReport from './features/reports/penalty_report/PenaltyReport'
 
 export default function AppRoutes() {
   return (
@@ -100,6 +101,7 @@ export default function AppRoutes() {
         <Route path='/loanBills' element={<LoanBill />}></Route>
         <Route path='/payAdvanced' element={<PayAdvanced />}></Route>
 
+        {/* Reports */}
         <Route path='/reports/sale/sale_by_customer' element={<SaleByCustomer />} />
         <Route path='/reports/sale/sale_by_products' element={<SaleByProducts />} />
         <Route path='/reports/purchase/purchase_by_products' element={<PurchaseByProducts />}></Route>
@@ -108,6 +110,7 @@ export default function AppRoutes() {
         <Route path='/reports/account_report' element={<AccountReport />} />
         <Route path='/reports/balancesheet_report' element={<BalanceSheetReport />} />
         <Route path='/reports/stock/required_stock' element={<StockRequired />} />
+        <Route path='/reports/penalty_report' element={<PenaltyReport />} />
 
       </Routes>
     </div>
