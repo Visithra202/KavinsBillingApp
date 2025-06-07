@@ -216,33 +216,54 @@ def get_loan_list(request):
     serializer = LoanSerializer(loanList, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @transaction.atomic
 def get_collection_list(request):
     today = date.today()
     loan_bills = LoanBill.objects.filter(bill_date__lte=today, paid_date__isnull=True)
 
-    overdue_loans_dict = defaultdict(lambda: {'due_amount': Decimal('0.00'), 'late_fee': Decimal('0.00')})
+    overdue_loans_dict = defaultdict(lambda: {
+        'due_amount': Decimal('0.00'),
+        'late_fee': Decimal('0.00'),
+        'customer': None,
+        'loan_accno': '',
+        'payment_freq': '',
+        'od_days': 0
+    })
 
     for bill in loan_bills:
-        acc_no = bill.loan_acc.loan_accno
-        overdue_loans_dict[acc_no]['customer'] = {
-            'customer_name': bill.loan_acc.customer.customer_name,
-            'mph': str(bill.loan_acc.customer.mph)
-        }
-        overdue_loans_dict[acc_no]['loan_accno'] = acc_no
-        overdue_loans_dict[acc_no]['due_amount'] += (bill.due_amount- bill.paid_amount)
+        loan = bill.loan_acc
+        acc_no = loan.loan_accno
+
+        # Only set customer info once
+        if overdue_loans_dict[acc_no]['customer'] is None:
+            overdue_loans_dict[acc_no]['customer'] = {
+                'customer_name': loan.customer.customer_name,
+                'mph': str(loan.customer.mph)
+            }
+            overdue_loans_dict[acc_no]['loan_accno'] = acc_no
+            overdue_loans_dict[acc_no]['payment_freq'] = 'M' if loan.payment_freq.startswith('M') else 'W'
+
+            # OD Days Calculation
+            last_paid_bill = LoanBill.objects.filter(loan_acc=loan, paid_date__isnull=True).order_by('bill_date').first()
+            if last_paid_bill:
+                overdue_loans_dict[acc_no]['od_days'] = (today - last_paid_bill.bill_date).days
+            
+
+        overdue_loans_dict[acc_no]['due_amount'] += (bill.due_amount - bill.paid_amount)
         overdue_loans_dict[acc_no]['late_fee'] += bill.late_fee
 
     overdue_loans = [{
         'customer': data['customer'],
-        'loan_accno': acc_no,
+        'loan_accno': data['loan_accno'],
         'due_amount': str(data['due_amount']),
         'late_fee': str(data['late_fee']),
+        'frequency': data['payment_freq'],
+        'od_days': data['od_days']
     } for acc_no, data in overdue_loans_dict.items()]
 
     return JsonResponse({'overdue_loans': overdue_loans})
+
 
 
 @api_view(['GET'])
@@ -285,40 +306,55 @@ def add_loan_payment(request):
     loan = Loan.objects.get(loan_accno=loan_accno)
     loan.bal_amount-=paid_amount
     loan.save()
-    # prev_loanbalance=loan.bal_amount
     
     loan_bills = LoanBill.objects.filter(
         loan_acc__loan_accno=loan_accno,
         paid_date__isnull=True
     ).order_by('bill_date')
 
-    lateFee=0
-    seq_lst=[]
-
+    loan_bal=0
+    
     for bill in loan_bills:
         remaining_due = bill.total_due - bill.paid_amount
-        # principal_due = bill.due_amount - min(bill.paid_amount, bill.due_amount)
 
         if payment_amount >= remaining_due:
             bill.paid_amount += remaining_due
             bill.paid_date = today
-            # loan.bal_amount -= principal_due
+            loan.loanamt_bal-=bill.prin
             payment_amount -= remaining_due
         else:
             bill.paid_amount += payment_amount
             if bill.paid_amount >= bill.total_due:
                 bill.paid_date = today
+                loan.loanamt_bal-=bill.prin
 
-            # Pay principal first
-            # amount_toward_due = min(payment_amount, principal_due)
-            # loan.bal_amount -= amount_toward_due
             payment_amount = Decimal('0.00')
 
         bill.save()
+        loan.save()
+
 
         if bill.paid_amount==bill.total_due and bill.late_fee>0:
             create_cash_transaction(penalty=bill.late_fee, trans_comment= f'Accno : {loan_accno}, Bill seq : {bill.bill_seq}', trans_type='CREDIT')
+            income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype='Penalty',
+                    defaults={'income_amt': bill.late_fee}
+                )
 
+            if not created:
+                income_obj.income_amt += bill.late_fee
+                income_obj.save()
+        if bill.paid_amount==bill.total_due :
+            income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype='Interest',
+                    defaults={'income_amt': bill.int}
+                )
+
+            if not created:
+                income_obj.income_amt += bill.int
+                income_obj.save()
 
         if payment_amount == 0:
             break
@@ -834,15 +870,22 @@ def get_income_list(request):
     mobile_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Mobile')
     acc_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Accessories')
     ser_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Service')
+    pen_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Penalty')
+    int_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Interest')
+
 
     serializer_mob = IncomeSerializer(mobile_income, many=True)
     serializer_acc = IncomeSerializer(acc_income, many=True)
     serializer_ser = IncomeSerializer(ser_income, many=True)
+    serializer_pen = IncomeSerializer(pen_income, many=True)
+    serializer_int = IncomeSerializer(int_income, many=True)
 
     return Response({
         'mobincome_list': serializer_mob.data,
         'accincome_list': serializer_acc.data,
         'serincome_list':serializer_ser.data,
+        'penincome_list':serializer_pen.data,
+        'intincome_list':serializer_int.data,
     })
 
 @api_view(['POST'])
@@ -1033,149 +1076,20 @@ def add_service_receiveamt(request):
 def get_balancesheet_report(request):
     today = get_today()
 
-    glbal_cash = GlBal.objects.filter(glac='CASH001').first()
+    glbal_cash = GlBal.objects.filter(glac='CASH001').order_by('-id').first()
     cash_balance = glbal_cash.balance if glbal_cash else 0
 
-    glbal_account = GlBal.objects.filter(glac='ACC001').first()
+    glbal_account = GlBal.objects.filter(glac='ACC001').order_by('-id').first()
     account_balance = glbal_account.balance if glbal_account else 0
 
     stock_summary = calculate_stock_summary() 
+    loan_given = Loan.objects.aggregate(total=Sum('loanamt_bal'))['total'] or 0
 
     return Response({
         'cash_balance': cash_balance,
         'account_balance': account_balance,
-        'stock': stock_summary['total_stock'],
+        'loan': loan_given,
         'mobile': stock_summary['mobile_stock'],
         'accessories': stock_summary['accessories_stock']
     })
-
-
-# @api_view(['POST'])    
-# @transaction.atomic
-# def add_loan_payment(request):
-#     today = date.today()
-#     data = request.data
-
-#     loan_accno = data.get('loan_accno')
-    
-#     payment_amount = Decimal(data.get('payment_amount'))
-#     payment=data.get('payment')
-#     discount=data.get('discount')
-    
-#     paid_amount=payment_amount
-#     loan = Loan.objects.get(loan_accno=loan_accno)
-#     # prev_loanbalance=loan.bal_amount
-    
-#     loan_bills = LoanBill.objects.filter(
-#         loan_acc__loan_accno=loan_accno,
-#         paid_date__isnull=True
-#     ).order_by('bill_date')
-
-#     for bill in loan_bills:
-
-#         if discount > 0:
-#             applicable_discount = min(discount, bill.total_due-bill.discount)
-#             bill.discount += applicable_discount
-#             discount -= applicable_discount
-#             bill.save(update_fields=['discount'])
-
-#         discounted_due=bill.total_due-bill.discount
-#         remaining_due = discounted_due- bill.paid_amount
-#         principal_due = bill.due_amount - min(bill.paid_amount, bill.due_amount)
-
-#         if payment_amount >= remaining_due:
-#             bill.paid_amount += remaining_due
-#             bill.paid_date = today
-#             loan.bal_amount -= principal_due
-#             payment_amount -= remaining_due
-
-#         else:
-#             bill.paid_amount += payment_amount
-#             if bill.paid_amount >= discounted_due:
-#                 bill.paid_date = today
-
-#             # Pay principal first
-#             amount_toward_due = min(payment_amount, principal_due)
-#             loan.bal_amount -= amount_toward_due
-#             payment_amount = Decimal('0.00')
-
-#         bill.save()
-#         if payment_amount + discount == 0:
-#             break
-
-#     loan.save()
-
-#     if paid_amount > 0 :
-#         last_hist = GlHist.objects.order_by('-trans_seq').first()
-
-#         prev_balance = last_hist.balance if last_hist else Decimal('0.00')
-#         new_balance = prev_balance + paid_amount
-
-#         GlHist.objects.create(
-#             date=today,
-#             loan_acc=loan,
-#             credit=1, 
-#             trans_command=f"{paid_amount} credited",
-#             trans_amount=paid_amount,
-#             balance=new_balance
-#         )
-    
-#         latest_journal_entry = LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno).order_by('-journal_id').first() 
-
-#         if latest_journal_entry:
-#             previous_data = latest_journal_entry.new_data
-#             last_seq=latest_journal_entry.journal_seq 
-#         else:
-#             previous_data = Decimal('0.00')
-#             last_seq=1
-                
-            
-#         loan_journal=LoanJournal.objects.create(
-#             loan=loan,
-#             journal_date=today,
-#             journal_seq=last_seq+1,
-#             action_type='PAYMENT',
-#             description="Due payment added",
-#             old_data=previous_data,
-#             new_data=previous_data-paid_amount,
-#             crdr=True,
-#             trans_amt=paid_amount,
-#             balance_amount=previous_data - paid_amount
-#         )
-
-#         cash=0
-#         account=0
-
-#         if(payment=='Cash'):
-#             cash=paid_amount
-#         else:
-#             account=paid_amount
-
-#         create_cash_transaction(cash=cash, account=account, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
-    
-#     if discount > 0:
-#         latest_journal_entry = LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno).order_by('-journal_id').first() 
-
-#         if latest_journal_entry:
-#             previous_data = latest_journal_entry.new_data
-#             last_seq=latest_journal_entry.journal_seq 
-#         else:
-#             previous_data = Decimal('0.00')
-#             last_seq=1
-                
-            
-#         loan_journal=LoanJournal.objects.create(
-#             loan=loan,
-#             journal_date=today,
-#             journal_seq=last_seq+1,
-#             action_type='DISCOUNT',
-#             description="Discount added",
-#             old_data=previous_data,
-#             new_data=previous_data-discount,
-#             crdr=False,
-#             trans_amt=discount,
-#             balance_amount=previous_data - discount
-#         )
-    
-#     return Response({'message': 'Payment added successfully'})
 

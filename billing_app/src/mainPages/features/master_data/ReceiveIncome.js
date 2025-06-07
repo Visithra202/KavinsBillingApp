@@ -10,6 +10,9 @@ export default function ReceiveIncome() {
   const [mobIncomeList, setMobIncomeList] = useState([]);
   const [accIncomeList, setAccIncomeList] = useState([]);
   const [serIncomeList, setSerIncomeList] = useState([]);
+  const [penIncomeList, setPenIncomeList] = useState([]);
+  const [intIncomeList, setIntIncomeList] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
 
@@ -19,6 +22,8 @@ export default function ReceiveIncome() {
         setMobIncomeList(response.data.mobincome_list);
         setAccIncomeList(response.data.accincome_list);
         setSerIncomeList(response.data.serincome_list);
+        setIntIncomeList(response.data.intincome_list);
+        setPenIncomeList(response.data.penincome_list)
         setLoading(false);
       })
       .catch((error) => {
@@ -33,20 +38,20 @@ export default function ReceiveIncome() {
       <div className='row overflow-hidden'>
         <div className='col bg-light m-4 mt-4 me-0 p-3 px-5 border rounded-5 shadow ' >
           <IncomeList mobIncomeList={mobIncomeList} accIncomeList={accIncomeList}
-            serIncomeList={serIncomeList} loading={loading} />
+            serIncomeList={serIncomeList} penIncomeList={penIncomeList} intIncomeList={intIncomeList} loading={loading} />
         </div>
 
         <div className='col h-75 '>
           <ReceiveForm
             setReload={setReload} receiveAmt={receiveAmt} setReceiveAmt={setReceiveAmt}
-            mobIncomeList={mobIncomeList} accIncomeList={accIncomeList} serIncomeList={serIncomeList} />
+            mobIncomeList={mobIncomeList} accIncomeList={accIncomeList} serIncomeList={serIncomeList} penIncomeList={penIncomeList} intIncomeList={intIncomeList} />
         </div>
       </div>
     </div>
   )
 }
 
-function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accIncomeList, serIncomeList }) {
+function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accIncomeList, serIncomeList, penIncomeList, intIncomeList }) {
   const [incomeType, setIncomeType] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   // const [incomeDates, setIncomeDates] = useState([]);
@@ -81,6 +86,8 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
     if (type === 'Mobile') list = mobIncomeList;
     else if (type === 'Accessories') list = accIncomeList;
     else if (type === 'Service') list = serIncomeList;
+    else if (type === 'Penalty') list = penIncomeList;
+    else if (type === 'Interest') list = intIncomeList;
 
     const incomeItem = list.find(item => item.income_date === date);
     setReceiveAmt(incomeItem ? parseFloat(incomeItem.income_amt) : 0);
@@ -146,7 +153,7 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
       <form onSubmit={handleSubmit} className='py-3 px-4'>
         <div className='d-flex flex-column'>
           <label htmlFor='income_date' className='form-label'>Income Date</label>
-          <input id='income_date' type='date' className='form-control' value={selectedDate} onChange={handleDateChange} required/>
+          <input id='income_date' type='date' className='form-control' value={selectedDate} onChange={handleDateChange} required />
         </div>
 
 
@@ -157,6 +164,8 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
             <option value="Mobile">Mobile</option>
             <option value="Accessories">Accessories</option>
             <option value="Service">Service</option>
+            <option value="Penalty">Penalty</option>
+            <option value="Interest">Interest</option>
           </select>
         </div>
 
@@ -178,7 +187,7 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
 }
 
 
-function IncomeList({ loading, mobIncomeList, serIncomeList, accIncomeList }) {
+function IncomeList({ loading, mobIncomeList, serIncomeList, accIncomeList, penIncomeList, intIncomeList }) {
 
   return (
     <div className='container' style={{ height: 'calc(100vh - 150px)' }}>
@@ -233,7 +242,29 @@ function IncomeList({ loading, mobIncomeList, serIncomeList, accIncomeList }) {
                     ))}
                   </>
                 )}
-                {mobIncomeList.length === 0 && accIncomeList.length === 0 && serIncomeList.length === 0 && (
+                {penIncomeList.length > 0 && (
+                  <>
+                    <tr className="table-secondary"><td colSpan="2">Penalty</td></tr>
+                    {penIncomeList.map((inc, index) => (
+                      <tr key={`pen-${index}`}>
+                        <td>{inc.income_date}</td>
+                        <td className="text-end">{inc.income_amt}</td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+                {intIncomeList.length > 0 && (
+                  <>
+                    <tr className="table-secondary"><td colSpan="2">Interest</td></tr>
+                    {intIncomeList.map((inc, index) => (
+                      <tr key={`int-${index}`}>
+                        <td>{inc.income_date}</td>
+                        <td className="text-end">{inc.income_amt}</td>
+                      </tr>
+                    ))}
+                  </>
+                )}
+                {mobIncomeList.length === 0 && accIncomeList.length === 0 && serIncomeList.length === 0 && penIncomeList.length === 0 && intIncomeList.length === 0 && (
                   <tr className="text-center">
                     <td colSpan="2">Income not Found</td>
                   </tr>

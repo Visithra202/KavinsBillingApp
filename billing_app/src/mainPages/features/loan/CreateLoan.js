@@ -45,7 +45,7 @@ export default function CreateLoan() {
         const interest = paymentAmount - loanAmount;
 
         let emiAmount = 0;
-        const duration = frequency === 'Weekly' ? term * 4 : term;
+        const duration = term;
         if (paymentAmount > 0 && duration > 0) {
             emiAmount = paymentAmount / duration;
         }
@@ -114,7 +114,8 @@ export default function CreateLoan() {
             customer: searchCustomer,
             lock_id: lockId,
             ref_mph: refContact,
-            ln_typ: loanType
+            ln_typ: loanType,
+            loanamt_bal: loanFormData.loan_amount?loanFormData.loan_amount:0,
         }
 
         try {
@@ -122,7 +123,7 @@ export default function CreateLoan() {
                 headers: {
                     "Content-Type": "application/json"
                 }
-            })
+            }) 
             alert('Loan Created successfully')
             handleReset();
         } catch (error) {

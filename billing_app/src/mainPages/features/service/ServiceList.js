@@ -233,9 +233,9 @@ export default function ServiceList() {
                                         <td>{ser.model_name}</td>
                                         <td>{ser.password}</td>
                                         <td>{ser.issue_details}</td>
-                                        <td className='text-center'>
-                                            {Number(ser.paid_amt) === 0 && <button className='btn btn-primary rounded-pill px-3 py-1 mx-1' onClick={() => handlePay(ser)}>Pay</button>}
-                                            <button className='btn btn-secondary rounded-pill px-3 py-1 mx-1' onClick={() => handleReceive(ser)}>Receive</button>
+                                        <td className='text-center d-flex justify-content-between'>
+                                            {Number(ser.paid_amt) === 0 ? <button className='btn btn-primary rounded-pill px-3 py-1 mx-1' onClick={() => handlePay(ser)}>Pay</button> : <button className='btn btn-secondary rounded-pill px-3 py-1 mx-1' disabled>Paid</button>}
+                                            <button className='btn btn-success rounded-pill px-3 py-1 mx-1' onClick={() => handleReceive(ser)}>Receive</button>
                                         </td>
                                     </tr>
                                 ))

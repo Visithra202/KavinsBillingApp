@@ -85,6 +85,8 @@ export default function LoanCollection() {
               <th>Loan Acc No</th>
               <th>Customer name</th>
               <th>Customer number</th>
+              <th>Freq</th>
+              <th>OD days</th>
               <th className='text-end'>Due amount</th>
               <th className='text-end'>Late fee</th>
               <th className='text-end'>Total due</th>
@@ -102,6 +104,8 @@ export default function LoanCollection() {
                   <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => handleNavigate(collect.loan_accno)}>{collect.loan_accno}</td>
                   <td>{collect.customer.customer_name}</td>
                   <td>{collect.customer.mph}</td>
+                  <td>{collect.frequency}</td>
+                  <td>{collect.od_days}</td>
                   <td className='text-end'>{collect.due_amount}</td>
                   <td className='text-end'>{collect.late_fee}</td>
                   <td className='text-end'>

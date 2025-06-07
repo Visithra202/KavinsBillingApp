@@ -318,15 +318,12 @@ class LoanSerializer(serializers.ModelSerializer):
         )
 
         due_date = loan.next_pay_date
-        frequency_map = {"Monthly": 30, "Weekly": 7}
-        # interval = timedelta(days=frequency_map.get(loan.payment_freq, 30))
+        total_bills = loan.term
 
         if loan.payment_freq == "Weekly":
             interval = timedelta(weeks=1)
-            total_bills = loan.term * 4 
         else:  
             interval = relativedelta(months=1)
-            total_bills = loan.term
 
         billSeq=1
         principal=round(loan.loan_amount/loan.term)

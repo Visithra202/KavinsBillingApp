@@ -143,6 +143,7 @@ class Loan(models.Model):
     selling_price=models.DecimalField(max_digits=10, decimal_places=2)
     advance_amt=models.DecimalField(max_digits=10, decimal_places=2)
     loan_amount=models.DecimalField(max_digits=10, decimal_places=2)
+    loanamt_bal=models.DecimalField(max_digits=10, decimal_places=2)
     payment_amount=models.DecimalField(max_digits=10, decimal_places=2)
     emi_amount=models.DecimalField(max_digits=10, decimal_places=2)
     term=models.IntegerField()
@@ -155,6 +156,9 @@ class Loan(models.Model):
     advance_paydate=models.DateField(null=True, blank=True)
     lock_id=models.CharField(max_length=30)
     ref_mph=models.CharField(max_length=255, null=True, blank=True)
+    prinRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    intRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    penRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 
     def __str__(self):

@@ -42,15 +42,6 @@ export default function BalanceSheetReport() {
 
         <div className='balance-report row d-flex justify-content-between'>
           <div className='col'>
-            <span>Stock</span>
-          </div>
-          <div className='col d-flex justify-content-end'>
-            <span>{balanceList.stock}</span>
-          </div>
-        </div>
-
-        <div className='balance-report row d-flex justify-content-between'>
-          <div className='col'>
             <span>Mobile</span>
           </div>
           <div className='col d-flex justify-content-end'>
@@ -67,8 +58,23 @@ export default function BalanceSheetReport() {
           </div>
         </div>
 
+        <div className='balance-report row d-flex justify-content-between'>
+          <div className='col'>
+            <span>Loan</span>
+          </div>
+          <div className='col d-flex justify-content-end'>
+            <span>{balanceList.loan}</span>
+          </div>
+        </div>
 
-
+        <div className='balance-report row d-flex justify-content-between'>
+          <div className='col'>
+            <span>Total</span>
+          </div>
+          <div className='col d-flex justify-content-end'>
+            <span>{balanceList.cash_balance + balanceList.account_balance + balanceList.mobile + balanceList.accessories + balanceList.loan}</span>
+          </div>
+        </div>
 
       </div>
 
