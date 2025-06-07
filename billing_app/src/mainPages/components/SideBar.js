@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from "axios";
 import SidebarMenu from './SidebarMenu';
+import image from '../assets/logo.png'
 
 export default function SideBar({setShowReports}) {
 
@@ -36,7 +37,7 @@ function Logo() {
     return (
         <>
             {logo &&
-                <img src={logo} alt="logo-image" className="logo_image img-fluid pt-2 ps-2" />
+                <img src={image} alt="logo-image" className="logo_image img-fluid pt-2 ps-2" />
             }
         </>
     );
