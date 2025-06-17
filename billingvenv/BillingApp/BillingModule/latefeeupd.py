@@ -55,7 +55,7 @@ def apply_task():
         )
 
 def start_task():
-    schedule.every().day.at("13:52").do(apply_task)
+    schedule.every().day.at("09:00").do(apply_task)
 
     def run_scheduler():
         while True:

@@ -29,6 +29,7 @@ export default function PenaltyReport() {
             <tr>
               <th>Date</th>
               <th>Transaction comment</th>
+              <th className='text-end'>Debit</th>
               <th className='text-end'>Credit</th>
               <th className='text-end'>Balance</th>
             </tr>
@@ -47,6 +48,7 @@ export default function PenaltyReport() {
                       })()
                     }</td>
                     <td>{penalty.trans_comt}</td>
+                    <td className='text-end'>{penalty.crdr === false ? penalty.trans_amt : ''}</td>
                     <td className='text-end'>{penalty.crdr === true ? penalty.trans_amt : ''}</td>
                     <td className='text-end'>{penalty.end_balance}</td>
                   </tr>

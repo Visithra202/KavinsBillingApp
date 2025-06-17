@@ -290,21 +290,21 @@ def get_acc_loan_bills(request, loan_accno):
     serializer = LoanBillSerializer(bills, many=True)
     return Response(serializer.data)
 
-
 @api_view(['POST'])
 @transaction.atomic
 def add_loan_payment(request):
     today = date.today()
     data = request.data
-
     loan_accno = data.get('loan_accno')
-    
     payment_amount = Decimal(data.get('payment_amount'))
-    payment=data.get('payment')
+    payment_type=data.get('payment')
+    discount=data.get('discount')
     
+    pay_amount=payment_amount+discount
     paid_amount=payment_amount
+
     loan = Loan.objects.get(loan_accno=loan_accno)
-    loan.bal_amount-=paid_amount
+    loan.bal_amount=loan.bal_amount- (paid_amount+discount)
     loan.save()
     
     loan_bills = LoanBill.objects.filter(
@@ -312,23 +312,23 @@ def add_loan_payment(request):
         paid_date__isnull=True
     ).order_by('bill_date')
 
-    loan_bal=0
-    
     for bill in loan_bills:
         remaining_due = bill.total_due - bill.paid_amount
 
-        if payment_amount >= remaining_due:
+        if pay_amount >= remaining_due:
             bill.paid_amount += remaining_due
             bill.paid_date = today
-            loan.loanamt_bal-=bill.prin
-            payment_amount -= remaining_due
+            if bill.due_type=='EMI':
+                loan.loanamt_bal-=bill.prin
+            pay_amount -= remaining_due
         else:
-            bill.paid_amount += payment_amount
+            bill.paid_amount += pay_amount
             if bill.paid_amount >= bill.total_due:
                 bill.paid_date = today
-                loan.loanamt_bal-=bill.prin
+                if bill.due_type=='EMI':
+                    loan.loanamt_bal-=bill.prin
 
-            payment_amount = Decimal('0.00')
+            pay_amount = Decimal('0.00')
 
         bill.save()
         loan.save()
@@ -356,7 +356,7 @@ def add_loan_payment(request):
                 income_obj.income_amt += bill.int
                 income_obj.save()
 
-        if payment_amount == 0:
+        if pay_amount == 0:
             break
 
     last_hist = GlHist.objects.order_by('-trans_seq').first()
@@ -396,19 +396,37 @@ def add_loan_payment(request):
         trans_amt=paid_amount,
         balance_amount=previous_data - paid_amount
     )
+
+    updated_data = previous_data - paid_amount
+
+    if discount > 0:
+        LoanJournal.objects.create(
+            loan=loan,
+            journal_date=today,
+            journal_seq=last_seq + 2,
+            action_type='DISCOUNT',
+            description="Discount added",
+            old_data=updated_data,
+            new_data=updated_data - discount,
+            crdr=True,
+            trans_amt=discount,
+            balance_amount=updated_data - discount
+        )
     cash=0
     account=0
 
-    if(payment=='Cash'):
-        cash=paid_amount
+    if(payment_type=='Cash'):
+        cash=paid_amount+discount
     else:
-        account=paid_amount
+        account=paid_amount+discount
 
     create_cash_transaction(cash=cash, account=account, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
+
+    if discount>0:
+        create_cash_transaction(cash=discount, trans_comment=f'Loan due discount - accno : {loan_accno}', trans_type='DEBIT')
+        create_cash_transaction(penalty=discount, trans_comment=f'Loan due discount - accno : {loan_accno},', trans_type='DEBIT')
     
     return Response({'message': 'Payment added successfully'})
-
-
 
 # Purchase
 @api_view(['POST'])
@@ -925,6 +943,15 @@ def receive_income(request):
         trans_comment=f"{inc_type} Income Received",
         trans_type="DEBIT"
     )
+
+
+    if(inc_type=='Penalty'):
+        create_cash_transaction(
+            penalty=receive_amt,
+            trans_comment="Penalty Income Received",
+            trans_type='DEBIT'
+        )
+    
 
     return Response({"message": "Income Received"}, status=status.HTTP_200_OK)
 

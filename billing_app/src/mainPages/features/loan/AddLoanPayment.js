@@ -30,6 +30,8 @@ function PaymentForm({ collection, totalDue }) {
     const [discount, setDiscount] = useState('');
     const navigate = useNavigate()
     const [payment, setPayment] = useState('');
+    const [latefeeSum, setLatefeeSum] = useState(0);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -49,7 +51,7 @@ function PaymentForm({ collection, totalDue }) {
             return;
         }
 
-        if (parseFloat(amount)+parseFloat(discount) > parseFloat(totalDue)) {
+        if (parseFloat(amount) + parseFloat(discount) > parseFloat(totalDue)) {
             alert('Enter valid amount');
             return;
         }
@@ -65,6 +67,20 @@ function PaymentForm({ collection, totalDue }) {
             payment: payment,
             discount: discount ? Number(discount) : 0
         }
+
+
+        // axios.get(`http://localhost:8000/get-latefee-sum/${collection.loan_accno}`)
+        //     .then((response) => {
+        //         setLatefeeSum(response.data.latefee_sum);
+        //     })
+        //     .catch((error) => {
+        //         // console.error('Error Fetching latefee sum');
+        //     });
+
+        // if (formData.discount > latefeeSum) {
+        //     alert('Discount is more')
+        //     return;
+        // }
 
         try {
             await axios.post('http://localhost:8000/add-loan-payment/', formData, {
@@ -120,7 +136,7 @@ function PaymentForm({ collection, totalDue }) {
                     <div className='col d-flex flex-column'>
                         <label className='form-label'>Payment amount</label>
                         <input type='text' className='form-control p-2' name='payment_amount' value={amount} onChange={handleChange}
-                            autoComplete='off' required/>
+                            autoComplete='off' required />
                     </div>
                 </div>
 

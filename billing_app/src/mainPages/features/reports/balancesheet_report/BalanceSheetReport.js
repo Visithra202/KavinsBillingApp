@@ -72,7 +72,7 @@ export default function BalanceSheetReport() {
             <span>Total</span>
           </div>
           <div className='col d-flex justify-content-end'>
-            <span>{balanceList.cash_balance + balanceList.account_balance + balanceList.mobile + balanceList.accessories + balanceList.loan}</span>
+            <span>{balanceList.cash_balance + balanceList.account_balance + balanceList.mobile + balanceList.accessories + balanceList.loan}.toFixed(2)</span>
           </div>
         </div>
 

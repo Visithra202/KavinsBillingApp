@@ -10,8 +10,10 @@ idna==3.10
 mysqlclient==2.2.7
 phonenumbers==9.0.1
 PyJWT==2.9.0
+python-dateutil==2.9.0.post0
 requests==2.32.3
 schedule==1.2.2
+six==1.17.0
 sqlparse==0.5.3
 tzdata==2025.1
 urllib3==2.3.0
