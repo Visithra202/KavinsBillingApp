@@ -231,10 +231,12 @@ def get_collection_list(request):
         'od_days': 0
     })
 
+    totalDueSum = 0
+
     for bill in loan_bills:
         loan = bill.loan_acc
         acc_no = loan.loan_accno
-
+        totalDueSum+=(bill.total_due-bill.paid_amount)
         # Only set customer info once
         if overdue_loans_dict[acc_no]['customer'] is None:
             overdue_loans_dict[acc_no]['customer'] = {
@@ -262,7 +264,7 @@ def get_collection_list(request):
         'od_days': data['od_days']
     } for acc_no, data in overdue_loans_dict.items()]
 
-    return JsonResponse({'overdue_loans': overdue_loans})
+    return JsonResponse({'overdue_loans': overdue_loans, 'totalDueSum' : totalDueSum})
 
 
 
@@ -427,6 +429,7 @@ def add_loan_payment(request):
         create_cash_transaction(penalty=discount, trans_comment=f'Loan due discount - accno : {loan_accno},', trans_type='DEBIT')
     
     return Response({'message': 'Payment added successfully'})
+
 
 # Purchase
 @api_view(['POST'])

@@ -8,6 +8,7 @@ export default function LoanCollection() {
   const [filteredCollections, setFilteredCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [totalDueSum, setTotalDueSum] = useState(0);
 
   const [loans, setLoans] = useState([]);
 
@@ -17,6 +18,7 @@ export default function LoanCollection() {
         const data = response.data.overdue_loans;
         setCollections(data);
         setFilteredCollections(data);
+        setTotalDueSum(response.data.totalDueSum)
         setLoading(false);
       })
       .catch((error) => {
@@ -24,7 +26,7 @@ export default function LoanCollection() {
         setLoading(false);
       });
 
-      axios.get('http://localhost:8000/get-loan-list/')
+    axios.get('http://localhost:8000/get-loan-list/')
       .then((response) => {
         setLoans(response.data)
       })
@@ -52,28 +54,35 @@ export default function LoanCollection() {
     setSearchTerm(e.target.value);
   };
 
-  const handleNavigate = (accno) =>{
-    const loan= loans.find(loan=>loan.loan_accno===accno);
+  const handleNavigate = (accno) => {
+    const loan = loans.find(loan => loan.loan_accno === accno);
     console.log(loan);
-    navigate('/loanDetails', {state:{loan}})
+    navigate('/loanDetails', { state: { loan } })
   }
 
   return (
-    <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
-      <div>
-        <input id='search'
-          className='form-control border rounded px-2 my-3'
-          type='text'
-          placeholder='Search by name, number or acc no...'
-          style={{ width: '300px' }}
-          value={searchTerm}
-          onChange={handleChange}
-          autoComplete="off"
-        />
+    <div className='container' style={{ height: 'calc(100vh - 65px)' }}>
+      <div className='d-flex justify-content-between align-items-center'>
+        <div>
+          <input id='search'
+            className='form-control border rounded px-2 my-2'
+            type='text'
+            placeholder='Search by name, number or acc no...'
+            style={{ width: '300px' }}
+            value={searchTerm}
+            onChange={handleChange}
+            autoComplete="off"
+          />
+        </div>
+
+        <div className='pe-5 me-5'>
+          <span style={{fontWeight:'600'}}>Sum of total due : </span><span style={{fontWeight:'600', fontSize:'15px'}}>{totalDueSum}</span>
+        </div>
+
       </div>
 
       <div
-        className='border border-secondary bg-white rounded-5 shadow my-2 scroll-bar'
+        className='border border-secondary bg-white rounded-5 shadow mb-2 scroll-bar'
         style={{ minHeight: '90%', maxHeight: '90%', overflowY: 'auto' }}
       >
         <table className='itmlst table table-hover align-middle'>
