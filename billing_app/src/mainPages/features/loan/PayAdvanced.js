@@ -31,15 +31,18 @@ export default function PayAdvanced() {
 
 function PaymentForm({ loan, totalUnpaidDue }) {
     const [amount, setAmount] = useState('');
+    const [discount, setDiscount] = useState('');
     const [payment, setPayment] = useState('');
     const navigate = useNavigate()
 
     const handleChange = (e) => {
-        const val = e.target.value
-        if (isNaN(val))
+        const {name, value} = e.target;
+        if (isNaN(value))
             return;
-
-        setAmount(val)
+        if (name === 'payment_amount')
+            setAmount(value)
+        else
+            setDiscount(value)
     }
 
     const handleSubmit = async (e) => {
@@ -49,7 +52,7 @@ function PaymentForm({ loan, totalUnpaidDue }) {
             return;
         }
 
-        if (Number(amount) > Number(totalUnpaidDue)) {
+        if (parseFloat(amount) + parseFloat(discount) > parseFloat(totalUnpaidDue)) {
             alert('Enter valid amount');
             return;
         }
@@ -62,7 +65,9 @@ function PaymentForm({ loan, totalUnpaidDue }) {
         const formData = {
             loan_accno: loan.loan_accno,
             payment_amount: amount,
-            payment: payment
+            payment: payment,
+            discount: discount ? Number(discount) : 0
+
         }
 
         try {
@@ -100,10 +105,17 @@ function PaymentForm({ loan, totalUnpaidDue }) {
                     <input type='text' className='form-control p-2' name='tot_due' value={totalUnpaidDue}
                         disabled />
                 </div>
-                <div className='d-flex flex-column mt-3'>
-                    <label className='form-label'>Payment amount</label>
-                    <input type='text' className='form-control p-2' name='payment_amount' value={amount} onChange={handleChange}
-                        autoComplete='off' />
+                <div className='row mt-3'>
+                    <div className='col d-flex flex-column'>
+                        <label className='form-label'>Payment amount</label>
+                        <input type='text' className='form-control p-2' name='payment_amount' value={amount} onChange={handleChange}
+                            autoComplete='off' />
+                    </div>
+                    <div className='col d-flex flex-column '>
+                        <label className='form-label'>Discount</label>
+                        <input type='text' className='form-control p-2' name='discount' value={discount} onChange={handleChange}
+                            autoComplete='off' />
+                    </div>
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <PaymentOption payment={payment} setPayment={setPayment} />

@@ -3,7 +3,7 @@
 import schedule
 import threading
 import time
-from datetime import date, timedelta
+from datetime import date
 from BillingModule.models import LoanBill, LoanJournal, Loan
 from decimal import Decimal
 
@@ -12,7 +12,7 @@ def apply_task():
     today = date.today()
 
     bills = LoanBill.objects.filter(
-        loan_acc__ln_typ='MOB',
+        loan_acc__ln_typ__in=('MOB','OLD'),
         bill_date__lt=today,
         paid_date__isnull=True,
         late_fee=0
@@ -55,7 +55,7 @@ def apply_task():
         )
 
 def start_task():
-    schedule.every().day.at("09:00").do(apply_task)
+    schedule.every().day.at("14:27").do(apply_task)
 
     def run_scheduler():
         while True:

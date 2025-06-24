@@ -30,18 +30,15 @@ function PaymentForm({ collection, totalDue }) {
     const [discount, setDiscount] = useState('');
     const navigate = useNavigate()
     const [payment, setPayment] = useState('');
-    const [latefeeSum, setLatefeeSum] = useState(0);
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const val = e.target.value
-        if (isNaN(val))
+        if (isNaN(value))
             return;
         if (name === 'payment_amount')
-            setAmount(val)
+            setAmount(value)
         else
-            setDiscount(val)
+            setDiscount(value)
     }
 
     const handleSubmit = async (e) => {
@@ -67,20 +64,6 @@ function PaymentForm({ collection, totalDue }) {
             payment: payment,
             discount: discount ? Number(discount) : 0
         }
-
-
-        // axios.get(`http://localhost:8000/get-latefee-sum/${collection.loan_accno}`)
-        //     .then((response) => {
-        //         setLatefeeSum(response.data.latefee_sum);
-        //     })
-        //     .catch((error) => {
-        //         // console.error('Error Fetching latefee sum');
-        //     });
-
-        // if (formData.discount > latefeeSum) {
-        //     alert('Discount is more')
-        //     return;
-        // }
 
         try {
             await axios.post('http://localhost:8000/add-loan-payment/', formData, {
@@ -172,7 +155,8 @@ function DueDetails({ collection, setTotalDue }) {
             return sum + (parseFloat(bill.total_due) || 0);
         }, 0);
         setTotalDue(totalUnpaidDue);
-    }, [bills]);
+    }, [bills, setTotalDue]);
+
 
     useEffect(() => {
         axios.get(`http://localhost:8000/get-loan-bill/${collection.loan_accno}`)
