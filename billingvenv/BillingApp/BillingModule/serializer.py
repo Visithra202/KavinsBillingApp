@@ -199,6 +199,26 @@ class SaleSerializer(serializers.ModelSerializer):
             income_obj.income_amt += sale.income
             income_obj.save()
 
+        today=date.today()
+        if income_type=='Mobile':
+            accno='MOB001'
+        elif income_type=='Accessories':
+            accno='ACS001'
+            
+        if accno:
+            last_glbal = GlBal.objects.filter(date__lte=today, glac=accno).order_by('-date').first()
+            last_balance = last_glbal.balance if last_glbal else 0
+            new_balance = last_balance + sale.income
+
+            glbal_obj, created = GlBal.objects.get_or_create(
+                date=today,
+                glac=accno,
+                defaults={'balance': new_balance}
+            )
+            if not created:
+                glbal_obj.balance = new_balance
+                glbal_obj.save()
+
         return sale
 
 

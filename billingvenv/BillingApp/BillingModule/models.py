@@ -246,6 +246,7 @@ class Income(models.Model):
     inctype=models.CharField(max_length=30)
     income_taken=models.BooleanField(default=False)
     received_date=models.DateField(null=True, blank=True)
+    received_amt=models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 class AmountTransfer(models.Model):
     trans_id= models.AutoField(primary_key=True)

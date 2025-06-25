@@ -894,6 +894,21 @@ def get_income_list(request):
     pen_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Penalty')
     int_income = Income.objects.filter(income_taken=False, income_date__lt=today, inctype='Interest')
 
+    mob_obj = GlBal.objects.filter(glac='MOB001').order_by('-date').first()
+    tot_mob_inc = mob_obj.balance if mob_obj else 0
+
+    acc_obj = GlBal.objects.filter(glac='ACS001').order_by('-date').first()
+    tot_acc_inc = acc_obj.balance if acc_obj else 0
+
+    ser_obj = GlBal.objects.filter(glac='SER001').order_by('-date').first()
+    tot_ser_inc = ser_obj.balance if ser_obj else 0
+
+    pen_obj = GlBal.objects.filter(glac='PENL001').order_by('-date').first()
+    tot_pen_inc = pen_obj.balance if pen_obj else 0
+
+    int_obj = GlBal.objects.filter(glac='INT001').order_by('-date').first()
+    tot_int_inc = int_obj.balance if int_obj else 0
+
 
     serializer_mob = IncomeSerializer(mobile_income, many=True)
     serializer_acc = IncomeSerializer(acc_income, many=True)
@@ -907,33 +922,47 @@ def get_income_list(request):
         'serincome_list':serializer_ser.data,
         'penincome_list':serializer_pen.data,
         'intincome_list':serializer_int.data,
+        'mobileInc':tot_mob_inc,
+        'accInc':tot_acc_inc,
+        'interestInc':tot_int_inc,
+        'serviceInc':tot_ser_inc,
+        'penaltyInc':tot_pen_inc
     })
 
 @api_view(['POST'])
 def receive_income(request):
-    receive_amt = request.data.get('receive_amt')
-    receive_date = request.data.get('date')
-    inc_type = request.data.get('income_type')
-    payment = request.data.get('payment')
+    data=request.data
+    receive_amt = data.get('receive_amt')
+    inc_type = data.get('income_type')
+    payment = data.get('payment')
 
-    if not receive_amt or not receive_date or not inc_type:
+    if not receive_amt or not payment or not inc_type:
         return Response({"message": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        income = Income.objects.get(
-            income_taken=False,
-            income_date=receive_date,
-            inctype=inc_type
-        )
-    except Income.DoesNotExist:
-        return Response({"message": "Income already received or does not exist"}, status=status.HTTP_404_NOT_FOUND)
+    income_list = Income.objects.filter(income_taken=False, inctype=inc_type).order_by('income_date')
 
-    income.income_taken = True
-    income.received_date =get_today()
-    income.save()
+    if not income_list.exists():
+        return Response({"message": "No pending income found for this type"}, status=status.HTTP_404_NOT_FOUND)
+    
+    amount=receive_amt
+    for income in income_list:
+        rem=income.income_amt-income.received_amt
 
-    cash=0
-    account=0
+        if rem <= amount:
+            income.received_amt+=rem
+            income.income_taken = True
+            income.received_date=get_today()
+            amount-=rem    
+        else:
+            income.received_amt+=amount
+            amount=0
+        
+        income.save()
+
+        if amount==0:
+            break
+
+    cash = account = 0
 
     if(payment=='Cash'):
         cash=receive_amt
@@ -947,6 +976,9 @@ def receive_income(request):
         trans_type="DEBIT"
     )
 
+    today=get_today()
+
+    accno=''
 
     if(inc_type=='Penalty'):
         create_cash_transaction(
@@ -954,8 +986,28 @@ def receive_income(request):
             trans_comment="Penalty Income Received",
             trans_type='DEBIT'
         )
-    
+    elif inc_type=='Mobile':
+        accno='MOB001'
+    elif inc_type=='Accessories':
+        accno='ACS001'
+    elif inc_type=='Service':
+        accno='SER001'
+        
+    if accno:
+        last_glbal = GlBal.objects.filter(date__lte=today, glac=accno).order_by('-date').first()
+        last_balance = last_glbal.balance if last_glbal else 0
+        new_balance = last_balance - receive_amt
 
+        glbal_obj, created = GlBal.objects.get_or_create(
+            date=today,
+            glac=accno,
+            defaults={'balance': new_balance}
+        )
+        if not created:
+            glbal_obj.balance = new_balance
+            glbal_obj.save()
+    
+       
     return Response({"message": "Income Received"}, status=status.HTTP_200_OK)
 
 
@@ -1042,58 +1094,82 @@ def add_service_paidamt(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['PATCH'])
 def add_service_receiveamt(request):
     data = request.data
-    # print(data)
-
-    service_id=data.get('service_id')
-    received_amt=data.get('received_amt')
-    discount=data.get('discount')
-    payment=data.get('payment')
-
-    if not all([service_id, received_amt, payment]):
-        return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
-    
+    print(data)
     try:
-        service=Service.objects.get(service_id=service_id)
+        service_id = data.get('service_id')
+        received_amt = data.get('received_amt', 0)
+        discount =data.get('discount', 0)
+        payment = data.get('payment')
 
-        service.received_amt+=received_amt
-        service.received_date=get_today()
-        service.discount+=discount
-        service.receivedpayment_type=payment
-        
-        if(service.receivable_amt==service.received_amt+service.discount):
-            service.service_status='Closed'
-            service.balance=service.receivable_amt-service.received_amt-service.discount
-            if service.received_amt>service.paid_amt:
-                service.income=service.received_amt-service.paid_amt            
-                income_obj, created = Income.objects.get_or_create(
-                    income_date=get_today(),
-                    inctype='Service',
-                    defaults={'income_amt': service.income}
+        if not all([service_id, received_amt, payment]):
+            return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            service = Service.objects.get(service_id=service_id)
+
+            service.received_amt += received_amt
+            service.discount += discount
+            service.received_date = get_today()
+            service.receivedpayment_type = payment
+            
+            total_received = service.received_amt + service.discount
+            service.balance = service.receivable_amt - total_received
+
+            if service.received_amt > service.paid_amt:
+                service.income = service.received_amt - service.paid_amt
+            else:
+                service.income = 0
+            
+            # ----------------------------------
+            if service.receivable_amt == total_received:
+                service.service_status = 'Closed'
+                
+                if service.income > 0:
+                    income_obj, created = Income.objects.get_or_create(
+                        income_date=get_today(),
+                        inctype='Service',
+                        defaults={'income_amt': service.income}
                     )
+                    if not created:
+                        income_obj.income_amt += service.income
+                        income_obj.save()
 
-                if not created:
-                    income_obj.income_amt += service.income
-                    income_obj.save()
-        else:
-            service.service_status='Pending'
-            service.balance=service.receivable_amt-service.received_amt-service.discount
-            if service.received_amt>service.paid_amt:
-                service.income=service.received_amt-service.paid_amt
+                    last_glbal = GlBal.objects.filter(date__lte=get_today(), glac='SER001').order_by('-date').first()
+                    last_balance = last_glbal.balance if last_glbal else 0
+                    new_balance = last_balance + service.income
 
-        service.save()
-        cash=0
-        account=0
+                    glbal_obj, created = GlBal.objects.get_or_create(
+                        date=get_today(),
+                        glac='SER001',
+                        defaults={'balance': new_balance}
+                    )
+                    if not created:
+                        glbal_obj.balance = new_balance
+                        glbal_obj.save()
+            else:
+                service.service_status = 'Pending'
 
-        if(payment=='Cash'):
-            cash=received_amt
-        else:
-            account=received_amt
-        
-        trans_comment=f"Service {service.service_id} amount Received"
-        create_cash_transaction(cash=cash, account=account, trans_comment=trans_comment, trans_type='CREDIT' )
+            service.save()
+
+            cash=0
+            account=0
+
+            if payment=='Cash':
+                cash=received_amt
+            else:
+                account=received_amt
+
+            trans_comment = f"Service {service.service_id} amount Received"
+            create_cash_transaction(
+                cash=cash,
+                account=account,
+                trans_comment=trans_comment,
+                trans_type='CREDIT'
+            )
 
         return Response({"message": "Payment updated successfully."}, status=status.HTTP_200_OK)
 
@@ -1101,6 +1177,7 @@ def add_service_receiveamt(request):
         return Response({"error": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 def get_balancesheet_report(request):
