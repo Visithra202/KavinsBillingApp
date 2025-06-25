@@ -48,7 +48,9 @@ function PaymentForm({ collection, totalDue }) {
             return;
         }
 
-        if (parseFloat(amount) + parseFloat(discount) > parseFloat(totalDue)) {
+        const disc=discount?parseFloat(discount):0;
+
+        if (parseFloat(amount) + disc > parseFloat(totalDue)) {
             alert('Enter valid amount');
             return;
         }
@@ -62,7 +64,7 @@ function PaymentForm({ collection, totalDue }) {
             loan_accno: collection.loan_accno,
             payment_amount: amount,
             payment: payment,
-            discount: discount ? Number(discount) : 0
+            discount: disc 
         }
 
         try {
@@ -145,14 +147,14 @@ function PaymentForm({ collection, totalDue }) {
 
 function DueDetails({ collection, setTotalDue }) {
 
-    const [loanBills, setLoanBills] = useState([]);
+    const [unPaidBills, setUnPaidBills] = useState([]);
     const [loading, setLoading] = useState(true)
     const [bills, setBills] = useState([]);
 
     useEffect(() => {
         const unpaidBills = bills.filter(bill => !bill.paid_date);
         const totalUnpaidDue = unpaidBills.reduce((sum, bill) => {
-            return sum + (parseFloat(bill.total_due) || 0);
+            return sum + (parseFloat(bill.total_due)-parseFloat(bill.paid_amount) || 0);
         }, 0);
         setTotalDue(totalUnpaidDue);
     }, [bills, setTotalDue]);
@@ -161,7 +163,7 @@ function DueDetails({ collection, setTotalDue }) {
     useEffect(() => {
         axios.get(`http://localhost:8000/get-loan-bill/${collection.loan_accno}`)
             .then((response) => {
-                setLoanBills(response.data.loan_bills);
+                setUnPaidBills(response.data.loan_bills);
                 setLoading(false);
             })
             .catch((error) => {
@@ -201,8 +203,8 @@ function DueDetails({ collection, setTotalDue }) {
                                     <Loader message='Fetching details' />
                                 </td>
                             </tr>
-                        ) : loanBills.length > 0 ? (
-                            loanBills.map((bill, index) => (
+                        ) : unPaidBills.length > 0 ? (
+                            unPaidBills.map((bill, index) => (
                                 <tr key={index}>
                                     <td>{bill.bill_seq}</td>
                                     <td>{bill.bill_date}</td>

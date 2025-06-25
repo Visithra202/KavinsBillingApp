@@ -10,7 +10,7 @@ export default function PayAdvanced() {
 
     const unpaidBills = loanBills.filter(bill => !bill.paid_date);
     const totalUnpaidDue = unpaidBills.reduce((sum, bill) => {
-        return sum + (parseFloat(bill.total_due) || 0);
+        return sum + (parseFloat(bill.total_due)-parseFloat(bill.paid_amount) || 0);
     }, 0);
 
     return (
@@ -51,8 +51,10 @@ function PaymentForm({ loan, totalUnpaidDue }) {
         if (Number(amount) <= 0) {
             return;
         }
+        
+        const disc=discount?parseFloat(discount):0;
 
-        if (parseFloat(amount) + parseFloat(discount) > parseFloat(totalUnpaidDue)) {
+        if (parseFloat(amount) + disc > parseFloat(totalUnpaidDue)) {
             alert('Enter valid amount');
             return;
         }
@@ -66,8 +68,7 @@ function PaymentForm({ loan, totalUnpaidDue }) {
             loan_accno: loan.loan_accno,
             payment_amount: amount,
             payment: payment,
-            discount: discount ? Number(discount) : 0
-
+            discount: disc
         }
 
         try {
