@@ -5,13 +5,18 @@ import PaymentOption from '../payment/PaymentOption';
 
 export default function ReceiveIncome() {
   const [reload, setReload] = useState(false);
-  const [receiveAmt, setReceiveAmt] = useState(0);
 
   const [mobIncomeList, setMobIncomeList] = useState([]);
   const [accIncomeList, setAccIncomeList] = useState([]);
   const [serIncomeList, setSerIncomeList] = useState([]);
   const [penIncomeList, setPenIncomeList] = useState([]);
   const [intIncomeList, setIntIncomeList] = useState([]);
+
+  const [mobInc, setMobInc] = useState(0);
+  const [accInc, setAccInc] = useState(0);
+  const [serInc, setSerInc] = useState(0);
+  const [penInc, setPenInc] = useState(0);
+  const [intInc, setIntInc] = useState(0);
 
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +28,12 @@ export default function ReceiveIncome() {
         setAccIncomeList(response.data.accincome_list);
         setSerIncomeList(response.data.serincome_list);
         setIntIncomeList(response.data.intincome_list);
-        setPenIncomeList(response.data.penincome_list)
+        setPenIncomeList(response.data.penincome_list);
+        setMobInc(response.data.mobileInc);
+        setAccInc(response.data.accInc);
+        setSerInc(response.data.serviceInc);
+        setIntInc(response.data.interestInc);
+        setPenInc(response.data.penaltyInc);
         setLoading(false);
       })
       .catch((error) => {
@@ -43,55 +53,47 @@ export default function ReceiveIncome() {
 
         <div className='col h-75 '>
           <ReceiveForm
-            setReload={setReload} receiveAmt={receiveAmt} setReceiveAmt={setReceiveAmt}
-            mobIncomeList={mobIncomeList} accIncomeList={accIncomeList} serIncomeList={serIncomeList} penIncomeList={penIncomeList} intIncomeList={intIncomeList} />
+            setReload={setReload} mobInc={mobInc} accInc={accInc} serInc={serInc}
+            penInc={penInc} intInc={intInc} />
         </div>
       </div>
     </div>
   )
 }
 
-function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accIncomeList, serIncomeList, penIncomeList, intIncomeList }) {
+function ReceiveForm({ setReload, mobInc, accInc, serInc, penInc, intInc }) {
   const [incomeType, setIncomeType] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  // const [incomeDates, setIncomeDates] = useState([]);
+  const [OutstandingAmt, setOutstandingAmt] = useState(0);
   const [payment, setPayment] = useState('');
   const [lastCashBal, setLastCashBal] = useState(0);
   const [lastAccBal, setLastAccBal] = useState(0);
-
-  // useEffect(() => {
-  //   const allDates = [
-  //     ...mobIncomeList.map(i => i.income_date),
-  //     ...accIncomeList.map(i => i.income_date),
-  //     ...serIncomeList.map(i => i.income_date)
-  //   ];
-  //   const uniqueDates = [...new Set(allDates)];
-  //   setIncomeDates(uniqueDates);
-  // }, [mobIncomeList, accIncomeList, serIncomeList]);
+  const [receiveAmt, setReceiveAmt] = useState('');
 
   const handleTypeChange = (e) => {
     setIncomeType(e.target.value);
-    updateReceiveAmt(e.target.value, selectedDate);
   };
 
-  const handleDateChange = (e) => {
-    setSelectedDate(e.target.value);
-    updateReceiveAmt(incomeType, e.target.value);
-  };
+  useEffect(() => {
+    console.log("Selected Type:", incomeType);
+    console.log("mobInc:", mobInc, "accInc:", accInc, "serInc:", serInc, "penInc:", penInc, "intInc:", intInc);
 
-  const updateReceiveAmt = (type, date) => {
-    if (!type || !date) return setReceiveAmt(0);
+    if (!incomeType) {
+      setOutstandingAmt(0);
+      return;
+    }
 
-    let list = [];
-    if (type === 'Mobile') list = mobIncomeList;
-    else if (type === 'Accessories') list = accIncomeList;
-    else if (type === 'Service') list = serIncomeList;
-    else if (type === 'Penalty') list = penIncomeList;
-    else if (type === 'Interest') list = intIncomeList;
-
-    const incomeItem = list.find(item => item.income_date === date);
-    setReceiveAmt(incomeItem ? parseFloat(incomeItem.income_amt) : 0);
-  };
+    if (incomeType === 'Mobile') {
+      setOutstandingAmt(mobInc);
+    } else if (incomeType === 'Accessories') {
+      setOutstandingAmt(accInc);
+    } else if (incomeType === 'Service') {
+      setOutstandingAmt(serInc);
+    } else if (incomeType === 'Penalty') {
+      setOutstandingAmt(penInc);
+    } else if (incomeType === 'Interest') {
+      setOutstandingAmt(intInc);
+    }
+  }, [incomeType, mobInc, accInc, serInc, penInc, intInc]);
 
   useEffect(() => {
     axios.get('http://localhost:8000/get-last-balance/')
@@ -107,23 +109,27 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (receiveAmt === 0 || !incomeType || !selectedDate || !payment) return;
+    if (parseFloat(receiveAmt) <= 0 || !incomeType || !payment) return;
 
-    if (payment === 'Cash' && lastCashBal < receiveAmt) {
+    if (parseFloat(receiveAmt) > parseFloat(OutstandingAmt)) {
+      alert('Entered amount is more');
+      return;
+    }
+
+    if (payment === 'Cash' && lastCashBal < parseFloat(receiveAmt)) {
       alert("Insufficient cash balance")
       return;
-    } else if (payment === 'Account' && lastAccBal < receiveAmt) {
+    } else if (payment === 'Account' && lastAccBal < parseFloat(receiveAmt)) {
       alert('Insufficient account balance')
       return;
     }
 
 
-    const confirmReceive = window.confirm("Are you sure you want to receive the income?");
-    if (!confirmReceive) return;
+    // const confirmReceive = window.confirm("Are you sure you want to receive the income?");
+    // if (!confirmReceive) return;
 
     const receiveData = {
-      date: selectedDate,
-      receive_amt: receiveAmt,
+      receive_amt: parseFloat(receiveAmt),
       income_type: incomeType,
       payment: payment
     };
@@ -141,8 +147,8 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
 
   const handleReset = () => {
     setIncomeType('');
-    setSelectedDate('');
-    setReceiveAmt(0);
+    setReceiveAmt('');
+    setOutstandingAmt(0);
     setPayment('');
   };
 
@@ -151,11 +157,6 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
       <h5 className='text-center text-light p-2 rounded-top-5' style={{ backgroundColor: 'rgba(61, 60, 60, 0.73)' }}>Receive Income</h5>
 
       <form onSubmit={handleSubmit} className='py-3 px-4'>
-        <div className='d-flex flex-column'>
-          <label htmlFor='income_date' className='form-label'>Income Date</label>
-          <input id='income_date' type='date' className='form-control' value={selectedDate} onChange={handleDateChange} required />
-        </div>
-
 
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='income_type' className='form-label'>Income Type</label>
@@ -168,10 +169,14 @@ function ReceiveForm({ setReload, receiveAmt, setReceiveAmt, mobIncomeList, accI
             <option value="Interest">Interest</option>
           </select>
         </div>
+        <div className='d-flex flex-column mt-3'>
+          <label htmlFor='outstanding_amt' className='form-label'>Outstanding Amount</label>
+          <input id='outstanding_amt' type='number' className='form-control p-2' value={OutstandingAmt} disabled />
+        </div>
 
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='receive_amt' className='form-label'>Receive Amount</label>
-          <input id='receive_amt' type='number' className='form-control p-2' value={receiveAmt} disabled />
+          <input id='receive_amt' type='number' className='form-control p-2' value={receiveAmt} onChange={(e) => setReceiveAmt(e.target.value)} required />
         </div>
 
         <div className='d-flex flex-column mt-3'>
