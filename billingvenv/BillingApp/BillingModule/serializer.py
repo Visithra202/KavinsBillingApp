@@ -199,26 +199,12 @@ class SaleSerializer(serializers.ModelSerializer):
             income_obj.income_amt += sale.income
             income_obj.save()
 
-        today=date.today()
+        cmt=f"Sale {bill_no} Income Credited"
         if income_type=='Mobile':
-            accno='MOB001'
+            create_cash_transaction(mobile=sale.income, trans_comment=cmt, trans_type='CREDIT')
         elif income_type=='Accessories':
-            accno='ACS001'
-            
-        if accno:
-            last_glbal = GlBal.objects.filter(date__lte=today, glac=accno).order_by('-date').first()
-            last_balance = last_glbal.balance if last_glbal else 0
-            new_balance = last_balance + sale.income
-
-            glbal_obj, created = GlBal.objects.get_or_create(
-                date=today,
-                glac=accno,
-                defaults={'balance': new_balance}
-            )
-            if not created:
-                glbal_obj.balance = new_balance
-                glbal_obj.save()
-
+            create_cash_transaction(accessories=sale.income, trans_comment=cmt, trans_type='CREDIT')
+       
         return sale
 
 
@@ -441,7 +427,7 @@ class InvestSerializer(serializers.ModelSerializer):
 
 
 @transaction.atomic()
-def create_cash_transaction(cash = 0, account = 0, penalty = 0, trans_comment='', trans_type='CREDIT'):
+def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accessories=0, service=0, trans_comment='', trans_type='CREDIT'):
     today = date.today()
     crdr = trans_type.upper() == 'CREDIT'
 
@@ -476,11 +462,17 @@ def create_cash_transaction(cash = 0, account = 0, penalty = 0, trans_comment=''
     cash_gl_entry = update_accounts('CASH001', cash)
     acc_gl_entry = update_accounts('ACC001', account)
     penalty_entry = update_accounts('PENL001', penalty)
+    mobile_entry=update_accounts('MOB001', mobile)
+    accs_entry=update_accounts('ACS001', accessories)
+    serv_entry=update_accounts('SER001', service)
 
     return {
         'cash_entry': cash_gl_entry,
         'account_entry': acc_gl_entry,
-        'penalty_entry' :penalty_entry
+        'penalty_entry' :penalty_entry,
+        'mobile_entry':mobile_entry,
+        'accs_entry':accs_entry,
+        'serv_entry':serv_entry
     }
 
 class IncomeSerializer(serializers.ModelSerializer):

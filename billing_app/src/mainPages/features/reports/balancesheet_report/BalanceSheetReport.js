@@ -4,13 +4,13 @@ import axios from 'axios'
 export default function BalanceSheetReport() {
 
   const [balanceList, setBalanceList] = useState({});
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get('http://localhost:8000/get-balance-sheet-report/')
       .then((response) => {
         setBalanceList(response.data)
-        setLoading(false);
+        // setLoading(false);
       }).catch((error) => {
         // console.log(error)
       })
@@ -72,7 +72,10 @@ export default function BalanceSheetReport() {
             <span>Total</span>
           </div>
           <div className='col d-flex justify-content-end'>
-            <span>{balanceList.cash_balance + balanceList.account_balance + balanceList.mobile + balanceList.accessories + balanceList.loan}.toFixed(2)</span>
+            <span>
+              {(balanceList.cash_balance + balanceList.account_balance + balanceList.mobile + balanceList.accessories + balanceList.loan).toFixed(2)}
+            </span>
+
           </div>
         </div>
 

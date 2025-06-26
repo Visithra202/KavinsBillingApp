@@ -108,14 +108,7 @@ export default function SidebarMenu({setShowReports}) {
                 </li>
 
                 {/* reports */}
-                {/* <li className='list-item hover-slide'>
-                    <Link
-                        to='/reports'
-                        className={`menu text-decoration-none d-flex justify-content-between p-2 text-light ${location.pathname.includes("reports") ? "isActive" : ""}`}>
-                        <span><i className="bi bi-clipboard2-data-fill me-3"></i> Reports</span>
-                        <></>
-                    </Link>
-                </li> */}
+            
                 <li className='list-item hover-slide'>
                     <button className='sidebar-menu menu w-100 p-2' onClick={() => setShowReports(true)}>
                         <span><i className="bi bi-clipboard2-data-fill me-3"></i> Reports</span>

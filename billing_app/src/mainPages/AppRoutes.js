@@ -27,18 +27,21 @@ import SaleByCustomer from './features/reports/sale_report/SaleByCustomer'
 import SaleByProducts from './features/reports/sale_report/SaleByProducts'
 import PurchaseByProducts from './features/reports/purchase_report/PurchaseByProducts'
 import PurchaseBySeller from './features/reports/purchase_report/PurchaseBySeller'
-import CashReport from './features/reports/cash_report/CashReport'
 import Invest from './features/master_data/Invest'
 import ReceiveIncome from './features/master_data/ReceiveIncome'
 import StockRequired from './features/reports/stock_report/StockRequired'
 import PayAdvanced from './features/loan/PayAdvanced'
-import AccountReport from './features/reports/acc_report/AccountReport'
 import TransferAmount from './features/master_data/TransferAmount'
 import ServiceEntry from './features/service/ServiceEntry'
 import ServiceList from './features/service/ServiceList'
 import ServiceDetails from './features/service/ServiceDetails'
 import BalanceSheetReport from './features/reports/balancesheet_report/BalanceSheetReport'
-import PenaltyReport from './features/reports/penalty_report/PenaltyReport'
+import CashReport from './features/reports/gl_report/CashReport'
+import AccountReport from './features/reports/gl_report/AccountReport'
+import PenaltyReport from './features/reports/gl_report/PenaltyReport'
+import MobileReport from './features/reports/gl_report/MobileReport'
+import AccessoriesReport from './features/reports/gl_report/AccessoriesReport'
+import ServiceReport from './features/reports/gl_report/ServiceReport'
 
 export default function AppRoutes() {
   return (
@@ -111,6 +114,9 @@ export default function AppRoutes() {
         <Route path='/reports/balancesheet_report' element={<BalanceSheetReport />} />
         <Route path='/reports/stock/required_stock' element={<StockRequired />} />
         <Route path='/reports/penalty_report' element={<PenaltyReport />} />
+        <Route path='/reports/mobile_report' element={<MobileReport />} />
+        <Route path='/reports/accessories_report' element={<AccessoriesReport />} />
+        <Route path='/reports/service_report' element={<ServiceReport />} />
 
       </Routes>
     </div>

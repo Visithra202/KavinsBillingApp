@@ -82,10 +82,14 @@ urlpatterns=[
     
     path('get-report-purchase-by-products/', purchase_by_products, name='purchase_by_products'),
     path('get-report-purchase-by-seller/', purchase_by_seller, name='purchase_by_seller'),
+    path('get-required-stock-list/', get_required_stock, name='get_required_stock_list'),
+
     path('get-report-cash/', cash_report, name='cash-report'),
     path('get-report-account/', account_report, name='account-report'),
     path('get-report-penalty/', penalty_report, name='penalty-report'),
-    path('get-required-stock-list/', get_required_stock, name='get_required_stock_list'),
+    path('get-report-mobile/', mobile_report, name='mobile-report'),
+    path('get-report-accessories/', accessories_report, name='accessories-report'),
+    path('get-report-service/', service_report, name='service-report'),
 
     path('get-balance-sheet-report/', get_balancesheet_report, name='get_balancesheet_report'),
 

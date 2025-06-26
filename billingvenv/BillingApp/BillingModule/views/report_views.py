@@ -122,6 +122,25 @@ def penalty_report(request):
     serializer = CashGlSerializer(penalty, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def mobile_report(request):
+    mobilegl=CashGl.objects.filter(accno='MOB001').order_by('-seq_no')
+    serializer = CashGlSerializer(mobilegl, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def accessories_report(request):
+    accsgl=CashGl.objects.filter(accno='ACS001').order_by('-seq_no')
+    serializer = CashGlSerializer(accsgl, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def service_report(request):
+    servgl=CashGl.objects.filter(accno='SER001').order_by('-seq_no')
+    serializer = CashGlSerializer(servgl, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 # Stock report
 @api_view(['GET'])
 def get_required_stock(request):

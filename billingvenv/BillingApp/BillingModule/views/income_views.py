@@ -112,27 +112,12 @@ def receive_income(request):
             trans_type='DEBIT'
         )
     elif inc_type=='Mobile':
-        accno='MOB001'
+        create_cash_transaction(mobile=receive_amt, trans_comment='Mobile Income Received', trans_type='DEBIT')
     elif inc_type=='Accessories':
-        accno='ACS001'
+        create_cash_transaction(accessories=receive_amt, trans_comment='Accessories Income Received', trans_type='DEBIT')
     elif inc_type=='Service':
-        accno='SER001'
-        
-    if accno:
-        last_glbal = GlBal.objects.filter(date__lte=today, glac=accno).order_by('-date').first()
-        last_balance = last_glbal.balance if last_glbal else 0
-        new_balance = last_balance - receive_amt
-
-        glbal_obj, created = GlBal.objects.get_or_create(
-            date=today,
-            glac=accno,
-            defaults={'balance': new_balance}
-        )
-        if not created:
-            glbal_obj.balance = new_balance
-            glbal_obj.save()
-    
-       
+        create_cash_transaction(service=receive_amt, trans_comment='Service Income Received', trans_type='DEBIT')
+           
     return Response({"message": "Income Received"}, status=status.HTTP_200_OK)
 
 

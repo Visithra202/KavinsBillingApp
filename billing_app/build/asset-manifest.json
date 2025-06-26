@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/kavins-billing-app/static/css/main.029688de.css",
-    "main.js": "/kavins-billing-app/static/js/main.6036e61a.js",
+    "main.js": "/kavins-billing-app/static/js/main.d8e95f00.js",
     "static/js/453.bae7e889.chunk.js": "/kavins-billing-app/static/js/453.bae7e889.chunk.js",
     "static/media/logo.png": "/kavins-billing-app/static/media/logo.99615ce82f3f553c8469.png",
     "index.html": "/kavins-billing-app/index.html",
     "main.029688de.css.map": "/kavins-billing-app/static/css/main.029688de.css.map",
-    "main.6036e61a.js.map": "/kavins-billing-app/static/js/main.6036e61a.js.map",
+    "main.d8e95f00.js.map": "/kavins-billing-app/static/js/main.d8e95f00.js.map",
     "453.bae7e889.chunk.js.map": "/kavins-billing-app/static/js/453.bae7e889.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.029688de.css",
-    "static/js/main.6036e61a.js"
+    "static/js/main.d8e95f00.js"
   ]
 }

@@ -72,7 +72,7 @@ def add_service_paidamt(request):
 @api_view(['PATCH'])
 def add_service_receiveamt(request):
     data = request.data
-    print(data)
+    # print(data)
     try:
         service_id = data.get('service_id')
         received_amt = data.get('received_amt', 0)
@@ -112,18 +112,7 @@ def add_service_receiveamt(request):
                         income_obj.income_amt += service.income
                         income_obj.save()
 
-                    last_glbal = GlBal.objects.filter(date__lte=get_today(), glac='SER001').order_by('-date').first()
-                    last_balance = last_glbal.balance if last_glbal else 0
-                    new_balance = last_balance + service.income
-
-                    glbal_obj, created = GlBal.objects.get_or_create(
-                        date=get_today(),
-                        glac='SER001',
-                        defaults={'balance': new_balance}
-                    )
-                    if not created:
-                        glbal_obj.balance = new_balance
-                        glbal_obj.save()
+                    create_cash_transaction(service=service.income, trans_comment=f"Service {service_id} Income Credited", trans_type='CREDIT')
             else:
                 service.service_status = 'Pending'
 
