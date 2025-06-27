@@ -34,6 +34,10 @@ export default function GlReport({setShowReports}) {
             <div className={`reportby py-1 px-4`} onClick={() => handleNavigate('/reports/service_report')}>
                 Service Income report
             </div>
+
+            <div className={`reportby py-1 px-4`} onClick={() => handleNavigate('/reports/interest_report')}>
+                Interest Income report
+            </div>
         </div>
     )
 }

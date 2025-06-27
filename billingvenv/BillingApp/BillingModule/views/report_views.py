@@ -140,6 +140,12 @@ def service_report(request):
     serializer = CashGlSerializer(servgl, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def interest_report(request):
+    intgl=CashGl.objects.filter(accno='INT001').order_by('-seq_no')
+    serializer = CashGlSerializer(intgl, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # Stock report
 @api_view(['GET'])

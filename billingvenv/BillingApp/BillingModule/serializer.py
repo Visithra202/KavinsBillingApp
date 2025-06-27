@@ -427,7 +427,7 @@ class InvestSerializer(serializers.ModelSerializer):
 
 
 @transaction.atomic()
-def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accessories=0, service=0, trans_comment='', trans_type='CREDIT'):
+def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accessories=0, service=0, interest=0, trans_comment='', trans_type='CREDIT'):
     today = date.today()
     crdr = trans_type.upper() == 'CREDIT'
 
@@ -465,6 +465,7 @@ def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accesso
     mobile_entry=update_accounts('MOB001', mobile)
     accs_entry=update_accounts('ACS001', accessories)
     serv_entry=update_accounts('SER001', service)
+    int_entry=update_accounts('INT001', interest)
 
     return {
         'cash_entry': cash_gl_entry,
@@ -472,7 +473,8 @@ def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accesso
         'penalty_entry' :penalty_entry,
         'mobile_entry':mobile_entry,
         'accs_entry':accs_entry,
-        'serv_entry':serv_entry
+        'serv_entry':serv_entry,
+        'int_entry' : int_entry
     }
 
 class IncomeSerializer(serializers.ModelSerializer):

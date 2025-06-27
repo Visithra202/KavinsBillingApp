@@ -162,6 +162,7 @@ def add_loan_payment(request):
                 income_obj.income_amt += bill.late_fee
                 income_obj.save()
         if bill.paid_amount==bill.total_due :
+            create_cash_transaction(interest=bill.int, trans_comment=f"Loan - {bill.loan_acc} Interest credited. seq - {bill.bill_seq}", trans_type='CREDIT')
             income_obj, created = Income.objects.get_or_create(
                     income_date=get_today(),
                     inctype='Interest',

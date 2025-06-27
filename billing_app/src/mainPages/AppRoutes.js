@@ -42,6 +42,7 @@ import PenaltyReport from './features/reports/gl_report/PenaltyReport'
 import MobileReport from './features/reports/gl_report/MobileReport'
 import AccessoriesReport from './features/reports/gl_report/AccessoriesReport'
 import ServiceReport from './features/reports/gl_report/ServiceReport'
+import InterestReport from './features/reports/gl_report/InterestReport'
 
 export default function AppRoutes() {
   return (
@@ -117,6 +118,7 @@ export default function AppRoutes() {
         <Route path='/reports/mobile_report' element={<MobileReport />} />
         <Route path='/reports/accessories_report' element={<AccessoriesReport />} />
         <Route path='/reports/service_report' element={<ServiceReport />} />
+        <Route path='/reports/interest_report' element={<InterestReport />} />
 
       </Routes>
     </div>

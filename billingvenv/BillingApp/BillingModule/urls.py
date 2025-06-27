@@ -90,6 +90,7 @@ urlpatterns=[
     path('get-report-mobile/', mobile_report, name='mobile-report'),
     path('get-report-accessories/', accessories_report, name='accessories-report'),
     path('get-report-service/', service_report, name='service-report'),
+    path('get-report-interest/', interest_report, name='interest-report'),
 
     path('get-balance-sheet-report/', get_balancesheet_report, name='get_balancesheet_report'),
 

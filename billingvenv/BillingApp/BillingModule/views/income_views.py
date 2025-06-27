@@ -117,6 +117,8 @@ def receive_income(request):
         create_cash_transaction(accessories=receive_amt, trans_comment='Accessories Income Received', trans_type='DEBIT')
     elif inc_type=='Service':
         create_cash_transaction(service=receive_amt, trans_comment='Service Income Received', trans_type='DEBIT')
+    elif inc_type=='Interest':
+        create_cash_transaction(interest=receive_amt, trans_comment='Interest Income Received', trans_type='DEBIT')
            
     return Response({"message": "Income Received"}, status=status.HTTP_200_OK)
 
