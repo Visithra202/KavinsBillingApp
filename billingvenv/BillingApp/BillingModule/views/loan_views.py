@@ -65,9 +65,12 @@ def get_collection_list(request):
             if last_paid_bill:
                 overdue_loans_dict[acc_no]['od_days'] = (today - last_paid_bill.bill_date).days
             
+        if bill.paid_amount >= bill.due_amount:
+            overdue_loans_dict[acc_no]['late_fee'] +=( bill.total_due-bill.paid_amount)
+        else:
+            overdue_loans_dict[acc_no]['due_amount'] += (bill.due_amount - bill.paid_amount)
+            overdue_loans_dict[acc_no]['late_fee'] +=( bill.late_fee)
 
-        overdue_loans_dict[acc_no]['due_amount'] += (bill.due_amount - bill.paid_amount)
-        overdue_loans_dict[acc_no]['late_fee'] += bill.late_fee
 
     overdue_loans = [{
         'customer': data['customer'],

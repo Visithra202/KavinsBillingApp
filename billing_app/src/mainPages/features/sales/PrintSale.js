@@ -1,6 +1,7 @@
 import React, { useEffect, useRef} from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useReactToPrint } from 'react-to-print'
+import image from '../../assets/bill_logo.png'
 
 export default function PrintSale() {
   const location = useLocation();
@@ -31,7 +32,7 @@ export default function PrintSale() {
       <>
         <div className='row'>
           <div className='col'>
-            <div><img src='/static/assets/bill_logo.png' alt='Invoice logo' className='mt-2' style={{ width: '20%' }} />
+            <div><img src={image} alt='Invoice logo' className='mt-2' style={{ width: '20%' }} />
               <h3 >Tax Invoice</h3>
             </div>
           </div>

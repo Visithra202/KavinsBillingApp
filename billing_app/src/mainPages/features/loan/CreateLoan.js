@@ -8,7 +8,7 @@ export default function CreateLoan() {
     const [loanFormData, setLoanFormData] = useState({
         total_payment: '', advance_amt: '', advance_bal: '', sell_prc: '',
         loan_amount: '', payment_amount: '', interest: '', payment_frequency: '',
-        term: '', emi_amount: '', next_payment_date: '', advance_paydate: '',
+        term: '', emi_amount: '', next_payment_date: '', advance_paydate: '', details: ''
     });
 
     const [searchCustomer, setSearchCustomer] = useState({
@@ -116,6 +116,7 @@ export default function CreateLoan() {
             ref_mph: refContact,
             ln_typ: loanType,
             loanamt_bal: loanFormData.loan_amount?loanFormData.loan_amount:0,
+            details: loanFormData.details
         }
 
         try {
@@ -149,6 +150,7 @@ export default function CreateLoan() {
             next_payment_date: '',
             advance_bal: '',
             advance_paydate: '',
+            details:''
         });
         setLockId('');
         setRefContact('');
@@ -193,7 +195,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (!["payment_frequency", "next_payment_date", "advance_paydate"].includes(name) && !/^\d*$/.test(value)) {
+        if (!["payment_frequency", "next_payment_date", "advance_paydate","details"].includes(name) && !/^\d*$/.test(value)) {
             return;
         }
 
@@ -260,14 +262,14 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                     <input id='term' type="text" name="term" className="form-control"
                         autoComplete="off" value={loanFormData.term || ''} onChange={handleChange} required />
                 </div>
-            </div>
-
-            <div className='row mt-2'>
-                <div className="col-4">
+                <div className="col">
                     <label htmlFor='emi_amount' className="form-label">Emi amount</label>
                     <input id='emi_amount' type="text" name="emi_amount" className="form-control"
                         value={loanFormData.emi_amount || ''} onChange={handleChange} disabled />
                 </div>
+            </div>
+
+            <div className='row mt-2'>
                 <div className="col">
                     <label htmlFor='loan_date' className="form-label">Loan date</label>
                     <input id='loan_date' type="date" name="loan_date" className="form-control"
@@ -282,7 +284,12 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                 <div className="col">
                     <label htmlFor='advance_paydate' className="form-label">Advance pay date</label>
                     <input id='advance_paydate' type="date" name="advance_paydate" className="form-control" min={today}
-                        autoComplete="off" value={loanFormData.advance_paydate || ''} onChange={handleChange} />
+                        autoComplete="off" value={loanFormData.advance_paydate || ''} onChange={handleChange} disabled={!loanFormData.advance_bal||Number(loanFormData.advance_bal)<=0}/>
+                </div>
+                <div className="col">
+                    <label htmlFor='details' className="form-label">Details</label>
+                    <input id='details' type="text" name="details" className="form-control"
+                        value={loanFormData.details || ''} onChange={handleChange} />
                 </div>
             </div>
 

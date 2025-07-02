@@ -105,7 +105,7 @@ export default function LoanCollection() {
           <tbody>
             {loading ? (
               <tr className='text-center'>
-                <td colSpan='7'>Loading...</td>
+                <td colSpan='9'>Loading...</td>
               </tr>
             ) : filteredCollections.length > 0 ? (
               filteredCollections.map((collect, index) => (
@@ -131,7 +131,7 @@ export default function LoanCollection() {
               ))
             ) : (
               <tr className='text-center'>
-                <td colSpan='7'>Collection not found</td>
+                <td colSpan='9'>Collection not found</td>
               </tr>
             )}
           </tbody>

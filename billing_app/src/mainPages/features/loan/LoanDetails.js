@@ -147,6 +147,10 @@ export default function LoanDetails() {
                 <span className='form-label'>Payment amount</span>
                 <span className='loan-control'>{loan.payment_amount}</span>
               </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Balance amount</span>
+                <span className='loan-control'>{loan.bal_amount}</span>
+              </div>
             </div>
 
             <div className='row'>
@@ -174,6 +178,10 @@ export default function LoanDetails() {
                 <span className='form-label'>Payment frequency</span>
                 <span className='loan-control'>{loan.payment_freq}</span>
               </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Loan type</span>
+                <span className='loan-control'>{loan.ln_typ==='MOB'?'Mobile':loan.ln_typ==='ACC'?'Accessories':'Old Loan'}</span>
+              </div>
             </div>
 
             <div className='row'>
@@ -194,8 +202,12 @@ export default function LoanDetails() {
                 <span className='loan-control'>{loan.lock_id}</span>
               </div>
               <div className='col d-flex flex-column'>
-                <span className='form-label'>Reference contant</span>
+                <span className='form-label'>Reference contact</span>
                 <span className='loan-control'>{loan.ref_mph}</span>
+              </div>
+              <div className='col d-flex flex-column'>
+                <span className='form-label'>Details</span>
+                <span className='loan-control'>{loan.details}</span>
               </div>
               <div className='col d-flex align-items-center'>
                 <button className='btn btn-primary rounded-pill px-3 py-1' onClick={() => navigate('/loanBills', { state: { loan } })}>show bills</button>

@@ -159,7 +159,7 @@ class Loan(models.Model):
     prinRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     intRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     penRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
+    details = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.loan_accno
