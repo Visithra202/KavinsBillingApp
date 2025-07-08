@@ -279,3 +279,11 @@ class Service(models.Model):
 class ServiceBill(models.Model):
     year=models.IntegerField()
     bill=models.IntegerField()
+
+class LoanInfo(models.Model):
+    id = models.AutoField(primary_key=True)
+    seq = models.IntegerField()
+    date = models.DateField()
+    commited_in = models.IntegerField()
+    extended_date = models.DateField()
+    loan_accno = models.CharField(max_length=15)

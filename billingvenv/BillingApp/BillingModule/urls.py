@@ -60,6 +60,9 @@ urlpatterns=[
     path('get-acc-loan-bills/<str:loan_accno>', get_acc_loan_bills, name='get_acc_loan_bills'),
     path('add-loan-payment/', add_loan_payment, name='add_loan_payment'),
     path('get-loan-journal/<str:loan_accno>/', get_loan_journal, name='get_loan_journal'),
+    path('add-loan-info', add_loan_info, name='add_loan_info'),
+    path('get-loan-info/<str:loan_accno>', get_loan_info, name='get_loan_info'),
+
     
     # Purchase
     path('add-purchase/', add_purchase, name='add_purchase'),

@@ -61,7 +61,7 @@ export default function SidebarMenu({setShowReports}) {
                 {/* Service */}
                 <li className='list-item '>
                     <button className='sidebar-menu menu w-100 p-2' onClick={() => handleMenu('service')}>
-                        <span><i class="bi bi-tools me-3"></i> Service</span>
+                        <span><i className="bi bi-tools me-3"></i> Service</span>
                         <i className={`bi ${openMenu === "service" ? "bi-chevron-up" : "bi-chevron-down"}`} style={{ fontSize: '12px' }}></i>
                     </button>
 

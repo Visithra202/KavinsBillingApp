@@ -536,3 +536,7 @@ class ServiceBillSerializer(serializers.ModelSerializer):
         model=ServiceBill
         fields='__all__'
         
+class LoanInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoanInfo
+        fields = '__all__'

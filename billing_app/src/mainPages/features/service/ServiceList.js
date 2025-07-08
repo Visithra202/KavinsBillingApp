@@ -249,10 +249,10 @@ export default function ServiceList() {
             </div>
 
             {showPayModal && (
-                <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} >
                     <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '400px' }}>
                         <div className="modal-content">
-                            <div className="modal-header">
+                            <div className="modal-header"> 
                                 <h6 className="modal-title">Pay amount</h6>
                                 <button type="button" className="btn-close btn-sm" style={{ width: '1rem', height: '1rem' }} onClick={() => setShowPayModal(false)} ></button>
                             </div>

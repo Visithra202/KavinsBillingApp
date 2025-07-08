@@ -62,7 +62,7 @@ function IncomeSummary({ formatRupees }) {
     <>
       <div className='col shadow rounded-3 me-3 px-3 py-1' style={{ backgroundColor: 'rgb(65,139,202)' }}>
         <div className='d-flex align-items-center'>
-          <i class="bi bi-cash-coin me-4" style={{ fontSize: '2.5rem' }}></i>
+          <i className="bi bi-cash-coin me-4" style={{ fontSize: '2.5rem' }}></i>
           <div className='mt-3'>
             <p className='fw-bold mb-0' style={{ fontSize: '14px' }}>INCOME</p>
             <h5 className='text-center'>{formatRupees(todayIncome)}</h5>
@@ -207,46 +207,46 @@ function SalesSummary({ formatRupees }) {
 }
 
 
-function CustomerBoard() {
-  const [totalCustomers, setTotalCustomers] = useState('');
-  const [lastWeek, setLastWeek] = useState('');
-  const [lastMonth, setLastMonth] = useState('')
+// function CustomerBoard() {
+//   const [totalCustomers, setTotalCustomers] = useState('');
+//   const [lastWeek, setLastWeek] = useState('');
+//   const [lastMonth, setLastMonth] = useState('')
 
-  useEffect(() => {
-    axios.get('http://localhost:8000/get-dashboard-customer-details/')
-      .then((response) => {
-        setTotalCustomers(response.data.total_customers)
-        setLastWeek(response.data.last_week_customers)
-        setLastMonth(response.data.last_month_customers)
-      }).catch((error) => {
-        // console.log(error)
-      })
-  }, [])
+//   useEffect(() => {
+//     axios.get('http://localhost:8000/get-dashboard-customer-details/')
+//       .then((response) => {
+//         setTotalCustomers(response.data.total_customers)
+//         setLastWeek(response.data.last_week_customers)
+//         setLastMonth(response.data.last_month_customers)
+//       }).catch((error) => {
+//         // console.log(error)
+//       })
+//   }, [])
 
-  return (
-    <>
-      <div className='col shadow rounded-3 me-3 px-3 py-1' style={{ backgroundColor: 'rgb(28,176,154)' }}>
-        <div className='d-flex align-items-center'>
-          <i className="bi bi-people-fill me-4" style={{ fontSize: '2.5rem' }}></i>
-          <div className='mt-3'>
-            <p className='fw-bold mb-0' style={{ fontSize: '14px' }}>CUSTOMERS</p>
-            <h4 className='text-center'>{totalCustomers}</h4>
-          </div>
-        </div>
-        <div className='d-flex justify-content-between'>
-          <div>
-            <p className='small mb-0'>LAST WEEK</p>
-            <h6 className='text-center'>{lastWeek}</h6>
-          </div>
-          <div>
-            <p className='small mb-0'>LAST MONTH</p>
-            <h6 className='text-center'>{lastMonth}</h6>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
+//   return (
+//     <>
+//       <div className='col shadow rounded-3 me-3 px-3 py-1' style={{ backgroundColor: 'rgb(28,176,154)' }}>
+//         <div className='d-flex align-items-center'>
+//           <i className="bi bi-people-fill me-4" style={{ fontSize: '2.5rem' }}></i>
+//           <div className='mt-3'>
+//             <p className='fw-bold mb-0' style={{ fontSize: '14px' }}>CUSTOMERS</p>
+//             <h4 className='text-center'>{totalCustomers}</h4>
+//           </div>
+//         </div>
+//         <div className='d-flex justify-content-between'>
+//           <div>
+//             <p className='small mb-0'>LAST WEEK</p>
+//             <h6 className='text-center'>{lastWeek}</h6>
+//           </div>
+//           <div>
+//             <p className='small mb-0'>LAST MONTH</p>
+//             <h6 className='text-center'>{lastMonth}</h6>
+//           </div>
+//         </div>
+//       </div>
+//     </>
+//   )
+// }
 
 function Recentsales() {
   const [sale, setSale] = useState([]);

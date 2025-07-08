@@ -1,13 +1,15 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from BillingModule.models import Loan, LoanBill, LoanJournal, GlHist, Income
-from BillingModule.serializer import LoanSerializer, LoanBillSerializer, LoanJournalSerializer, create_cash_transaction
+from BillingModule.models import Loan, LoanBill, LoanJournal, GlHist, Income, LoanInfo
+from BillingModule.serializer import LoanSerializer, LoanBillSerializer, LoanJournalSerializer, LoanInfoSerializer, create_cash_transaction
 from django.http import JsonResponse
 from decimal import Decimal
 from django.db import transaction
 from collections import defaultdict
 from django.utils import timezone
+from django.db.models import Sum
+from datetime import date, timedelta
 
 
 def get_today():
@@ -34,7 +36,7 @@ def get_loan_list(request):
 @transaction.atomic
 def get_collection_list(request):
     today = get_today()
-    loan_bills = LoanBill.objects.filter(bill_date__lte=today, paid_date__isnull=True)
+    loan_bills = LoanBill.objects.filter(bill_date__lte=today, paid_date__isnull=True).order_by('-bill_date')
 
     overdue_loans_dict = defaultdict(lambda: {
         'due_amount': Decimal('0.00'),
@@ -81,7 +83,11 @@ def get_collection_list(request):
         'od_days': data['od_days']
     } for acc_no, data in overdue_loans_dict.items()]
 
-    return JsonResponse({'overdue_loans': overdue_loans, 'totalDueSum' : totalDueSum})
+
+    today_collection = GlHist.objects.filter(date=today, credit=True).aggregate(total=Sum('trans_amount'))
+    collected = today_collection['total'] or 0
+
+    return JsonResponse({'overdue_loans': overdue_loans, 'totalDueSum' : totalDueSum, 'today_collection':collected})
 
 
 
@@ -125,7 +131,9 @@ def add_loan_payment(request):
     loan = Loan.objects.get(loan_accno=loan_accno)
     loan.bal_amount=loan.bal_amount- (paid_amount+discount)
     loan.save()
-    
+
+    LoanInfo.objects.filter(loan_accno=loan_accno).delete()
+
     loan_bills = LoanBill.objects.filter(
         loan_acc__loan_accno=loan_accno,
         paid_date__isnull=True
@@ -245,6 +253,10 @@ def add_loan_payment(request):
     if discount>0:
         create_cash_transaction(cash=discount, trans_comment=f'Loan due discount - accno : {loan_accno}', trans_type='DEBIT')
         create_cash_transaction(penalty=discount, trans_comment=f'Loan due discount - accno : {loan_accno},', trans_type='DEBIT')
+
+    if loan.bal_amount <= 0:
+        LoanInfo.objects.filter(loan_accno=loan.loan_accno).delete()
+
     
     return Response({'message': 'Payment added successfully'})
 
@@ -256,4 +268,39 @@ def get_loan_journal(request, loan_accno):
     serializer=LoanJournalSerializer(journals, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
     
-    
+@api_view(['POST'])
+def add_loan_info(request):
+    loan_accno = request.data.get('loan_accno')
+    days = request.data.get('days')
+    # print(request.data)
+
+    if not loan_accno or days is None:
+        return Response({'error': 'Missing loan_accno or days'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        days = int(days)
+    except ValueError:
+            return Response({'error': 'Invalid days value'}, status=status.HTTP_400_BAD_REQUEST)
+
+    last_info = LoanInfo.objects.filter(loan_accno=loan_accno).order_by('-seq').first()
+    last_seq = last_info.seq if last_info else 0
+
+    today = date.today()
+    extended_date = today + timedelta(days=days)
+
+    new_info = LoanInfo.objects.create(
+        seq=last_seq + 1,
+        date=today,
+        commited_in=days,
+        extended_date=extended_date,
+        loan_accno=loan_accno
+        )
+
+    return Response({'message': 'Loan information added successfully'}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def get_loan_info(request, loan_accno):
+    loanInfo = LoanInfo.objects.filter(loan_accno=loan_accno).order_by('-seq')
+    serializer = LoanInfoSerializer(loanInfo, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

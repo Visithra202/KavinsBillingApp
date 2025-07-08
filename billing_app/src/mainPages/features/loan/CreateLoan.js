@@ -38,7 +38,6 @@ export default function CreateLoan() {
         const advanceBal = parseFloat(loanFormData.advance_bal) || 0;
         const totalPayment = parseFloat(loanFormData.total_payment) || 0;
         const term = parseFloat(loanFormData.term) || 0;
-        const frequency = loanFormData.payment_frequency;
 
         const loanAmount = sellPrice - advanceAmt - advanceBal;
         const paymentAmount = totalPayment - advanceAmt - advanceBal;
