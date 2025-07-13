@@ -28,3 +28,18 @@ def delete_customer(request, customer_id):
     customer=get_object_or_404(Customer,customer_id=customer_id)
     customer.delete()
     return Response({"message": "Customer deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['PATCH'])
+def update_customer_mph(request, customer_id):
+    try:
+        customer = Customer.objects.get(customer_id=customer_id)
+    except Customer.DoesNotExist:
+        return Response({'error': 'Customer not found'}, status=404)
+
+    mph = request.data.get('mph')
+    if not mph:
+        return Response({'error': 'Missing phone number (mph)'}, status=400)
+
+    customer.mph = mph
+    customer.save()
+    return Response({'message': 'Customer phone number updated successfully'}, status=status.HTTP_202_ACCEPTED)

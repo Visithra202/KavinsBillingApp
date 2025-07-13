@@ -2,7 +2,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from BillingModule.models import Loan, LoanBill, LoanJournal, GlHist, Income, LoanInfo
-from BillingModule.serializer import LoanSerializer, LoanBillSerializer, LoanJournalSerializer, LoanInfoSerializer, create_cash_transaction
+from BillingModule.serializer import (
+    LoanSerializer,
+    LoanBillSerializer,
+    LoanJournalSerializer,
+    LoanInfoSerializer,
+    create_cash_transaction,
+)
 from django.http import JsonResponse
 from decimal import Decimal
 from django.db import transaction
@@ -15,10 +21,11 @@ from datetime import date, timedelta
 def get_today():
     return timezone.localdate()
 
+
 # Loan
-@api_view(['POST'])
+@api_view(["POST"])
 def create_loan(request):
-    serializer=LoanSerializer(data=request.data)
+    serializer = LoanSerializer(data=request.data)
     # print(request.data)
     if serializer.is_valid():
         serializer.save()
@@ -26,118 +33,147 @@ def create_loan(request):
     # print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_loan_list(request):
-    loanList=Loan.objects.all().order_by('-loan_date')
+    loanList = Loan.objects.all().order_by("-loan_date")
     serializer = LoanSerializer(loanList, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @transaction.atomic
 def get_collection_list(request):
     today = get_today()
-    loan_bills = LoanBill.objects.filter(bill_date__lte=today, paid_date__isnull=True).order_by('-bill_date')
+    loan_bills = LoanBill.objects.filter(
+        bill_date__lte=today, paid_date__isnull=True
+    ).order_by("-bill_date")
 
-    overdue_loans_dict = defaultdict(lambda: {
-        'due_amount': Decimal('0.00'),
-        'late_fee': Decimal('0.00'),
-        'customer': None,
-        'loan_accno': '',
-        'payment_freq': '',
-        'od_days': 0
-    })
+    overdue_loans_dict = defaultdict(
+        lambda: {
+            "due_amount": Decimal("0.00"),
+            "late_fee": Decimal("0.00"),
+            "customer": None,
+            "loan_accno": "",
+            "payment_freq": "",
+            "od_days": 0,
+        }
+    )
 
     totalDueSum = 0
 
     for bill in loan_bills:
         loan = bill.loan_acc
         acc_no = loan.loan_accno
-        totalDueSum+=(bill.total_due-bill.paid_amount)
+        totalDueSum += bill.total_due - bill.paid_amount
         # Only set customer info once
-        if overdue_loans_dict[acc_no]['customer'] is None:
-            overdue_loans_dict[acc_no]['customer'] = {
-                'customer_name': loan.customer.customer_name,
-                'mph': str(loan.customer.mph)
+        if overdue_loans_dict[acc_no]["customer"] is None:
+            overdue_loans_dict[acc_no]["customer"] = {
+                "customer_name": loan.customer.customer_name,
+                "mph": str(loan.customer.mph),
             }
-            overdue_loans_dict[acc_no]['loan_accno'] = acc_no
-            overdue_loans_dict[acc_no]['payment_freq'] = 'M' if loan.payment_freq.startswith('M') else 'W'
+            overdue_loans_dict[acc_no]["loan_accno"] = acc_no
+            overdue_loans_dict[acc_no]["payment_freq"] = (
+                "M" if loan.payment_freq.startswith("M") else "W"
+            )
 
             # OD Days Calculation
-            last_paid_bill = LoanBill.objects.filter(loan_acc=loan, paid_date__isnull=True).order_by('bill_date').first()
+            last_paid_bill = (
+                LoanBill.objects.filter(loan_acc=loan, paid_date__isnull=True)
+                .order_by("bill_date")
+                .first()
+            )
             if last_paid_bill:
-                overdue_loans_dict[acc_no]['od_days'] = (today - last_paid_bill.bill_date).days
-            
+                overdue_loans_dict[acc_no]["od_days"] = (
+                    today - last_paid_bill.bill_date
+                ).days
+
         if bill.paid_amount >= bill.due_amount:
-            overdue_loans_dict[acc_no]['late_fee'] +=( bill.total_due-bill.paid_amount)
+            overdue_loans_dict[acc_no]["late_fee"] += bill.total_due - bill.paid_amount
         else:
-            overdue_loans_dict[acc_no]['due_amount'] += (bill.due_amount - bill.paid_amount)
-            overdue_loans_dict[acc_no]['late_fee'] +=( bill.late_fee)
+            overdue_loans_dict[acc_no]["due_amount"] += (
+                bill.due_amount - bill.paid_amount
+            )
+            overdue_loans_dict[acc_no]["late_fee"] += bill.late_fee
+
+    overdue_loans = [
+        {
+            "customer": data["customer"],
+            "loan_accno": data["loan_accno"],
+            "due_amount": str(data["due_amount"]),
+            "late_fee": str(data["late_fee"]),
+            "frequency": data["payment_freq"],
+            "od_days": data["od_days"],
+        }
+        for acc_no, data in overdue_loans_dict.items()
+    ]
+
+    today_collection = GlHist.objects.filter(date=today, credit=True).aggregate(
+        total=Sum("trans_amount")
+    )
+    collected = today_collection["total"] or 0
+
+    return JsonResponse(
+        {
+            "overdue_loans": overdue_loans,
+            "totalDueSum": totalDueSum,
+            "today_collection": collected,
+        }
+    )
 
 
-    overdue_loans = [{
-        'customer': data['customer'],
-        'loan_accno': data['loan_accno'],
-        'due_amount': str(data['due_amount']),
-        'late_fee': str(data['late_fee']),
-        'frequency': data['payment_freq'],
-        'od_days': data['od_days']
-    } for acc_no, data in overdue_loans_dict.items()]
-
-
-    today_collection = GlHist.objects.filter(date=today, credit=True).aggregate(total=Sum('trans_amount'))
-    collected = today_collection['total'] or 0
-
-    return JsonResponse({'overdue_loans': overdue_loans, 'totalDueSum' : totalDueSum, 'today_collection':collected})
-
-
-
-@api_view(['GET'])
+@api_view(["GET"])
 def get_loan_bill(request, loan_accno):
-    today=get_today()
-    loan_bills = LoanBill.objects.filter(loan_acc__loan_accno=loan_accno).order_by('bill_date')
+    today = get_today()
+    loan_bills = LoanBill.objects.filter(loan_acc__loan_accno=loan_accno).order_by(
+        "bill_date"
+    )
     bills_data = []
     for bill in loan_bills:
-        if bill.paid_date is None and bill.bill_date <= today :
-            bills_data.append({
-                'bill_seq': bill.bill_seq,
-                'bill_date': bill.bill_date.strftime('%Y-%m-%d'),
-                'due_amount': str(bill.due_amount),
-                'late_fee': str(bill.late_fee),
-                'total_due': bill.total_due,
-                'paid_amount' : bill.paid_amount,
-                'paid_date' : bill.paid_date
-            })
-    return JsonResponse({'loan_bills': bills_data})
+        if bill.paid_date is None and bill.bill_date <= today:
+            bills_data.append(
+                {
+                    "bill_seq": bill.bill_seq,
+                    "bill_date": bill.bill_date.strftime("%Y-%m-%d"),
+                    "due_amount": str(bill.due_amount),
+                    "late_fee": str(bill.late_fee),
+                    "total_due": bill.total_due,
+                    "paid_amount": bill.paid_amount,
+                    "paid_date": bill.paid_date,
+                }
+            )
+    return JsonResponse({"loan_bills": bills_data})
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_acc_loan_bills(request, loan_accno):
-    bills = LoanBill.objects.filter(loan_acc__loan_accno=loan_accno)  
+    bills = LoanBill.objects.filter(loan_acc__loan_accno=loan_accno)
     serializer = LoanBillSerializer(bills, many=True)
     return Response(serializer.data)
 
-@api_view(['POST'])
+
+@api_view(["POST"])
 @transaction.atomic
 def add_loan_payment(request):
     today = get_today()
     data = request.data
-    loan_accno = data.get('loan_accno')
-    payment_amount = Decimal(data.get('payment_amount'))
-    payment_type=data.get('payment')
-    discount=data.get('discount')
-    
-    pay_amount=payment_amount+discount
-    paid_amount=payment_amount
+    loan_accno = data.get("loan_accno")
+    payment_amount = Decimal(data.get("payment_amount"))
+    payment_type = data.get("payment")
+    discount = data.get("discount")
+
+    pay_amount = payment_amount + discount
+    paid_amount = payment_amount
 
     loan = Loan.objects.get(loan_accno=loan_accno)
-    loan.bal_amount=loan.bal_amount- (paid_amount+discount)
+    loan.bal_amount = loan.bal_amount - (paid_amount + discount)
     loan.save()
 
     LoanInfo.objects.filter(loan_accno=loan_accno).delete()
 
     loan_bills = LoanBill.objects.filter(
-        loan_acc__loan_accno=loan_accno,
-        paid_date__isnull=True
-    ).order_by('bill_date')
+        loan_acc__loan_accno=loan_accno, paid_date__isnull=True
+    ).order_by("bill_date")
 
     for bill in loan_bills:
         remaining_due = bill.total_due - bill.paid_amount
@@ -145,40 +181,47 @@ def add_loan_payment(request):
         if pay_amount >= remaining_due:
             bill.paid_amount += remaining_due
             bill.paid_date = today
-            if bill.due_type=='EMI':
-                loan.loanamt_bal-=bill.prin
+            if bill.due_type == "EMI":
+                loan.loanamt_bal -= bill.prin
             pay_amount -= remaining_due
         else:
             bill.paid_amount += pay_amount
             if bill.paid_amount >= bill.total_due:
                 bill.paid_date = today
-                if bill.due_type=='EMI':
-                    loan.loanamt_bal-=bill.prin
+                if bill.due_type == "EMI":
+                    loan.loanamt_bal -= bill.prin
 
-            pay_amount = Decimal('0.00')
+            pay_amount = Decimal("0.00")
 
         bill.save()
         loan.save()
 
-
-        if bill.paid_amount==bill.total_due and bill.late_fee>0:
-            create_cash_transaction(penalty=bill.late_fee, trans_comment= f'Accno : {loan_accno}, Bill seq : {bill.bill_seq}', trans_type='CREDIT')
+        if bill.paid_amount == bill.total_due and bill.late_fee > 0:
+            create_cash_transaction(
+                penalty=bill.late_fee,
+                trans_comment=f"Accno : {loan_accno}, Bill seq : {bill.bill_seq}",
+                trans_type="CREDIT",
+            )
             income_obj, created = Income.objects.get_or_create(
-                    income_date=get_today(),
-                    inctype='Penalty',
-                    defaults={'income_amt': bill.late_fee}
-                )
+                income_date=get_today(),
+                inctype="Penalty",
+                defaults={"income_amt": bill.late_fee},
+            )
 
             if not created:
                 income_obj.income_amt += bill.late_fee
                 income_obj.save()
-        if bill.paid_amount==bill.total_due :
-            create_cash_transaction(interest=bill.int, trans_comment=f"Loan - {bill.loan_acc} Interest credited. seq - {bill.bill_seq}", trans_type='CREDIT')
+        if bill.paid_amount == bill.total_due:
+            create_cash_transaction(
+                interest=bill.int,
+                trans_comment=f"Loan - {bill.loan_acc} Interest credited. seq - {bill.bill_seq}",
+                trans_type="CREDIT",
+            )
             income_obj, created = Income.objects.get_or_create(
-                    income_date=get_today(),
-                    inctype='Interest',
-                    defaults={'income_amt': bill.int}
-                )
+                income_date=get_today(),
+                inctype="Interest",
+                defaults={"income_amt": bill.int},
+            )
 
             if not created:
                 income_obj.income_amt += bill.int
@@ -187,42 +230,44 @@ def add_loan_payment(request):
         if pay_amount == 0:
             break
 
-    last_hist = GlHist.objects.order_by('-trans_seq').first()
+    last_hist = GlHist.objects.order_by("-trans_seq").first()
 
-    prev_balance = last_hist.balance if last_hist else Decimal('0.00')
+    prev_balance = last_hist.balance if last_hist else Decimal("0.00")
     new_balance = prev_balance + paid_amount
 
     GlHist.objects.create(
         date=today,
         loan_acc=loan,
-        credit=1, 
+        credit=1,
         trans_command=f"{paid_amount} credited",
         trans_amount=paid_amount,
-        balance=new_balance
+        balance=new_balance,
     )
-    
-    
-    latest_journal_entry = LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno).order_by('-journal_id').first() 
+
+    latest_journal_entry = (
+        LoanJournal.objects.filter(loan__loan_accno=loan.loan_accno)
+        .order_by("-journal_id")
+        .first()
+    )
 
     if latest_journal_entry:
         previous_data = latest_journal_entry.new_data
-        last_seq=latest_journal_entry.journal_seq 
+        last_seq = latest_journal_entry.journal_seq
     else:
-        previous_data = Decimal('0.00')
-        last_seq=0 
-            
-            
-    loan_journal=LoanJournal.objects.create(
+        previous_data = Decimal("0.00")
+        last_seq = 0
+
+    loan_journal = LoanJournal.objects.create(
         loan=loan,
         journal_date=today,
-        journal_seq=last_seq+1,
-        action_type='PAYMENT',
+        journal_seq=last_seq + 1,
+        action_type="PAYMENT",
         description="Due payment added",
         old_data=previous_data,
-        new_data=previous_data-paid_amount,
+        new_data=previous_data - paid_amount,
         crdr=True,
         trans_amt=paid_amount,
-        balance_amount=previous_data - paid_amount
+        balance_amount=previous_data - paid_amount,
     )
 
     updated_data = previous_data - paid_amount
@@ -232,57 +277,76 @@ def add_loan_payment(request):
             loan=loan,
             journal_date=today,
             journal_seq=last_seq + 2,
-            action_type='DISCOUNT',
+            action_type="DISCOUNT",
             description="Discount added",
             old_data=updated_data,
             new_data=updated_data - discount,
             crdr=True,
             trans_amt=discount,
-            balance_amount=updated_data - discount
+            balance_amount=updated_data - discount,
         )
-    cash=0
-    account=0
+    cash = 0
+    account = 0
 
-    if(payment_type=='Cash'):
-        cash=paid_amount+discount
+    if payment_type == "Cash":
+        cash = paid_amount + discount
     else:
-        account=paid_amount+discount
+        account = paid_amount + discount
 
-    create_cash_transaction(cash=cash, account=account, trans_comment=f'Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ', trans_type='CREDIT')
+    create_cash_transaction(
+        cash=cash,
+        account=account,
+        trans_comment=f"Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ",
+        trans_type="CREDIT",
+    )
 
-    if discount>0:
-        create_cash_transaction(cash=discount, trans_comment=f'Loan due discount - accno : {loan_accno}', trans_type='DEBIT')
-        create_cash_transaction(penalty=discount, trans_comment=f'Loan due discount - accno : {loan_accno},', trans_type='DEBIT')
+    if discount > 0:
+        create_cash_transaction(
+            cash=discount,
+            trans_comment=f"Loan due discount - accno : {loan_accno}",
+            trans_type="DEBIT",
+        )
+        create_cash_transaction(
+            penalty=discount,
+            trans_comment=f"Loan due discount - accno : {loan_accno},",
+            trans_type="DEBIT",
+        )
 
     if loan.bal_amount <= 0:
         LoanInfo.objects.filter(loan_accno=loan.loan_accno).delete()
 
-    
-    return Response({'message': 'Payment added successfully'})
+    return Response({"message": "Payment added successfully"})
 
 
 # Loan Journal
-@api_view(['GET'])
+@api_view(["GET"])
 def get_loan_journal(request, loan_accno):
-    journals=LoanJournal.objects.filter(loan__loan_accno=loan_accno).order_by('journal_id')
-    serializer=LoanJournalSerializer(journals, many=True)
+    journals = LoanJournal.objects.filter(loan__loan_accno=loan_accno).order_by(
+        "journal_id"
+    )
+    serializer = LoanJournalSerializer(journals, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-    
-@api_view(['POST'])
+
+
+@api_view(["POST"])
 def add_loan_info(request):
-    loan_accno = request.data.get('loan_accno')
-    days = request.data.get('days')
+    loan_accno = request.data.get("loan_accno")
+    days = request.data.get("days")
     # print(request.data)
 
     if not loan_accno or days is None:
-        return Response({'error': 'Missing loan_accno or days'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Missing loan_accno or days"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     try:
         days = int(days)
     except ValueError:
-            return Response({'error': 'Invalid days value'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Invalid days value"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
-    last_info = LoanInfo.objects.filter(loan_accno=loan_accno).order_by('-seq').first()
+    last_info = LoanInfo.objects.filter(loan_accno=loan_accno).order_by("-seq").first()
     last_seq = last_info.seq if last_info else 0
 
     today = date.today()
@@ -293,14 +357,40 @@ def add_loan_info(request):
         date=today,
         commited_in=days,
         extended_date=extended_date,
-        loan_accno=loan_accno
-        )
+        loan_accno=loan_accno,
+    )
 
-    return Response({'message': 'Loan information added successfully'}, status=status.HTTP_201_CREATED)
+    return Response(
+        {"message": "Loan information added successfully"},
+        status=status.HTTP_201_CREATED,
+    )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_loan_info(request, loan_accno):
-    loanInfo = LoanInfo.objects.filter(loan_accno=loan_accno).order_by('-seq')
+    loanInfo = LoanInfo.objects.filter(loan_accno=loan_accno).order_by("-seq")
     serializer = LoanInfoSerializer(loanInfo, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(["PATCH"])
+def update_loan(request, loan_accno):
+    try:
+        loan = Loan.objects.get(loan_accno=loan_accno)
+    except Loan.DoesNotExist:
+        return Response({"error": "Loan not found"}, status=404)
+
+    allowed_fields = ["lock_id", "ref_mph", "details"]  
+    data_updated = False
+
+    for field in allowed_fields:
+        if field in request.data:
+            setattr(loan, field, request.data[field])
+            data_updated = True
+
+    if data_updated:                  
+        loan.save()
+        return Response(
+            {"message": "Loan updated successfully"}, status=status.HTTP_202_ACCEPTED
+        )
+    else:
+        return Response({"error": "No valid fields provided to update"}, status=400)

@@ -62,7 +62,8 @@ urlpatterns=[
     path('get-loan-journal/<str:loan_accno>/', get_loan_journal, name='get_loan_journal'),
     path('add-loan-info', add_loan_info, name='add_loan_info'),
     path('get-loan-info/<str:loan_accno>', get_loan_info, name='get_loan_info'),
-
+    path('update-customer/<str:customer_id>/', update_customer_mph, name='update_customer_mph'),
+    path('update-loan/<str:loan_accno>/', update_loan, name='update_loan'),
     
     # Purchase
     path('add-purchase/', add_purchase, name='add_purchase'),
