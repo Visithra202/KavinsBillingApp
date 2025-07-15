@@ -49,12 +49,17 @@ export default function LoanCollection() {
     if (searchTerm.trim() === '') {
       setFilteredCollections(collections);
     } else {
+
+      const terms = searchTerm.toLowerCase().split(/\s+/);
+
       const filtered = collections.filter((collect) => {
         const name = collect.customer.customer_name.toLowerCase();
         const mph = collect.customer.mph.toLowerCase();
         const accno = collect.loan_accno.toLowerCase();
-        const term = searchTerm.toLowerCase();
-        return name.includes(term) || mph.includes(term) || accno.includes(term);
+
+        return terms.every(term =>
+           name.includes(term) || mph.includes(term) || accno.includes(term)
+          );
       });
       setFilteredCollections(filtered);
     }
@@ -134,7 +139,7 @@ export default function LoanCollection() {
           />
         </div>
 
-        <div className='d-flex' style={{ fontWeight: '600', fontSize:'14px' }}>
+        <div className='d-flex' style={{ fontWeight: '600', fontSize: '14px' }}>
           <div>
             <span>Sum of total due : </span><span>{totalDueSum}</span>
           </div>
@@ -250,20 +255,20 @@ export default function LoanCollection() {
 
                       <tbody>
                         {
-                          infoLoading?(
-                            <tr><td colSpan={3}><Loader message=''/></td></tr>
-                          ):
-                         ( customerInfo.length > 0 ? (
-                            customerInfo.map((inf, index) => (
-                              <tr key={index}>
-                                <td>{inf.date}</td>
-                                <td>{inf.commited_in}</td>
-                                <td>{inf.extended_date}</td>
-                              </tr>
+                          infoLoading ? (
+                            <tr><td colSpan={3}><Loader message='' /></td></tr>
+                          ) :
+                            (customerInfo.length > 0 ? (
+                              customerInfo.map((inf, index) => (
+                                <tr key={index}>
+                                  <td>{inf.date}</td>
+                                  <td>{inf.commited_in}</td>
+                                  <td>{inf.extended_date}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr><td colSpan={3}>Info not found</td></tr>
                             ))
-                          ) : (
-                            <tr><td colSpan={3}>Info not found</td></tr>
-                          ))
                         }
                       </tbody>
                     </table>

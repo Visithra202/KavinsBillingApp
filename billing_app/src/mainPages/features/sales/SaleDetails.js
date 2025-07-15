@@ -14,6 +14,9 @@ export default function SaleDetails() {
   const [dropdown, setDropdown] = useState(false);
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
+  const [lastCashBal, setLastCashBal] = useState(0);
+  const [lastAccBal, setLastAccBal] = useState(0);
+  const [reload, setReload] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +33,18 @@ export default function SaleDetails() {
         setLoading(false);
         // console.error('Error Fetching Sales')
       })
-  }, [])
+  }, [reload])
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/get-last-balance/')
+      .then((response) => {
+        setLastCashBal(response.data.cash_bal);
+        setLastAccBal(response.data.acc_bal);
+      })
+      .catch((error) => {
+        // console.error('Error Fetching balance');
+      });
+  }, [reload])
 
   const handleChange = (e) => {
     const search = e.target.value;
@@ -40,8 +54,7 @@ export default function SaleDetails() {
 
     const filtered = sales.filter((sale) => {
       const combined = `${sale.bill_no} ${sale.customer?.customer_name || ''} ${sale.sale_date}`.toLowerCase();
-
-      return terms.some(term => combined.includes(term));
+      return terms.every(term => combined.includes(term));
     });
 
     setFilteredSales(filtered);
@@ -54,47 +67,85 @@ export default function SaleDetails() {
     setSearchTerm('');
   }
 
+  const handleReverse = () => {
+    
+    if (sale.reversed === true) {
+      alert('Sale already reversed');
+      return;
+    }
+
+    if (parseFloat(sale.payment?.cash) > parseFloat(lastCashBal)) {
+      alert('Insufficient cash balance');
+      return;
+    }
+
+    if (parseFloat(sale.payment?.account) > parseFloat(lastAccBal)) {
+      alert('Insufficient account balance');
+      return;
+    }
+
+    const cnf = window.confirm('Are you sure want to reverse?');
+
+    if (cnf) {
+      axios.post(`http://localhost:8000/reverse-sale/${sale.bill_no}/`)
+        .then(response => {
+          alert(response.data.message);
+          setReload(prev => (!prev));
+          sale.reversed = true
+        }).catch(error => {
+          alert(error?.response?.data?.message || error?.response?.data?.error || 'An unknown error occurred');
+        });
+
+    }
+  }
+
   return (
     <div className='container'>
 
       {/* Search */}
       <div className='row mt-2 mb-2 mx-0'>
-        <input id='search' className='form-control border rounded px-2 ' type='text' placeholder='Search bill' style={{ width: '300px' }}
-          value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
+        <div className='col p-0 m-0'>
+          <input id='search' className='form-control border rounded px-2 ' type='text' placeholder='Search bill' style={{ width: '300px' }}
+            value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
 
-        {dropdown && searchTerm.length > 0 && (
-          <div ref={dropdownRef} className='dropdown-menu show' style={{ maxHeight: '35%', overflowY: 'auto', width: '300px', marginTop: '50px' }}>
-            <table className='table table-hover' >
-              <thead>
-                <tr>
-                  <th>Bill no</th>
-                  <th>Customer</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <Loader message='Fetching sales' />
-                ) :
-                  (
-                    sales.length > 0 ? (
-                      filteredSales.length > 0 ? (
-                        filteredSales.map((sale, index) => (
-                          <tr key={index} onClick={() => handleDisplaySales(sale)}>
-                            <td>{sale.bill_no}</td>
-                            <td>{sale.customer?.customer_name}</td>
-                          </tr>
-                        ))
+          {dropdown && searchTerm.length > 0 && (
+            <div ref={dropdownRef} className='dropdown-menu show' style={{ maxHeight: '200px', overflowY: 'auto', width: '300px', marginTop: '50px' }}>
+              <table className='table table-hover' >
+                <thead>
+                  <tr>
+                    <th>Bill no</th>
+                    <th>Customer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <Loader message='Fetching sales' />
+                  ) :
+                    (
+                      sales.length > 0 ? (
+                        filteredSales.length > 0 ? (
+                          filteredSales.map((sale, index) => (
+                            <tr key={index} onClick={() => handleDisplaySales(sale)}>
+                              <td>{sale.bill_no}</td>
+                              <td>{sale.customer?.customer_name}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr className='text-center'><td colSpan='2'>Matches not found</td></tr>
+                        )
                       ) : (
-                        <tr className='text-center'><td colSpan='2'>Matches not found</td></tr>
+                        <tr className='text-center'><td colSpan='2'>Sales not found</td></tr>
                       )
-                    ) : (
-                      <tr className='text-center'><td colSpan='2'>Sales not found</td></tr>
-                    )
-                  )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div className='col d-flex justify-content-end'>
+          <button className='btn btn-success rounded-pill p-0 px-3' type='button' onClick={handleReverse}>Reverse</button>
+        </div>
+
       </div>
 
       {/* Invoice and Customer */}

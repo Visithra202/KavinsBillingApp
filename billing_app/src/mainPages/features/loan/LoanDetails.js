@@ -51,7 +51,7 @@ export default function LoanDetails() {
 
     const terms = term.split(/\s+/);
     const filtered = loanList.filter(l =>
-      terms.some(t =>
+      terms.every(t =>
         `${l.loan_accno} ${l.customer?.customer_name || ''} ${l.loan_date}`.toLowerCase().includes(t)
       )
     );
@@ -114,7 +114,7 @@ export default function LoanDetails() {
   };
 
   return (
-    <div className='container' style={{ height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+    <div className='container' style={{ height: 'calc(100vh - 80px)' }}>
 
       {/* Search */}
       <div className='row mt-2 mb-1 mx-0'>
@@ -182,8 +182,8 @@ export default function LoanDetails() {
         {/* Transaction History */}
         <div className='row mt-3'>
           <h6>Transaction history</h6>
-          <div className='px-3'>
-            <div style={{ maxHeight: '75%', overflowY: 'auto' }}>
+          <div className='px-3' style={{height:'calc( 100vh - 370px)', }}>
+            <div style={{ maxHeight: '100%', overflowY: 'auto' }}>
               <table className='table shadow py-2'>
                 <thead className='table-light' style={{ position: 'sticky', top: '0', zIndex: 1 }}>
                   <tr>

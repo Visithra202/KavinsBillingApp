@@ -41,7 +41,7 @@ export default function StockList() {
                 const category = item.category.toLowerCase();
                 const brand = item.brand.toLowerCase();
 
-                return terms.some(term =>
+                return terms.every(term =>
                     name.includes(term) || category.includes(term) || brand.includes(term)
                 );
             });

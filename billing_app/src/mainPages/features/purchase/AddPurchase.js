@@ -328,9 +328,12 @@ function ProductSelection({ dropdown, setDropdown, searchProduct, setSearchProdu
       return;
     }
 
-    const filtered = products.filter((prod) =>
-      (`${prod.item_name} ${prod.category} ${prod.brand}`.toLowerCase().includes(search.toLowerCase()))
-    );
+    const terms = search.toLowerCase().split(/\s+/);
+
+    const filtered = products.filter((prod) => {
+      const combined = `${prod.item_name} ${prod.category} ${prod.brand}`.toLowerCase()
+      return terms.every(term => combined.includes(term));
+    });
 
     setFilteredProducts(filtered);
     setLoading(false);
@@ -442,10 +445,13 @@ function SellerSelection({ dropdown, setDropdown, searchSeller, setSearchSeller,
       setLoading(false)
       return;
     }
+    const terms = search.toLowerCase().split(/\s+/);
 
-    const filtered = sellers.filter((sell) =>
-      (`${sell.seller_name} ${sell.seller_mph} ${sell.address}`.toLowerCase().includes(search.toLowerCase()))
-    );
+    const filtered = sellers.filter((sell) => {
+      const combined = `${sell.seller_name} ${sell.seller_mph} ${sell.address}`.toLowerCase()
+      return terms.every(term => combined.includes(term))
+    });
+
     setFilteredSellers(filtered);
     setLoading(false);
   }, 300);

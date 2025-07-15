@@ -326,10 +326,12 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
       setLoading(false);
       return;
     }
+    const terms = search.toLowerCase().split(/\s+/);
 
-    const filtered = products.filter((prod) =>
-      (`${prod.item_name} ${prod.category} ${prod.brand}`.toLowerCase().includes(search.toLowerCase()))
-    );
+    const filtered = products.filter((prod) => {
+      const combined = `${prod.item_name} ${prod.category} ${prod.brand}`.toLowerCase();
+      return terms.every(term => combined.includes(term));
+    });
 
     setFilteredProducts(filtered);
     setLoading(false);
@@ -382,7 +384,7 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
         onChange={handleProductChange} value={searchProduct} style={{ width: '250px' }} autoComplete="off" />
 
       {activeDropdown === 'product' && searchProduct.length > 0 &&
-        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', maxHeight: '35%', overflowY: 'auto' }} >
+        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', maxHeight: '200px', overflowY: 'auto' }} >
           <table className='table table-hover'>
             <thead>
               <tr>
@@ -390,6 +392,7 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
                 <th>Category</th>
                 <th>Brand</th>
                 <th>Price</th>
+                <th>Quantity</th>
               </tr>
             </thead>
             <tbody>
@@ -405,6 +408,7 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
                           <td>{product.category}</td>
                           <td>{product.brand}</td>
                           <td>{product.sale_price}</td>
+                          <td>{product.quantity}</td>
                         </tr>
                       ))
                     ) : (
@@ -457,9 +461,13 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
       return;
     }
 
-    const filtered = customers.filter((cust) =>
-      (`${cust.customer_name} ${cust.mph} ${cust.address}`.toLowerCase().includes(search.toLowerCase()))
-    );
+    const terms = search.toLowerCase().split(/\s+/);
+
+    const filtered = customers.filter((cust) =>{
+      const combined = `${cust.customer_name} ${cust.mph} ${cust.address}`.toLowerCase()
+      return terms.every(term=> combined.includes(term));
+    });
+
     setFilteredCustomers(filtered);
     setLoading(false);
   }, 300);
@@ -478,7 +486,7 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
         onChange={handleCustomerChange} value={searchCustomer} style={{ width: '250px' }} autoFocus autoComplete="off" />
 
       {activeDropdown === 'customer' && searchCustomer.length > 0 &&
-        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', height: '100px' }} >
+        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', maxHeight: '200px', overflowY: 'auto'  }} >
           <table className='table table-hover'>
             <thead>
               <tr>

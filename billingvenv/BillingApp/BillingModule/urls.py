@@ -48,6 +48,7 @@ urlpatterns=[
     path('get-sale-list/', get_sale_list, name='get_sale_list'),
     path('get-sale-items-list/', get_sale_items_list, name='get_sale_items_list'),
     path('delete-sale/<int:bill_no>/', delete_sale, name='delete_sale'),
+    path('reverse-sale/<str:bill_no>/', reverse_sale, name='reverse_sale'),
 
     # payments
     path('get-payment-list/', get_payment_list, name='get_payment_list'),

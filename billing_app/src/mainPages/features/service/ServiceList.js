@@ -50,7 +50,7 @@ export default function ServiceList() {
                 const model = ser.model_name.toLowerCase();
                 const issue_details = ser.issue_details.toLowerCase();
 
-                return terms.some(term =>
+                return terms.every(term =>
                     customer.includes(term) ||
                     brand.includes(term) ||
                     mph.includes(term) ||
@@ -233,7 +233,7 @@ export default function ServiceList() {
                                         <td>{ser.model_name}</td>
                                         <td>{ser.password}</td>
                                         <td>{ser.issue_details}</td>
-                                        <td className='text-center d-flex justify-content-between'>
+                                        <td className='text-center d-flex justify-content-center'>
                                             {Number(ser.paid_amt) === 0 ? <button className='btn btn-primary rounded-pill px-3 py-1 mx-1' onClick={() => handlePay(ser)}>Pay</button> : <button className='btn btn-secondary rounded-pill px-3 py-1 mx-1' disabled>Paid</button>}
                                             <button className='btn btn-success rounded-pill px-3 py-1 mx-1' onClick={() => handleReceive(ser)}>Receive</button>
                                         </td>
@@ -288,7 +288,7 @@ export default function ServiceList() {
                             <div className="modal-body">
                                 <div className="mb-3">
                                     <label className="form-label">Receivable amount</label>
-                                    <input type="text" className="form-control" value={selectedReceiveService.receivable_amt} disabled />
+                                    <input type="text" className="form-control" value={selectedReceiveService.balance} disabled />
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Received amount</label>

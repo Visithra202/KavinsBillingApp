@@ -112,7 +112,7 @@ class SaleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sale
-        fields = ['bill_no', 'sale_date', 'customer', 'payment', 'total_amount', 'discount', 'sale_products', 'balance', 'paid_amount', 'income']
+        fields = ['bill_no', 'sale_date', 'customer', 'payment', 'total_amount', 'discount', 'sale_products', 'balance', 'paid_amount', 'income', 'reversed']
 
     @transaction.atomic()
     def create(self, validated_data):

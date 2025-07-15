@@ -99,9 +99,9 @@ export default function CreateLoan() {
             total_payment: loanFormData.total_payment,
             advance_amt: loanFormData.advance_amt,
             selling_price: loanFormData.sell_prc,
-            payment_amount: loanFormData.payment_amount?loanFormData.payment_amount:0,
-            loan_amount: loanFormData.loan_amount?loanFormData.loan_amount:0,
-            interest: loanFormData.interest?loanFormData.interest:0,
+            payment_amount: loanFormData.payment_amount ? loanFormData.payment_amount : 0,
+            loan_amount: loanFormData.loan_amount ? loanFormData.loan_amount : 0,
+            interest: loanFormData.interest ? loanFormData.interest : 0,
             payment_freq: loanFormData.payment_frequency,
             term: loanFormData.term,
             emi_amount: loanFormData.emi_amount,
@@ -114,7 +114,7 @@ export default function CreateLoan() {
             lock_id: lockId,
             ref_mph: refContact,
             ln_typ: loanType,
-            loanamt_bal: loanFormData.loan_amount?loanFormData.loan_amount:0,
+            loanamt_bal: loanFormData.loan_amount ? loanFormData.loan_amount : 0,
             details: loanFormData.details
         }
 
@@ -123,7 +123,7 @@ export default function CreateLoan() {
                 headers: {
                     "Content-Type": "application/json"
                 }
-            }) 
+            })
             alert('Loan Created successfully')
             handleReset();
         } catch (error) {
@@ -149,7 +149,7 @@ export default function CreateLoan() {
             next_payment_date: '',
             advance_bal: '',
             advance_paydate: '',
-            details:''
+            details: ''
         });
         setLockId('');
         setRefContact('');
@@ -194,7 +194,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (!["payment_frequency", "next_payment_date", "advance_paydate","details"].includes(name) && !/^\d*$/.test(value)) {
+        if (!["payment_frequency", "next_payment_date", "advance_paydate", "details"].includes(name) && !/^\d*$/.test(value)) {
             return;
         }
 
@@ -283,7 +283,7 @@ function LoanCreation({ loanFormData, setLoanFormData }) {
                 <div className="col">
                     <label htmlFor='advance_paydate' className="form-label">Advance pay date</label>
                     <input id='advance_paydate' type="date" name="advance_paydate" className="form-control" min={today}
-                        autoComplete="off" value={loanFormData.advance_paydate || ''} onChange={handleChange} disabled={!loanFormData.advance_bal||Number(loanFormData.advance_bal)<=0}/>
+                        autoComplete="off" value={loanFormData.advance_paydate || ''} onChange={handleChange} disabled={!loanFormData.advance_bal || Number(loanFormData.advance_bal) <= 0} />
                 </div>
                 <div className="col">
                     <label htmlFor='details' className="form-label">Details</label>
@@ -326,10 +326,13 @@ function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setR
             return;
         }
 
+        const terms = search.toLowerCase().split(/\s+/);
+
         if (customers?.length > 0) {
-            const filtered = customers.filter((cust) =>
-                (`${cust.customer_name} ${cust.mph}`.toLowerCase().includes(search))
-            );
+            const filtered = customers.filter((cust) => {
+                const combined = `${cust.customer_name} ${cust.mph}`.toLowerCase();
+                return terms.every(term => combined.includes(term));
+            });
 
             setFilteredCustomers(filtered);
         }

@@ -41,7 +41,7 @@ export default function PurchaseDetails() {
     const filtered = purchases.filter((purch) => {
       const combined = `${purch.purchase_id} ${purch.seller?.seller_name || ''} ${purch.purchase_date}`.toLowerCase();
 
-      return terms.some(term => combined.includes(term));
+      return terms.every(term => combined.includes(term));
     });
 
     setFilteredPurchase(filtered);

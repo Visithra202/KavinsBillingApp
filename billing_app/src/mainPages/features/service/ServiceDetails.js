@@ -48,7 +48,7 @@ export default function ServiceDetails() {
         const filtered = serviceList.filter((serviceData) => {
             const combinedString = `${serviceData.customer} ${serviceData.mph} ${serviceData.brand} ${serviceData.date}`.toLowerCase();
 
-            return terms.some(term => combinedString.includes(term));
+            return terms.every(term => combinedString.includes(term));
         });
 
         setFilteredService(filtered);

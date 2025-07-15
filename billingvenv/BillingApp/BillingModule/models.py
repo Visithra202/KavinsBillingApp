@@ -91,6 +91,7 @@ class Sale(models.Model):
     sale_products = models.ManyToManyField("Item", through="SaleItem")
     paid_amount=models.DecimalField(max_digits=10, decimal_places=2)
     income=models.DecimalField(max_digits=10, decimal_places=2)
+    reversed = models.BooleanField(default = False)
 
     def __str__(self):
         return f"Sale {self.bill_no} - Total: {self.total_amount}"
