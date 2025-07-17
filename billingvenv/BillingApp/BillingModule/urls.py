@@ -65,6 +65,7 @@ urlpatterns=[
     path('get-loan-info/<str:loan_accno>', get_loan_info, name='get_loan_info'),
     path('update-customer/<str:customer_id>/', update_customer_mph, name='update_customer_mph'),
     path('update-loan/<str:loan_accno>/', update_loan, name='update_loan'),
+    path('lock-mobile/<str:loan_accno>', lock_mobile, name='lock_mobile'),
     
     # Purchase
     path('add-purchase/', add_purchase, name='add_purchase'),

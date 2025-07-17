@@ -68,7 +68,7 @@ export default function SaleDetails() {
   }
 
   const handleReverse = () => {
-    
+
     if (sale.reversed === true) {
       alert('Sale already reversed');
       return;
@@ -143,7 +143,7 @@ export default function SaleDetails() {
           )}
         </div>
         <div className='col d-flex justify-content-end'>
-          <button className='btn btn-success rounded-pill p-0 px-3' type='button' onClick={handleReverse}>Reverse</button>
+          <button className='btn btn-success rounded-pill p-0 px-3' type='button' onClick={handleReverse} disabled={!sale.bill_no || sale.reversed}>{sale.reversed ? 'Reversed' : 'Reverse'}</button>
         </div>
 
       </div>

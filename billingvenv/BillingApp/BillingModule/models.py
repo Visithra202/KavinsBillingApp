@@ -157,10 +157,8 @@ class Loan(models.Model):
     advance_paydate=models.DateField(null=True, blank=True)
     lock_id=models.CharField(max_length=30)
     ref_mph=models.CharField(max_length=255, null=True, blank=True)
-    prinRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    intRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    penRcvd=models.DecimalField(max_digits=10, decimal_places=2, default=0)
     details = models.TextField(null=True, blank=True)
+    lock_sts = models.BooleanField(default=False)
 
     def __str__(self):
         return self.loan_accno
@@ -285,6 +283,6 @@ class LoanInfo(models.Model):
     id = models.AutoField(primary_key=True)
     seq = models.IntegerField()
     date = models.DateField()
-    commited_in = models.IntegerField()
+    committed_in = models.IntegerField()
     extended_date = models.DateField()
-    loan_accno = models.CharField(max_length=15)
+    loan_accno = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='loan_infos')

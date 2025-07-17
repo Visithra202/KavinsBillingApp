@@ -21,6 +21,8 @@ export default function LoanCollection() {
   const [customerInfo, setCustomerInfo] = useState({});
   const [infoLoading, setInfoLoading] = useState(false);
 
+  const today = new Date().toISOString().split('T')[0];
+
   useEffect(() => {
     axios.get('http://localhost:8000/get-collection-list/')
       .then((response) => {
@@ -54,12 +56,12 @@ export default function LoanCollection() {
 
       const filtered = collections.filter((collect) => {
         const name = collect.customer.customer_name.toLowerCase();
-        const mph = collect.customer.mph.toLowerCase();
+        const mph = collect.customer.mph;
         const accno = collect.loan_accno.toLowerCase();
 
         return terms.every(term =>
-           name.includes(term) || mph.includes(term) || accno.includes(term)
-          );
+          name.includes(term) || mph.includes(term) || accno.includes(term)
+        );
       });
       setFilteredCollections(filtered);
     }
@@ -124,6 +126,33 @@ export default function LoanCollection() {
     setDays(val);
   }
 
+  const [lockingLoanId, setLockingLoanId] = useState(null);
+
+  const handleLock = async (loan) => {
+    setLockingLoanId(loan.loan_accno);
+    try {
+      const response = await axios.post(`http://localhost:8000/lock-mobile/${loan.loan_accno}`);
+      const updatedLockStatus = response.data.lock_sts;
+
+      setCollections(prevList => prevList.map(item =>
+        item.loan_accno === loan.loan_accno
+          ? { ...item, lock_sts: updatedLockStatus }
+          : item
+      ));
+      setFilteredCollections(prevList => prevList.map(item =>
+        item.loan_accno === loan.loan_accno
+          ? { ...item, lock_sts: updatedLockStatus }
+          : item
+      ));
+    } catch (error) {
+      alert('Error in lock or unlock: ' + error.message);
+    } finally {
+      setLockingLoanId(null);
+    }
+  };
+
+
+
   return (
     <div className='container' style={{ height: 'calc(100vh - 65px)' }}>
       <div className='d-flex justify-content-between align-items-center'>
@@ -172,6 +201,7 @@ export default function LoanCollection() {
               <th className='text-end'>Late fee</th>
               <th className='text-end'>Total due</th>
               <th className='text-center'>Payment</th>
+              <th className='text-center'>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -180,28 +210,40 @@ export default function LoanCollection() {
                 <td colSpan='9'>Loading...</td>
               </tr>
             ) : filteredCollections.length > 0 ? (
-              filteredCollections.map((collect, index) => (
-                <tr key={index}>
-                  <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => handleNavigate(collect.loan_accno)}>{collect.loan_accno}</td>
-                  <td>{collect.customer.customer_name}</td>
-                  <td>{collect.customer.mph}</td>
-                  <td>{collect.frequency}</td>
-                  <td>{collect.od_days}</td>
-                  <td className='text-end'>{collect.due_amount}</td>
-                  <td className='text-end'>{collect.late_fee}</td>
-                  <td className='text-end'>
-                    {(parseFloat(collect.due_amount) + parseFloat(collect.late_fee)).toFixed(2)}
-                  </td>
-                  <td className='text-center' style={{ cursor: 'pointer' }}>
-                    <button className='btn py-0 px-2 border-0' type='button' title='Collect'
-                      onClick={() => navigate('/addLoanPayment', { state: { collect } })}><i className="bi bi-cash-stack fs-5 text-primary"></i>
+              filteredCollections.map((collect, index) => {
+                const rowClass = collect.od_days > 10 && collect.extended_date && collect.extended_date < today
+                  ? 'table-warning'
+                  : collect.od_days > 10
+                    ? 'table-danger'
+                    : '';
+                return (
+                  <tr key={index} className={rowClass}>
+                    <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => handleNavigate(collect.loan_accno)}>{collect.loan_accno}</td>
+                    <td>{collect.customer.customer_name}</td>
+                    <td>{collect.customer.mph}</td>
+                    <td>{collect.frequency}</td>
+                    <td>{collect.od_days}</td>
+                    <td className='text-end'>{collect.due_amount}</td>
+                    <td className='text-end'>{collect.late_fee}</td>
+                    <td className='text-end'>
+                      {(parseFloat(collect.due_amount) + parseFloat(collect.late_fee)).toFixed(2)}
+                    </td>
+                    <td className='text-center' style={{ cursor: 'pointer' }}>
+                      <button className='btn py-0 px-2 border-0' type='button' title='Collect'
+                        onClick={() => navigate('/addLoanPayment', { state: { collect } })}><i className="bi bi-cash-stack fs-5 text-primary"></i>
+                      </button>
+                      <button className='btn py-0 px-2 border-0' type='button' title='Info'
+                        onClick={() => handleInfo(collect)} ><i className="bi bi-info-circle-fill text-success fs-5 "></i>
+                      </button>
+                    </td>
+                    <td className='text-center'><button className='btn p-0 m-0 border-0' type='button' onClick={() => handleLock(collect)} disabled={lockingLoanId === collect.loan_accno}>
+                      {collect.lock_sts
+                        ? <i className="bi bi-lock-fill"></i>
+                        : <i className="bi bi-unlock-fill"></i>}
                     </button>
-                    <button className='btn py-0 px-2 border-0' type='button' title='Info'
-                      onClick={() => handleInfo(collect)} ><i className="bi bi-info-circle-fill text-success fs-5 "></i>
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>)
+              })
             ) : (
               <tr className='text-center'>
                 <td colSpan='9'>Collection not found</td>

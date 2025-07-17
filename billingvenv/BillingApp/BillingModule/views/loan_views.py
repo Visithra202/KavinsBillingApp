@@ -48,7 +48,7 @@ def get_collection_list(request):
     loan_bills = LoanBill.objects.filter(
         bill_date__lte=today, paid_date__isnull=True
     ).order_by("-bill_date")
-
+    
     overdue_loans_dict = defaultdict(
         lambda: {
             "due_amount": Decimal("0.00"),
@@ -57,6 +57,7 @@ def get_collection_list(request):
             "loan_accno": "",
             "payment_freq": "",
             "od_days": 0,
+            "lock_sts":0
         }
     )
 
@@ -65,6 +66,18 @@ def get_collection_list(request):
     for bill in loan_bills:
         loan = bill.loan_acc
         acc_no = loan.loan_accno
+
+        if "extended_date" not in overdue_loans_dict[acc_no]:
+            latest_info = (
+                LoanInfo.objects.filter(loan_accno=acc_no)
+                .order_by("-seq")
+                .values("extended_date")
+                .first()
+            )
+            overdue_loans_dict[acc_no]["extended_date"] = (
+                latest_info["extended_date"].isoformat() if latest_info else None
+            )
+
         totalDueSum += bill.total_due - bill.paid_amount
         # Only set customer info once
         if overdue_loans_dict[acc_no]["customer"] is None:
@@ -76,6 +89,7 @@ def get_collection_list(request):
             overdue_loans_dict[acc_no]["payment_freq"] = (
                 "M" if loan.payment_freq.startswith("M") else "W"
             )
+            overdue_loans_dict[acc_no]["lock_sts"] = loan.lock_sts 
 
             # OD Days Calculation
             last_paid_bill = (
@@ -104,6 +118,8 @@ def get_collection_list(request):
             "late_fee": str(data["late_fee"]),
             "frequency": data["payment_freq"],
             "od_days": data["od_days"],
+            "extended_date": data.get("extended_date"), 
+            "lock_sts": data.get("lock_sts", 0),
         }
         for acc_no, data in overdue_loans_dict.items()
     ]
@@ -350,7 +366,7 @@ def add_loan_info(request):
     last_seq = last_info.seq if last_info else 0
 
     today = date.today()
-    extended_date = today + timedelta(days=days)
+    extended_date = today + timedelta(days=days+1)
 
     new_info = LoanInfo.objects.create(
         seq=last_seq + 1,
@@ -394,3 +410,14 @@ def update_loan(request, loan_accno):
         )
     else:
         return Response({"error": "No valid fields provided to update"}, status=400)
+
+
+@api_view(['POST'])
+def lock_mobile(request, loan_accno):
+    try:
+        loan = Loan.objects.get(loan_accno=loan_accno)
+        loan.lock_sts = not loan.lock_sts
+        loan.save()
+        return Response({'lock_sts': loan.lock_sts})
+    except Loan.DoesNotExist:
+        return Response({'error': 'Loan not found'}, status=404)
