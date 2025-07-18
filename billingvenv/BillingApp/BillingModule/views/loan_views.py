@@ -138,6 +138,7 @@ def get_collection_list(request):
     )
 
 
+
 @api_view(["GET"])
 def get_loan_bill(request, loan_accno):
     today = get_today()

@@ -94,30 +94,49 @@ export default function LoanCollection() {
 
 
   const handleInfoSubmit = async () => {
-
     if (Number(days) <= 0) {
-      alert('Enter valid days')
+      alert('Enter valid days');
       return;
     }
 
     try {
       setInfoLoad(true);
-      await axios.post('http://localhost:8000/add-loan-info', {
+      const response = await axios.post('http://localhost:8000/add-loan-info', {
         loan_accno: selectedLoan.loan_accno,
         days: Number(days)
-      }).then(response => {
-        alert(response.data.message);
-      })
+      });
+
+      const newDate = new Date();
+      newDate.setDate(newDate.getDate() + Number(days));
+      const formattedDate = newDate.toISOString().split('T')[0];
+
+      setCollections(prev =>
+        prev.map(loan =>
+          loan.loan_accno === selectedLoan.loan_accno
+            ? { ...loan, extended_date: formattedDate }
+            : loan
+        )
+      );
+
+      setFilteredCollections(prev =>
+        prev.map(loan =>
+          loan.loan_accno === selectedLoan.loan_accno
+            ? { ...loan, extended_date: formattedDate }
+            : loan
+        )
+      );
+
+      alert(response.data.message);
       setDays('');
       setSelectedLoan({});
       setInfo(false);
     } catch {
       alert('Error adding information');
-    }
-    finally {
+    } finally {
       setInfoLoad(false);
     }
-  }
+  };
+
 
   const handleChangeDays = (e) => {
     const val = e.target.value;
@@ -200,8 +219,7 @@ export default function LoanCollection() {
               <th className='text-end'>Due amount</th>
               <th className='text-end'>Late fee</th>
               <th className='text-end'>Total due</th>
-              <th className='text-center'>Payment</th>
-              <th className='text-center'>Status</th>
+              <th className='text-center'>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -211,7 +229,7 @@ export default function LoanCollection() {
               </tr>
             ) : filteredCollections.length > 0 ? (
               filteredCollections.map((collect, index) => {
-                const rowClass = collect.od_days > 10 && collect.extended_date && collect.extended_date < today
+                const rowClass = collect.od_days > 10 && collect.extended_date && today < collect.extended_date
                   ? 'table-warning'
                   : collect.od_days > 10
                     ? 'table-danger'
@@ -235,13 +253,13 @@ export default function LoanCollection() {
                       <button className='btn py-0 px-2 border-0' type='button' title='Info'
                         onClick={() => handleInfo(collect)} ><i className="bi bi-info-circle-fill text-success fs-5 "></i>
                       </button>
+                      <button className='btn px-2 py-0 m-0 border-0' type='button' onClick={() => handleLock(collect)} disabled={lockingLoanId === collect.loan_accno}>
+                        {collect.lock_sts
+                          ? <i className="bi bi-lock-fill text-danger fs-5"></i>
+                          : <i className="bi bi-unlock-fill fs-5"></i>}
+                      </button>
                     </td>
-                    <td className='text-center'><button className='btn p-0 m-0 border-0' type='button' onClick={() => handleLock(collect)} disabled={lockingLoanId === collect.loan_accno}>
-                      {collect.lock_sts
-                        ? <i className="bi bi-lock-fill"></i>
-                        : <i className="bi bi-unlock-fill"></i>}
-                    </button>
-                    </td>
+
                   </tr>)
               })
             ) : (
