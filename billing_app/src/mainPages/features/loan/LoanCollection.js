@@ -271,7 +271,7 @@ export default function LoanCollection() {
                       <input id='loan_id' type='text' className="form-control" value={selectedLoan.customer.customer_name} disabled />
                     </div>
                     <div className="mb-3">
-                      <label htmlFor='days' className="form-label">Commited in (days)</label>
+                      <label htmlFor='days' className="form-label">Committed in (days)</label>
                       <input id='days' type="number" className="form-control" value={days} onChange={handleChangeDays} required onKeyDown={(e) => {
                         if (['e', 'E', '+', '-', '.'].includes(e.key)) {
                           e.preventDefault();
@@ -304,7 +304,7 @@ export default function LoanCollection() {
                               customerInfo.map((inf, index) => (
                                 <tr key={index}>
                                   <td>{inf.date}</td>
-                                  <td>{inf.commited_in}</td>
+                                  <td>{inf.committed_in}</td>
                                   <td>{inf.extended_date}</td>
                                 </tr>
                               ))

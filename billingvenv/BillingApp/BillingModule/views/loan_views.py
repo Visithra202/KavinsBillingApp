@@ -69,7 +69,7 @@ def get_collection_list(request):
 
         if "extended_date" not in overdue_loans_dict[acc_no]:
             latest_info = (
-                LoanInfo.objects.filter(loan_accno=acc_no)
+                LoanInfo.objects.filter(loan_accno=loan)
                 .order_by("-seq")
                 .values("extended_date")
                 .first()
@@ -185,7 +185,7 @@ def add_loan_payment(request):
     loan.bal_amount = loan.bal_amount - (paid_amount + discount)
     loan.save()
 
-    LoanInfo.objects.filter(loan_accno=loan_accno).delete()
+    LoanInfo.objects.filter(loan_accno=loan).delete()
 
     loan_bills = LoanBill.objects.filter(
         loan_acc__loan_accno=loan_accno, paid_date__isnull=True
@@ -329,7 +329,7 @@ def add_loan_payment(request):
         )
 
     if loan.bal_amount <= 0:
-        LoanInfo.objects.filter(loan_accno=loan.loan_accno).delete()
+        LoanInfo.objects.filter(loan_accno=loan).delete()
 
     return Response({"message": "Payment added successfully"})
 
@@ -348,6 +348,7 @@ def get_loan_journal(request, loan_accno):
 def add_loan_info(request):
     loan_accno = request.data.get("loan_accno")
     days = request.data.get("days")
+    loan = Loan.objects.get(loan_accno = loan_accno)
     # print(request.data)
 
     if not loan_accno or days is None:
@@ -362,7 +363,7 @@ def add_loan_info(request):
             {"error": "Invalid days value"}, status=status.HTTP_400_BAD_REQUEST
         )
 
-    last_info = LoanInfo.objects.filter(loan_accno=loan_accno).order_by("-seq").first()
+    last_info = LoanInfo.objects.filter(loan_accno=loan).order_by("-seq").first()
     last_seq = last_info.seq if last_info else 0
 
     today = date.today()
@@ -371,9 +372,9 @@ def add_loan_info(request):
     new_info = LoanInfo.objects.create(
         seq=last_seq + 1,
         date=today,
-        commited_in=days,
+        committed_in=days,
         extended_date=extended_date,
-        loan_accno=loan_accno,
+        loan_accno=loan,
     )
 
     return Response(
@@ -384,7 +385,8 @@ def add_loan_info(request):
 
 @api_view(["GET"])
 def get_loan_info(request, loan_accno):
-    loanInfo = LoanInfo.objects.filter(loan_accno=loan_accno).order_by("-seq")
+    loan = Loan.objects.get(loan_accno = loan_accno)
+    loanInfo = LoanInfo.objects.filter(loan_accno=loan).order_by("-seq")
     serializer = LoanInfoSerializer(loanInfo, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
