@@ -273,7 +273,7 @@ function SaleProducts({ selectedProducts, setSelectedProducts }) {
             selectedProducts.map((item, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
-                <td>{item.product.brand + " " + item.product.category + " " + item.product.item_name}</td>
+                <td>{item.product.item_name}</td>
                 <td className='text-end'>{item.unit_price}</td>
                 <td className='text-end'>
                   <input type="text" value={item.sale_quantity} className="text-end border rounded pe-2"
@@ -328,10 +328,12 @@ function ProductSelection({ activeDropdown, setActiveDropdown, searchProduct, se
     }
     const terms = search.toLowerCase().split(/\s+/);
 
-    const filtered = products.filter((prod) => {
-      const combined = `${prod.item_name} ${prod.category} ${prod.brand}`.toLowerCase();
-      return terms.every(term => combined.includes(term));
-    });
+    const filtered = products
+      .filter(prod => prod.quantity > 0)
+      .filter(prod => {
+        const combined = `${prod.item_name} ${prod.category} ${prod.brand}`.toLowerCase();
+        return terms.every(term => combined.includes(term));
+      });
 
     setFilteredProducts(filtered);
     setLoading(false);
@@ -463,9 +465,9 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
 
     const terms = search.toLowerCase().split(/\s+/);
 
-    const filtered = customers.filter((cust) =>{
+    const filtered = customers.filter((cust) => {
       const combined = `${cust.customer_name} ${cust.mph} ${cust.address}`.toLowerCase()
-      return terms.every(term=> combined.includes(term));
+      return terms.every(term => combined.includes(term));
     });
 
     setFilteredCustomers(filtered);
@@ -486,7 +488,7 @@ function CustomerSelection({ activeDropdown, setActiveDropdown, searchCustomer, 
         onChange={handleCustomerChange} value={searchCustomer} style={{ width: '250px' }} autoFocus autoComplete="off" />
 
       {activeDropdown === 'customer' && searchCustomer.length > 0 &&
-        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', maxHeight: '200px', overflowY: 'auto'  }} >
+        <div ref={dropdownRef} className='dropdown-menu show' style={{ marginTop: '70px', maxHeight: '200px', overflowY: 'auto' }} >
           <table className='table table-hover'>
             <thead>
               <tr>

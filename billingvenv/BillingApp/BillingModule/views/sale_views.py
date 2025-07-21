@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.http import JsonResponse
 from django.db import transaction
-from rest_framework.pagination import PageNumberPagination
 
 @api_view(['GET'])
 def get_sale_bill_no(request):
@@ -40,19 +39,9 @@ def add_sale(request):
 
 @api_view(['GET'])
 def get_sale_list(request):
-
-    sales = (
-        Sale.objects
-        .select_related('customer', 'payment')
-        .prefetch_related('sale_products')
-        .order_by('-sale_seq')
-    )
-
-    paginator = PageNumberPagination()
-    paginator.page_size = 12
-    result_page = paginator.paginate_queryset(sales, request)
-    serializer = SaleSerializer(result_page, many=True)
-    return paginator.get_paginated_response(serializer.data)
+    sales=Sale.objects.all().order_by('-sale_seq')
+    serializer = SaleSerializer(sales, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
 def delete_sale(request, bill_no):

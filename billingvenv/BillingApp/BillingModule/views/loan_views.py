@@ -14,7 +14,7 @@ from decimal import Decimal
 from django.db import transaction
 from collections import defaultdict
 from django.utils import timezone
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, ExpressionWrapper, F, DecimalField, Q
 from datetime import date, timedelta, datetime
 from rest_framework.pagination import PageNumberPagination
 
@@ -38,11 +38,8 @@ def create_loan(request):
 @api_view(["GET"])
 def get_loan_list(request):
     loanList = Loan.objects.all().order_by("-loan_date")
-    paginator = PageNumberPagination()
-    paginator.page_size = 12
-    result_page = paginator.paginate_queryset(loanList, request)
-    serializer = LoanSerializer(result_page, many=True)
-    return paginator.get_paginated_response(serializer.data)
+    serializer = LoanSerializer(loanList, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # @api_view(["GET"])
@@ -435,6 +432,7 @@ def lock_mobile(request, loan_accno):
         return Response({"error": "Loan not found"}, status=404)
 
 
+
 @api_view(["GET"])
 @transaction.atomic
 def get_collection_list(request):
@@ -444,6 +442,14 @@ def get_collection_list(request):
         bill_date__lte=today,
         paid_date__isnull=True
     ).order_by("-bill_date")
+
+    search_term = request.GET.get("search", "")
+    if search_term:
+        loan_bills = loan_bills.filter(
+            Q(loan_acc__loan_accno__icontains=search_term) |
+            Q(loan_acc__customer__customer_name__icontains=search_term) |
+            Q(loan_acc__customer__mph__icontains=search_term)
+        )
 
     overdue_loans_dict = defaultdict(
         lambda: {
@@ -516,7 +522,7 @@ def get_collection_list(request):
         }
         for acc_no, data in overdue_loans_dict.items()
     ]
-
+    
     paginator = PageNumberPagination()
     paginator.page_size = 10
     result_page = paginator.paginate_queryset(overdue_loans, request)
@@ -547,3 +553,4 @@ def get_collection_data(request):
     totalCount = loan_bills.values('loan_acc').distinct().count()
 
     return Response({"totalDueSum": total_due_sum, "todayCollection": collected, "totalCount" : totalCount})
+

@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader';
+import { debounce } from 'lodash';
 
 export default function LoanCollection() {
 
@@ -21,18 +22,35 @@ export default function LoanCollection() {
   const [customerInfo, setCustomerInfo] = useState({});
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/get-collection-list/?page=${page}`)
-      .then((response) => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:8000/get-collection-list/`, {
+          params: {
+            page,
+            search: searchTerm
+          }
+        });
+
         const data = response.data.results;
         setCollections(data);
         setTotalPages(Math.ceil(response.data.count / 10));
+      } catch (error) {
+        console.error('Error fetching collections:', error);
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        // console.error('Error Fetching collections');
-        setLoading(false);
-      });
-  }, [page])
+      }
+    };
+
+    const debouncedFetch = debounce(fetchData, 700); // 500ms debounce
+
+    debouncedFetch();
+
+    return () => {
+      debouncedFetch.cancel(); // Cleanup on unmount
+    };
+  }, [page, searchTerm]);
+
 
 
   const handleInfo = async (collect) => {
@@ -92,6 +110,7 @@ function CollectionSummary({ collections, searchTerm, setSearchTerm, page, setPa
 
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
+    setPage(1);
   };
 
   return (
