@@ -11,16 +11,16 @@ import math
 from dateutil.relativedelta import relativedelta
 
 
-
 class CompdetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Compdet
-        fields = ['logo_path']
+        fields = ["logo_path"]
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = "__all__"
 
     def validate_category_name(self, value):
         if Category.objects.filter(category_name=value).exists():
@@ -31,7 +31,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
-        fields = '__all__'
+        fields = "__all__"
 
     def validate_brand_name(self, value):
         if Brand.objects.filter(brand_name=value).exists():
@@ -42,37 +42,54 @@ class BrandSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['item_id', 'item_name', 'category', 'brand', 'quantity', 'min_stock', 'purchase_price', 'sale_price', 'tax_option', 'mrp', 'discount_type', 'discount']
+        fields = [
+            "item_id",
+            "item_name",
+            "category",
+            "brand",
+            "quantity",
+            "min_stock",
+            "purchase_price",
+            "sale_price",
+            "tax_option",
+            "mrp",
+            "discount_type",
+            "discount",
+        ]
 
     def validate(self, data):
-        if data['sale_price'] > data['mrp']:
+        if data["sale_price"] > data["mrp"]:
             raise serializers.ValidationError("Sale price cannot be greater than MRP.")
-        
-        if data['sale_price']< data['purchase_price']:
-            raise serializers.ValidationError('Purchase price cannot be greater than sale price.')
+
+        if data["sale_price"] < data["purchase_price"]:
+            raise serializers.ValidationError(
+                "Purchase price cannot be greater than sale price."
+            )
         return data
-    
+
+
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = '__all__'
+        fields = "__all__"
+
 
 class SaleBillSerializer(serializers.ModelSerializer):
     class Meta:
         model = SaleBill
-        fields='__all__'
+        fields = "__all__"
+
 
 class PurchaseBillSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseBill
-        fields='__all__'
+        fields = "__all__"
 
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
-        fields = '__all__'
-
+        fields = "__all__"
 
 
 class TransactionItemSerializer(serializers.ModelSerializer):
@@ -80,62 +97,79 @@ class TransactionItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SaleItem  # Dummy model for inheritance
-        fields = ['product', 'item_seq', 'quantity', 'unit_price', 'total_price']
+        fields = ["product", "item_seq", "quantity", "unit_price", "total_price"]
+
 
 class SaleItemSerializer(TransactionItemSerializer):
-    sale = serializers.PrimaryKeyRelatedField(read_only=True)  
-    
+    sale = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta(TransactionItemSerializer.Meta):
         model = SaleItem
-        fields = TransactionItemSerializer.Meta.fields + ['sale']
-        extra_kwargs = {'sale': {'required': False}}
-        
+        fields = TransactionItemSerializer.Meta.fields + ["sale"]
+        extra_kwargs = {"sale": {"required": False}}
+
+
 class PurchaseItemSerializer(TransactionItemSerializer):
-    purchase = serializers.PrimaryKeyRelatedField(read_only=True)  
-    
+    purchase = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta(TransactionItemSerializer.Meta):
         model = PurchaseItem
-        fields = TransactionItemSerializer.Meta.fields + ['purchase']
-        extra_kwargs = {'purchase': {'required': False}}
-        
+        fields = TransactionItemSerializer.Meta.fields + ["purchase"]
+        extra_kwargs = {"purchase": {"required": False}}
+
 
 class PurchasePaymentSerializer(serializers.ModelSerializer):
     class Meta:
-        model=PurchasePayment
-        fields='__all__'
-        
+        model = PurchasePayment
+        fields = "__all__"
+
+
 class SaleSerializer(serializers.ModelSerializer):
-    sale_products = SaleItemSerializer(source='sale_items', many=True)
+    sale_products = SaleItemSerializer(source="sale_items", many=True)
     payment = PaymentSerializer()
     customer = CustomerSerializer()
     income = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Sale
-        fields = ['bill_no', 'sale_date', 'customer', 'payment', 'total_amount', 'discount', 'sale_products', 'balance', 'paid_amount', 'income', 'reversed']
+        fields = [
+            "bill_no",
+            "sale_date",
+            "customer",
+            "payment",
+            "total_amount",
+            "discount",
+            "sale_products",
+            "balance",
+            "paid_amount",
+            "income",
+            "reversed",
+        ]
 
     @transaction.atomic()
     def create(self, validated_data):
-        customer_data = validated_data.pop('customer')
-        payment_data = validated_data.pop('payment')
-        sale_items_data = validated_data.pop('sale_items', [])
+        customer_data = validated_data.pop("customer")
+        payment_data = validated_data.pop("payment")
+        sale_items_data = validated_data.pop("sale_items", [])
 
         customer, _ = Customer.objects.get_or_create(**customer_data)
         payment = Payment.objects.create(**payment_data)
 
-        bill_no = validated_data.get('bill_no')
+        bill_no = validated_data.get("bill_no")
         current_year = datetime.now().year
         bill, created = SaleBill.objects.get_or_create(
-            bill_year=current_year,
-            defaults={'bill_seq': 1}
+            bill_year=current_year, defaults={"bill_seq": 1}
         )
         if not created:
             bill.bill_seq += 1
             bill.save()
 
-
         current_year = datetime.now().year
-        latest_sale = Sale.objects.filter(sale_date__year=current_year).order_by('-sale_seq').first()
+        latest_sale = (
+            Sale.objects.filter(sale_date__year=current_year)
+            .order_by("-sale_seq")
+            .first()
+        )
         sale_seq = (latest_sale.sale_seq if latest_sale else 0) + 1
 
         sale = Sale.objects.create(
@@ -143,92 +177,113 @@ class SaleSerializer(serializers.ModelSerializer):
             payment=payment,
             sale_seq=sale_seq,
             income=0,
-            **validated_data
+            **validated_data,
         )
 
         income = 0
-        income_type=''
+        income_type = ""
 
         for index, item_data in enumerate(sale_items_data):
             product_data = item_data.pop("product")
-            category=product_data['category']
-            income_type='Mobile' if category == 'Mobile' else 'Accessories'
+            category = product_data["category"]
+            income_type = "Mobile" if category == "Mobile" else "Accessories"
 
             try:
                 item = Item.objects.get(
-                    item_name=product_data['item_name'],
-                    category=product_data['category'],
-                    brand=product_data['brand'],
-                    sale_price=product_data['sale_price'],
-                    purchase_price=product_data['purchase_price']
+                    item_name=product_data["item_name"],
+                    category=product_data["category"],
+                    brand=product_data["brand"],
+                    sale_price=product_data["sale_price"],
+                    purchase_price=product_data["purchase_price"],
                 )
 
-                if item.quantity >= item_data['quantity']:
-                    item.quantity -= item_data['quantity']
+                if item.quantity >= item_data["quantity"]:
+                    item.quantity -= item_data["quantity"]
                     item.save()
 
                     SaleItem.objects.create(
-                        sale=sale,
-                        item_seq=index + 1,
-                        product=item,
-                        **item_data
+                        sale=sale, item_seq=index + 1, product=item, **item_data
                     )
 
-                    income += (item.sale_price - item.purchase_price) * item_data['quantity']
+                    income += (item.sale_price - item.purchase_price) * item_data[
+                        "quantity"
+                    ]
                 else:
-                    raise serializers.ValidationError(f"Not enough stock for {item.item_name}")
+                    raise serializers.ValidationError(
+                        f"Not enough stock for {item.item_name}"
+                    )
 
             except ObjectDoesNotExist:
-                raise serializers.ValidationError(f"Item '{product_data['item_name']}' not found.")
+                raise serializers.ValidationError(
+                    f"Item '{product_data['item_name']}' not found."
+                )
 
-        sale.income = income-sale.discount
+        sale.income = income - sale.discount
         sale.save()
 
-        trans_amt = validated_data['paid_amount']
+        trans_amt = validated_data["paid_amount"]
         trans_comment = f"Sale {bill_no} created, credited amount: {trans_amt:.2f}"
-        paid=sale.payment
-        create_cash_transaction(cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='CREDIT')
+        paid = sale.payment
+        create_cash_transaction(
+            cash=paid.cash,
+            account=paid.account,
+            trans_comment=trans_comment,
+            trans_type="CREDIT",
+        )
 
         income_obj, created = Income.objects.get_or_create(
-        income_date=date.today(),
-        inctype=income_type,
-        defaults={'income_amt': sale.income}
+            income_date=date.today(),
+            inctype=income_type,
+            defaults={"income_amt": sale.income},
         )
 
         if not created:
             income_obj.income_amt += sale.income
             income_obj.save()
 
-        cmt=f"Sale {bill_no} Income Credited"
-        if income_type=='Mobile':
-            create_cash_transaction(mobile=sale.income, trans_comment=cmt, trans_type='CREDIT')
-        elif income_type=='Accessories':
-            create_cash_transaction(accessories=sale.income, trans_comment=cmt, trans_type='CREDIT')
-       
+        cmt = f"Sale {bill_no} Income Credited"
+        if income_type == "Mobile":
+            create_cash_transaction(
+                mobile=sale.income, trans_comment=cmt, trans_type="CREDIT"
+            )
+        elif income_type == "Accessories":
+            create_cash_transaction(
+                accessories=sale.income, trans_comment=cmt, trans_type="CREDIT"
+            )
+
         return sale
 
-
-    
 
 class SellerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seller
-        fields = '__all__'
+        fields = "__all__"
+
 
 class PurchaseSerializer(serializers.ModelSerializer):
-    purchase_products = PurchaseItemSerializer(source='purchase_items', many=True)
+    purchase_products = PurchaseItemSerializer(source="purchase_items", many=True)
     purchase_payment = PurchasePaymentSerializer()
     seller = SellerSerializer()
 
     class Meta:
         model = Purchase
-        fields = ['purchase_id', 'purchase_date', 'seller', 'purchase_payment', 'total_amount','paid_amount', 'discount', 'purchase_products', 'balance']
+        fields = [
+            "purchase_id",
+            "purchase_date",
+            "seller",
+            "purchase_payment",
+            "total_amount",
+            "paid_amount",
+            "discount",
+            "purchase_products",
+            "balance",
+        ]
 
     @transaction.atomic()
     def create(self, validated_data):
-        seller_data = validated_data.pop('seller')
-        payment_data = validated_data.pop('purchase_payment')
-        purchase_items_data = validated_data.pop('purchase_items', [])
+        seller_data = validated_data.pop("seller")
+        payment_data = validated_data.pop("purchase_payment")
+        purchase_items_data = validated_data.pop("purchase_items", [])
 
         seller, _ = Seller.objects.get_or_create(**seller_data)
 
@@ -236,24 +291,26 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
         current_year = datetime.now().year
         bill, created = PurchaseBill.objects.get_or_create(
-            bill_year=current_year,
-            defaults={'bill_seq': 1}
+            bill_year=current_year, defaults={"bill_seq": 1}
         )
         if not created:
             bill.bill_seq += 1
             bill.save()
 
         current_year = datetime.now().year
-        latest_purchase = Purchase.objects.filter(purchase_date__year=current_year).order_by('-purchase_seq').first()
+        latest_purchase = (
+            Purchase.objects.filter(purchase_date__year=current_year)
+            .order_by("-purchase_seq")
+            .first()
+        )
         purchase_seq = (latest_purchase.purchase_seq if latest_purchase else 0) + 1
 
-
-        purchase_id=validated_data.get('purchase_id')
+        purchase_id = validated_data.get("purchase_id")
         purchase = Purchase.objects.create(
             seller=seller,
             purchase_payment=payment,
             purchase_seq=purchase_seq,
-            **validated_data
+            **validated_data,
         )
 
         for index, item_data in enumerate(purchase_items_data):
@@ -261,66 +318,76 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
             try:
                 item = Item.objects.get(
-                    item_name=product_data['item_name'],
-                    category=product_data['category'],
-                    brand=product_data['brand'],
-                    sale_price=product_data['sale_price'],
-                    purchase_price=product_data['purchase_price']
+                    item_name=product_data["item_name"],
+                    category=product_data["category"],
+                    brand=product_data["brand"],
+                    sale_price=product_data["sale_price"],
+                    purchase_price=product_data["purchase_price"],
                 )
 
-                item.quantity += item_data['quantity']
+                item.quantity += item_data["quantity"]
                 item.save()
 
                 PurchaseItem.objects.create(
-                    purchase=purchase,
-                    item_seq=index + 1,
-                    product=item,
-                    **item_data
+                    purchase=purchase, item_seq=index + 1, product=item, **item_data
                 )
 
             except ObjectDoesNotExist:
-                raise serializers.ValidationError(f"Item '{product_data['item_name']}' not found.")
+                raise serializers.ValidationError(
+                    f"Item '{product_data['item_name']}' not found."
+                )
 
-        trans_amt = validated_data['paid_amount']
-        trans_comment = f"Purchase {purchase_id} created, Debited amount: {trans_amt:.2f}"
-        paid=purchase.purchase_payment
-        create_cash_transaction(cash=paid.cash, account=paid.account, trans_comment=trans_comment,trans_type='DEBIT')
+        trans_amt = validated_data["paid_amount"]
+        trans_comment = (
+            f"Purchase {purchase_id} created, Debited amount: {trans_amt:.2f}"
+        )
+        paid = purchase.purchase_payment
+        create_cash_transaction(
+            cash=paid.cash,
+            account=paid.account,
+            trans_comment=trans_comment,
+            trans_type="DEBIT",
+        )
 
         return purchase
-    
+
+
 class LoanBillSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoanBill
-        fields = '__all__'
+        fields = "__all__"
+
 
 class LoanSerializer(serializers.ModelSerializer):
-    customer= CustomerSerializer()
-    
+    customer = CustomerSerializer()
+
     class Meta:
         model = Loan
-        fields = '__all__'
-        read_only_fields = ['loan_accno']  
+        fields = "__all__"
+        read_only_fields = ["loan_accno"]
 
     @transaction.atomic()
     def create(self, validated_data):
         """Creates a Loan and auto-generates LoanBill entries"""
-        today = date.today().strftime("%Y%m%d")  
-        last_loan = Loan.objects.filter(loan_accno__startswith=today).order_by('-loan_accno').first()
+        today = date.today().strftime("%Y%m%d")
+        last_loan = (
+            Loan.objects.filter(loan_accno__startswith=today)
+            .order_by("-loan_accno")
+            .first()
+        )
 
         if last_loan:
-            last_seq = int(last_loan.loan_accno[-3:])  
-            new_seq = f"{last_seq + 1:03d}"  
+            last_seq = int(last_loan.loan_accno[-3:])
+            new_seq = f"{last_seq + 1:03d}"
         else:
-            new_seq = "001"  
-        loan_accno = f"{today}{new_seq}" 
-        
-        customer_data= validated_data.pop('customer', {})
-        
+            new_seq = "001"
+        loan_accno = f"{today}{new_seq}"
+
+        customer_data = validated_data.pop("customer", {})
+
         customer, created = Customer.objects.get_or_create(**customer_data)
         loan = Loan.objects.create(
-            loan_accno=loan_accno, 
-            customer=customer, 
-            **validated_data
+            loan_accno=loan_accno, customer=customer, **validated_data
         )
 
         due_date = loan.next_pay_date
@@ -328,26 +395,26 @@ class LoanSerializer(serializers.ModelSerializer):
 
         if loan.payment_freq == "Weekly":
             interval = timedelta(weeks=1)
-        else:  
+        else:
             interval = relativedelta(months=1)
 
-        billSeq=1
-        principal=round(loan.loan_amount/loan.term)
-        interest=round(loan.emi_amount-principal)
+        billSeq = 1
+        principal = round(loan.loan_amount / loan.term)
+        interest = round(loan.emi_amount - principal)
 
-        if loan.advance_bal and loan.advance_bal>0:
+        if loan.advance_bal and loan.advance_bal > 0:
             LoanBill.objects.create(
                 loan_acc=loan,
                 bill_seq=billSeq,
                 bill_date=loan.advance_paydate,
                 due_amount=loan.advance_bal,
-                due_type=f'Advance',
+                due_type=f"Advance",
                 total_due=loan.advance_bal,
                 prin=loan.advance_bal,
-                int=0
+                int=0,
             )
-            billSeq+=1
-            total_bills+=1
+            billSeq += 1
+            total_bills += 1
 
         for seq in range(billSeq, total_bills + 1):
             LoanBill.objects.create(
@@ -355,87 +422,110 @@ class LoanSerializer(serializers.ModelSerializer):
                 bill_seq=seq,
                 bill_date=due_date,
                 due_amount=loan.emi_amount,
-                due_type=f'EMI',
+                due_type=f"EMI",
                 total_due=loan.emi_amount,
                 prin=principal,
-                int=interest
+                int=interest,
             )
             due_date += interval
-        
-        desc=''
-        if(loan.advance_bal>0):
-            desc='Loan account creation with adv'
+
+        desc = ""
+        if loan.advance_bal > 0:
+            desc = "Loan account creation with adv"
         else:
-            desc='Loan account creation'
+            desc = "Loan account creation"
 
         LoanJournal.objects.create(
             loan=loan,
             journal_date=today,
             journal_seq=1,
-            action_type='CREATE',
+            action_type="CREATE",
             description=desc,
             new_data=Decimal(loan.payment_amount + loan.advance_bal),
             crdr=False,
             trans_amt=Decimal(loan.payment_amount + loan.advance_bal),
-            balance_amount=Decimal(loan.payment_amount + loan.advance_bal)
+            balance_amount=Decimal(loan.payment_amount + loan.advance_bal),
         )
 
-        create_cash_transaction(cash=loan.loan_amount+loan.advance_bal, account=0, trans_comment=f'Loan Issued - {loan.customer.customer_name}', trans_type="DEBIT")
+        create_cash_transaction(
+            cash=loan.loan_amount + loan.advance_bal,
+            account=0,
+            trans_comment=f"Loan Issued - {loan.customer.customer_name}",
+            trans_type="DEBIT",
+        )
         return loan
-    
+
+
 class GlHistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GlHist
-        fields = '__all__'
+        fields = "__all__"
+
 
 class LoanJournalSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoanJournal
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CashGlSerializer(serializers.ModelSerializer):
     class Meta:
         model = CashGl
-        fields = '__all__'
+        fields = "__all__"
+
 
 class GlBalSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlBal
-        fields = '__all__'
+        fields = "__all__"
+
 
 class InvestSerializer(serializers.ModelSerializer):
-    class Meta :
+    class Meta:
         model = Invest
-        fields = '__all__'
+        fields = "__all__"
 
     @transaction.atomic()
     def create(self, validated_data):
-        trans_amt=validated_data.get('invest_amt')
-        trans_comment=validated_data.get('invest_desc')
-        invest_to=validated_data.get('invest_to')
-        cash=0
-        account=0
-        if invest_to=='Cash':
-            cash=trans_amt
+        trans_amt = validated_data.get("invest_amt")
+        trans_comment = validated_data.get("invest_desc")
+        invest_to = validated_data.get("invest_to")
+        cash = 0
+        account = 0
+        if invest_to == "Cash":
+            cash = trans_amt
         else:
-            account=trans_amt
-        create_cash_transaction(cash=cash, account=account, trans_comment=trans_comment,trans_type='CREDIT')
+            account = trans_amt
+        create_cash_transaction(
+            cash=cash, account=account, trans_comment=trans_comment, trans_type="CREDIT"
+        )
 
         return super().create(validated_data)
 
 
 @transaction.atomic()
-def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accessories=0, service=0, interest=0, trans_comment='', trans_type='CREDIT'):
+def create_cash_transaction(
+    cash=0,
+    account=0,
+    penalty=0,
+    mobile=0,
+    accessories=0,
+    service=0,
+    interest=0,
+    trans_comment="",
+    trans_type="CREDIT",
+):
     today = date.today()
-    crdr = trans_type.upper() == 'CREDIT'
+    crdr = trans_type.upper() == "CREDIT"
 
     def update_accounts(accno, amount):
         if amount <= 0:
             return None
-        
-        last_glbal = GlBal.objects.filter(date__lte=today, glac=accno).order_by('-date').first()
+
+        last_glbal = (
+            GlBal.objects.filter(date__lte=today, glac=accno).order_by("-date").first()
+        )
         last_balance = last_glbal.balance if last_glbal else 0
         new_balance = last_balance + amount if crdr else last_balance - amount
 
@@ -445,13 +535,11 @@ def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accesso
             trans_amt=amount,
             crdr=crdr,
             trans_comt=trans_comment,
-            end_balance=new_balance
+            end_balance=new_balance,
         )
 
         glbal_obj, created = GlBal.objects.get_or_create(
-            date=today,
-            glac=accno,
-            defaults={'balance': new_balance}
+            date=today, glac=accno, defaults={"balance": new_balance}
         )
         if not created:
             glbal_obj.balance = new_balance
@@ -459,53 +547,76 @@ def create_cash_transaction(cash = 0, account = 0, penalty = 0,mobile=0, accesso
 
         return gl_entry
 
-    cash_gl_entry = update_accounts('CASH001', cash)
-    acc_gl_entry = update_accounts('ACC001', account)
-    penalty_entry = update_accounts('PENL001', penalty)
-    mobile_entry=update_accounts('MOB001', mobile)
-    accs_entry=update_accounts('ACS001', accessories)
-    serv_entry=update_accounts('SER001', service)
-    int_entry=update_accounts('INT001', interest)
+    cash_gl_entry = update_accounts("CASH001", cash)
+    acc_gl_entry = update_accounts("ACC001", account)
+    penalty_entry = update_accounts("PENL001", penalty)
+    mobile_entry = update_accounts("MOB001", mobile)
+    accs_entry = update_accounts("ACS001", accessories)
+    serv_entry = update_accounts("SER001", service)
+    int_entry = update_accounts("INT001", interest)
 
     return {
-        'cash_entry': cash_gl_entry,
-        'account_entry': acc_gl_entry,
-        'penalty_entry' :penalty_entry,
-        'mobile_entry':mobile_entry,
-        'accs_entry':accs_entry,
-        'serv_entry':serv_entry,
-        'int_entry' : int_entry
+        "cash_entry": cash_gl_entry,
+        "account_entry": acc_gl_entry,
+        "penalty_entry": penalty_entry,
+        "mobile_entry": mobile_entry,
+        "accs_entry": accs_entry,
+        "serv_entry": serv_entry,
+        "int_entry": int_entry,
     }
+
 
 class IncomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Income
-        fields = '__all__'
+        fields = "__all__"
+
 
 class AmountTransferSerializer(serializers.ModelSerializer):
     class Meta:
-        model=AmountTransfer
-        fields='__all__'
+        model = AmountTransfer
+        fields = "__all__"
 
     def create(self, validated_data):
-        trans_amt=validated_data['amount']
-        trans_from=validated_data['trans_from']
-        trans_to=validated_data['trans_to']
-        
-        if trans_from=='Cash':
-            create_cash_transaction(cash=trans_amt, account=0, trans_comment='Amount Transfered from Cash to Account',trans_type='DEBIT')
-            create_cash_transaction(cash=0, account=trans_amt, trans_comment='Amount Transfered from Cash to Account',trans_type='CREDIT')
+        trans_amt = validated_data["amount"]
+        trans_from = validated_data["trans_from"]
+        trans_to = validated_data["trans_to"]
+
+        if trans_from == "Cash":
+            create_cash_transaction(
+                cash=trans_amt,
+                account=0,
+                trans_comment="Amount Transfered from Cash to Account",
+                trans_type="DEBIT",
+            )
+            create_cash_transaction(
+                cash=0,
+                account=trans_amt,
+                trans_comment="Amount Transfered from Cash to Account",
+                trans_type="CREDIT",
+            )
         else:
-            create_cash_transaction(cash=0, account=trans_amt, trans_comment='Amount Transfered from Account to Cash',trans_type='DEBIT')
-            create_cash_transaction(cash=trans_amt, account=0, trans_comment='Amount Transfered from Account to Cash',trans_type='CREDIT')
+            create_cash_transaction(
+                cash=0,
+                account=trans_amt,
+                trans_comment="Amount Transfered from Account to Cash",
+                trans_type="DEBIT",
+            )
+            create_cash_transaction(
+                cash=trans_amt,
+                account=0,
+                trans_comment="Amount Transfered from Account to Cash",
+                trans_type="CREDIT",
+            )
 
         return super().create(validated_data)
-    
+
+
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = '__all__'
-        read_only_fields = ['service_id'] 
+        fields = "__all__"
+        read_only_fields = ["service_id"]
 
     def create(self, validated_data):
         today = now().date()
@@ -513,8 +624,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
         with transaction.atomic():
             bill_obj, created = ServiceBill.objects.get_or_create(
-                year=year,
-                defaults={'bill': 1}
+                year=year, defaults={"bill": 1}
             )
 
             if not created:
@@ -522,21 +632,20 @@ class ServiceSerializer(serializers.ModelSerializer):
                 bill_obj.save()
 
             bill_number = bill_obj.bill
-            service_id = f"SER-{year}-{bill_number:04d}" 
+            service_id = f"SER-{year}-{bill_number:04d}"
 
-            service=Service.objects.create(
-                service_id=service_id,
-                **validated_data
-            )
+            service = Service.objects.create(service_id=service_id, **validated_data)
 
             return service
-        
+
+
 class ServiceBillSerializer(serializers.ModelSerializer):
     class Meta:
-        model=ServiceBill
-        fields='__all__'
-        
+        model = ServiceBill
+        fields = "__all__"
+
+
 class LoanInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoanInfo
-        fields = '__all__'
+        fields = "__all__"
