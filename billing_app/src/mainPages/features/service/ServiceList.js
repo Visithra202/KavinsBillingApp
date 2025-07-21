@@ -155,7 +155,7 @@ export default function ServiceList() {
         }
 
         if (Number(receivedAmount) + Number(discount) + Number(selectedReceiveService.received_amt) + Number(selectedReceiveService.discount) > Number(selectedReceiveService.receivable_amt)) {
-            alert(`Receivable amount is ${selectedReceiveService.receivable_amt}`)
+            alert(`Receivable amount is ${selectedReceiveService.balance}`)
             return;
         }
 

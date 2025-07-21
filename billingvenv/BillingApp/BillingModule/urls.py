@@ -66,6 +66,7 @@ urlpatterns=[
     path('update-customer/<str:customer_id>/', update_customer_mph, name='update_customer_mph'),
     path('update-loan/<str:loan_accno>/', update_loan, name='update_loan'),
     path('lock-mobile/<str:loan_accno>', lock_mobile, name='lock_mobile'),
+    path('get-collection-data/', get_collection_data, name='get_collection_data'),
 
     # Purchase
     path('add-purchase/', add_purchase, name='add_purchase'),

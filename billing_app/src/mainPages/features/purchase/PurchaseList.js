@@ -6,23 +6,44 @@ import Loader from '../../components/Loader';
 export default function PurchaseList() {
   const [purchaseList, setPurchaseList] = useState([]);
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/get-purchase-list/')
+    axios.get(`http://localhost:8000/get-purchase-list/?page=${page}`)
       .then((response) => {
-        setPurchaseList(response.data)
+        setPurchaseList(response.data.results);
+        setTotalPages(Math.ceil(response.data.count / 12));
         setLoading(false);
       })
       .catch((error) => {
         // console.error('Error Fetching Purchase')
         setLoading(false);
       })
-  }, [])
+  }, [page])
 
   return (
-    <div className='container'  style={{ height: 'calc(100vh - 85px)' }}>
+    <div className='container' style={{ height: 'calc(100vh - 115px)' }}>
+
+      <div className='d-flex justify-content-end mt-2'>
+        <button className='btn btn-sm border' disabled={page === 1} onClick={() => setPage(1)}>
+          <i className="bi bi-caret-left-square-fill"></i>
+        </button>
+        <button className='btn btn-sm border' disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+          <i className='bi bi-caret-left-fill'></i>
+        </button>
+        <button className='btn btn-sm border' disabled>{page}/{totalPages}</button>
+        <button className='btn btn-sm border' disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+          <i className='bi bi-caret-right-fill'></i>
+        </button>
+        <button className='btn btn-sm border' disabled={page === totalPages} onClick={() => setPage(totalPages)}>
+          <i className="bi bi-caret-right-square-fill"></i>
+        </button>
+      </div>
+
       <div className='border border-secondary bg-white rounded-5 shadow  my-2 scroll-bar'
         style={{ minHeight: '100%', maxHeight: '100%', overflowY: 'auto' }}>
         <table className='itmlst table table-hover'>
@@ -47,20 +68,11 @@ export default function PurchaseList() {
                 purchaseList.length > 0 ? (
                   purchaseList.map((purchase, index) => (
                     <tr key={index}>
-                      <td className='text-primary' onClick={()=>navigate('/purchaseDetails', {state:{purchase}})}  style={{cursor:'pointer'}}>{purchase?.purchase_id || ''}</td>
+                      <td className='text-primary' onClick={() => navigate('/purchaseDetails', { state: { purchase } })} style={{ cursor: 'pointer' }}>{purchase?.purchase_id || ''}</td>
                       <td>{purchase?.purchase_date || ''}</td>
                       <td> {purchase?.seller?.seller_name || ''}</td>
                       <td>
-                        {(() => {
-                          let prods = '';
-                          purchase?.purchase_products?.length > 0 && purchase.purchase_products.forEach((prod) => {
-                            if (prod) {
-                              prods += (prods ? ', ' : '') + prod.product.item_name;
-                            }
-                          });
-                          return prods || '';
-                        })()}
-
+                        {purchase?.purchase_products?.length}
                       </td>
                       <td>
                         {(() => {

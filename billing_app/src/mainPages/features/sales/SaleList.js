@@ -8,17 +8,21 @@ export default function SaleList() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
 
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     useEffect(() => {
-        axios.get('http://localhost:8000/get-sale-list/')
+        axios.get(`http://localhost:8000/get-sale-list/?page=${page}`)
             .then((response) => {
-                setSaleList(response.data)
+                setSaleList(response.data.results)
+                setTotalPages(Math.ceil(response.data.count / 12));
                 setLoading(false);
             })
             .catch((error) => {
                 // console.error('Error Fetching Sales')
                 setLoading(false);
             })
-    }, [])
+    }, [page])
 
     const handlePrint = (sale, string) => {
 
@@ -46,7 +50,23 @@ export default function SaleList() {
 
 
     return (
-        <div className='container'  style={{ height: 'calc(100vh - 85px)' }}>
+        <div className='container' style={{ height: 'calc(100vh - 115px)' }}>
+
+            <div className='d-flex justify-content-end mt-2'>
+                <button className='btn btn-sm border' disabled={page === 1} onClick={() => setPage(1)}>
+                    <i className="bi bi-caret-left-square-fill"></i>
+                </button>
+                <button className='btn btn-sm border' disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+                    <i className='bi bi-caret-left-fill'></i>
+                </button>
+                <button className='btn btn-sm border' disabled>{page}/{totalPages}</button>
+                <button className='btn btn-sm border' disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+                    <i className='bi bi-caret-right-fill'></i>
+                </button>
+                <button className='btn btn-sm border' disabled={page === totalPages} onClick={() => setPage(totalPages)}>
+                    <i className="bi bi-caret-right-square-fill"></i>
+                </button>
+            </div>
 
             <div className='border border-secondary bg-white rounded-5 shadow  my-2 scroll-bar'
                 style={{ minHeight: '100%', maxHeight: '100%', overflowY: 'auto' }}>
@@ -71,24 +91,16 @@ export default function SaleList() {
                             loading ? (
                                 <tr><td colSpan='9'><Loader message='Fetching Sale Items' /></td></tr>
                             ) : (
-                                saleList.length > 0 ? (
-                                    saleList.map((sale, index) => (
+                                saleList?.length > 0 ? (
+                                    saleList?.map((sale, index) => (
                                         <tr key={index}>
-                                            <td className='text-primary' style={{cursor:'pointer'}} onClick={() => handlePrint(sale, 'details')}>{sale.bill_no}</td>
+                                            <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => handlePrint(sale, 'details')}>{sale.bill_no}</td>
                                             <td>{sale.sale_date}</td>
                                             <td>
                                                 {sale.customer?.customer_name || ""}
                                             </td>
                                             <td>
-                                                {(() => {
-                                                    let prods = '';
-                                                    sale.sale_products?.length > 0 && sale.sale_products.forEach((prod) => {
-                                                        if (prod) {
-                                                            prods += (prods ? ', ' : '') + prod.product.item_name;
-                                                        }
-                                                    });
-                                                    return prods || '';
-                                                })()}
+                                                {sale.sale_products?.length}
                                             </td>
 
                                             <td>
@@ -107,7 +119,7 @@ export default function SaleList() {
                                             <td className='text-end'>{sale.income}</td>
                                             <td className="text-center">
                                                 <i
-                                                    className="bi bi-printer-fill" style={{cursor:'pointer'}}
+                                                    className="bi bi-printer-fill" style={{ cursor: 'pointer' }}
                                                     onClick={() => handlePrint(sale, 'print')}
                                                 ></i>
                                             </td>
