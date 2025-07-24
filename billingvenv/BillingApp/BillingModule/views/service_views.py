@@ -18,8 +18,8 @@ def add_service(request):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    print(serializer.data)
-    print(serializer.errors)
+    # print(serializer.data)
+    # print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -48,6 +48,7 @@ def add_service_paidamt(request):
         service.paid_date=get_today()
         service.receivable_amt=receivable_amt
         service.service_status='Paid'
+        service.balance = receivable_amt
         service.paidpayment_type=payment
 
         service.save()

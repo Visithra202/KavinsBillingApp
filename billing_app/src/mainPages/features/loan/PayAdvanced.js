@@ -103,7 +103,7 @@ function PaymentForm({ loan, totalUnpaidDue }) {
                 </div>
                 <div className='d-flex flex-column mt-3'>
                     <label className='form-label'>Outstanding</label>
-                    <input type='text' className='form-control p-2' name='tot_due' value={totalUnpaidDue}
+                    <input type='text' className='form-control p-2' name='tot_due' value={totalUnpaidDue.toFixed(2)}
                         disabled />
                 </div>
                 <div className='row mt-3'>

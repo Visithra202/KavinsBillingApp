@@ -16,7 +16,7 @@ export default function AddLoanPayment() {
                     <PaymentForm collection={collection} totalDue={totalDue} />
                 </div>
 
-                <div className='col bg-light p-3 px-5 border rounded-5 shadow '>
+                <div className='col bg-light p-2 border rounded-5 shadow '>
                     <DueDetails collection={collection} setTotalDue={setTotalDue} />
                 </div>
             </div>
@@ -188,12 +188,13 @@ function DueDetails({ collection, setTotalDue }) {
                 <table className="table table-hover table-light">
                     <thead className="table-head" style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                         <tr>
-                            <th>#</th>
+                            {/* <th>#</th> */}
                             <th>Due date</th>
                             <th className='text-end'>Due amount</th>
                             <th className='text-end'>Late fee</th>
                             <th className='text-end'>Total due</th>
                             <th className='text-end'>Paid Amount</th>
+                            <th className='text-end'>Balance</th>
                         </tr>
                     </thead>
                     <tbody className="table-body">
@@ -206,12 +207,13 @@ function DueDetails({ collection, setTotalDue }) {
                         ) : unPaidBills.length > 0 ? (
                             unPaidBills.map((bill, index) => (
                                 <tr key={index}>
-                                    <td>{bill.bill_seq}</td>
+                                    {/* <td>{bill.bill_seq}</td> */}
                                     <td>{bill.bill_date}</td>
                                     <td className='text-end'>{bill.due_amount}</td>
                                     <td className='text-end'>{bill.late_fee}</td>
                                     <td className='text-end'>{bill.total_due}</td>
                                     <td className='text-end'>{bill.paid_amount}</td>
+                                    <td className='text-end'>{(bill.total_due - bill.paid_amount).toFixed(2)}</td>
                                 </tr>
                             ))
                         ) : (
