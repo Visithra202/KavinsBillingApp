@@ -42,103 +42,6 @@ def get_loan_list(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# @api_view(["GET"])
-# @transaction.atomic
-# def get_collection_list(request):
-#     today = get_today()
-#     loan_bills = LoanBill.objects.filter(
-#         bill_date__lte=today, paid_date__isnull=True
-#     ).order_by("-bill_date")
-
-#     overdue_loans_dict = defaultdict(
-#         lambda: {
-#             "due_amount": Decimal("0.00"),
-#             "late_fee": Decimal("0.00"),
-#             "customer": None,
-#             "loan_accno": "",
-#             "payment_freq": "",
-#             "od_days": 0,
-#             "lock_sts":0
-#         }
-#     )
-
-#     totalDueSum = 0
-
-#     for bill in loan_bills:
-#         loan = bill.loan_acc
-#         acc_no = loan.loan_accno
-
-#         if "extended_date" not in overdue_loans_dict[acc_no]:
-#             latest_info = (
-#                 LoanInfo.objects.filter(loan_accno=loan)
-#                 .order_by("-seq")
-#                 .values("extended_date")
-#                 .first()
-#             )
-#             overdue_loans_dict[acc_no]["extended_date"] = (
-#                 latest_info["extended_date"].isoformat() if latest_info else None
-#             )
-
-#         totalDueSum += bill.total_due - bill.paid_amount
-#         # Only set customer info once
-#         if overdue_loans_dict[acc_no]["customer"] is None:
-#             overdue_loans_dict[acc_no]["customer"] = {
-#                 "customer_name": loan.customer.customer_name,
-#                 "mph": str(loan.customer.mph),
-#             }
-#             overdue_loans_dict[acc_no]["loan_accno"] = acc_no
-#             overdue_loans_dict[acc_no]["payment_freq"] = (
-#                 "M" if loan.payment_freq.startswith("M") else "W"
-#             )
-#             overdue_loans_dict[acc_no]["lock_sts"] = loan.lock_sts
-
-#             # OD Days Calculation
-#             last_paid_bill = (
-#                 LoanBill.objects.filter(loan_acc=loan, paid_date__isnull=True)
-#                 .order_by("bill_date")
-#                 .first()
-#             )
-#             if last_paid_bill:
-#                 overdue_loans_dict[acc_no]["od_days"] = (
-#                     today - last_paid_bill.bill_date
-#                 ).days
-
-#         if bill.paid_amount >= bill.due_amount:
-#             overdue_loans_dict[acc_no]["late_fee"] += bill.total_due - bill.paid_amount
-#         else:
-#             overdue_loans_dict[acc_no]["due_amount"] += (
-#                 bill.due_amount - bill.paid_amount
-#             )
-#             overdue_loans_dict[acc_no]["late_fee"] += bill.late_fee
-
-#     overdue_loans = [
-#         {
-#             "customer": data["customer"],
-#             "loan_accno": data["loan_accno"],
-#             "due_amount": str(data["due_amount"]),
-#             "late_fee": str(data["late_fee"]),
-#             "frequency": data["payment_freq"],
-#             "od_days": data["od_days"],
-#             "extended_date": data.get("extended_date"),
-#             "lock_sts": data.get("lock_sts", 0),
-#         }
-#         for acc_no, data in overdue_loans_dict.items()
-#     ]
-
-#     today_collection = GlHist.objects.filter(date=today, credit=True).aggregate(
-#         total=Sum("trans_amount")
-#     )
-#     collected = today_collection["total"] or 0
-
-#     return JsonResponse(
-#         {
-#             "overdue_loans": overdue_loans,
-#             "totalDueSum": totalDueSum,
-#             "today_collection": collected,
-#         }
-#     )
-
-
 @api_view(["GET"])
 def get_loan_bill(request, loan_accno):
     today = get_today()
@@ -432,23 +335,23 @@ def lock_mobile(request, loan_accno):
         return Response({"error": "Loan not found"}, status=404)
 
 
-
 @api_view(["GET"])
 @transaction.atomic
 def get_collection_list(request):
     today = get_today()
 
-    loan_bills = LoanBill.objects.select_related('loan_acc__customer').filter(
-        bill_date__lte=today,
-        paid_date__isnull=True
-    ).order_by("-bill_date")
+    loan_bills = (
+        LoanBill.objects.select_related("loan_acc__customer")
+        .filter(bill_date__lte=today, paid_date__isnull=True)
+        .order_by("-bill_date")
+    )
 
     search_term = request.GET.get("search", "")
     if search_term:
         loan_bills = loan_bills.filter(
-            Q(loan_acc__loan_accno__icontains=search_term) |
-            Q(loan_acc__customer__customer_name__icontains=search_term) |
-            Q(loan_acc__customer__mph__icontains=search_term)
+            Q(loan_acc__loan_accno__icontains=search_term)
+            | Q(loan_acc__customer__customer_name__icontains=search_term)
+            | Q(loan_acc__customer__mph__icontains=search_term)
         )
 
     overdue_loans_dict = defaultdict(
@@ -522,7 +425,12 @@ def get_collection_list(request):
         }
         for acc_no, data in overdue_loans_dict.items()
     ]
-    
+
+    overdue_loans = sorted(
+        overdue_loans,
+        key=lambda x: (x["extended_date"] is not None, x["extended_date"] or ""),
+    )
+
     paginator = PageNumberPagination()
     paginator.page_size = 10
     result_page = paginator.paginate_queryset(overdue_loans, request)
@@ -537,20 +445,24 @@ def get_collection_data(request):
     ).order_by("-bill_date")
 
     total_due_expr = ExpressionWrapper(
-        F('total_due') - F('paid_amount'),
-        output_field=DecimalField()
+        F("total_due") - F("paid_amount"), output_field=DecimalField()
     )
 
-    total_due_sum = loan_bills.aggregate(
-        total_due_sum=Sum(total_due_expr)
-    )['total_due_sum'] or 0
+    total_due_sum = (
+        loan_bills.aggregate(total_due_sum=Sum(total_due_expr))["total_due_sum"] or 0
+    )
 
     today_collection = GlHist.objects.filter(date=today, credit=True).aggregate(
         total=Sum("trans_amount")
     )
     collected = today_collection["total"] or 0
 
-    totalCount = loan_bills.values('loan_acc').distinct().count()
+    totalCount = loan_bills.values("loan_acc").distinct().count()
 
-    return Response({"totalDueSum": total_due_sum, "todayCollection": collected, "totalCount" : totalCount})
-
+    return Response(
+        {
+            "totalDueSum": total_due_sum,
+            "todayCollection": collected,
+            "totalCount": totalCount,
+        }
+    )

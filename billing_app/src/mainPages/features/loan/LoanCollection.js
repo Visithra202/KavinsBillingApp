@@ -21,6 +21,8 @@ export default function LoanCollection() {
   const [selectedLoan, setSelectedLoan] = useState({});
   const [customerInfo, setCustomerInfo] = useState({});
 
+  const [reload, setReload] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -49,7 +51,7 @@ export default function LoanCollection() {
     return () => {
       debouncedFetch.cancel(); // Cleanup on unmount
     };
-  }, [page, searchTerm]);
+  }, [page, searchTerm, reload]);
 
 
 
@@ -84,7 +86,7 @@ export default function LoanCollection() {
 
       {info && (
         <div className='modal show fade d-block' tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <CollectionInfo setInfo={setInfo} selectedLoan={selectedLoan} infoLoading={infoLoading} customerInfo={customerInfo} setCollections={setCollections} setSelectedLoan={setSelectedLoan} />
+          <CollectionInfo setInfo={setInfo} selectedLoan={selectedLoan} infoLoading={infoLoading} customerInfo={customerInfo} setCollections={setCollections} setSelectedLoan={setSelectedLoan} setReload={setReload} />
         </div>
       )}
 
@@ -271,7 +273,7 @@ function CollectionTable({ loading, collections, handleInfo, setCollections }) {
   )
 }
 
-function CollectionInfo({ setInfo, selectedLoan, infoLoading, customerInfo, setCollections, setSelectedLoan }) {
+function CollectionInfo({ setInfo, selectedLoan, infoLoading, customerInfo, setCollections, setSelectedLoan, setReload }) {
 
   const [extendDate, setExtendDate] = useState('');
   const today = new Date().toISOString().split('T')[0];
@@ -307,6 +309,7 @@ function CollectionInfo({ setInfo, selectedLoan, infoLoading, customerInfo, setC
       setExtendDate('');
       setSelectedLoan({});
       setInfo(false);
+      setReload((prev) => !prev);
     } catch {
       alert('Error adding information');
     } finally {
