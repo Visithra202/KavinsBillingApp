@@ -46,7 +46,7 @@ def apply_task():
             journal_date=today,
             journal_seq=last_seq+1,
             action_type='PENALTY',
-            description="Due penalty added",
+            description=f"Due penalty added, bill seq - {bill.bill_seq}",
             old_data=previous_data,
             new_data=previous_data+bill.late_fee,
             crdr=False,
@@ -55,7 +55,7 @@ def apply_task():
         )
 
 def start_task():
-    schedule.every().day.at("09:00").do(apply_task)
+    schedule.every().day.at("09:30").do(apply_task)
 
     def run_scheduler():
         while True:

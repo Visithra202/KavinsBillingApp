@@ -231,9 +231,7 @@ function CollectionTable({ loading, collections, handleInfo, setCollections }) {
             collections.map((collect, index) => {
               const rowClass = collect.extended_date && today < collect.extended_date
                 ? 'table-warning'
-                : collect.od_days > 10
-                  ? 'table-danger'
-                  : '';
+                : '';
               return (
                 <tr key={index} className={rowClass}>
                   <td className='text-primary' style={{ cursor: 'pointer' }} onClick={() => handleNavigate(collect.loan_accno)}>{collect.loan_accno}</td>
