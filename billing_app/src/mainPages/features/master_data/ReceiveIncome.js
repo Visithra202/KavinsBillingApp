@@ -68,6 +68,7 @@ function ReceiveForm({ setReload, mobInc, accInc, serInc, penInc, intInc }) {
   const [lastCashBal, setLastCashBal] = useState(0);
   const [lastAccBal, setLastAccBal] = useState(0);
   const [receiveAmt, setReceiveAmt] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleTypeChange = (e) => {
     setIncomeType(e.target.value);
@@ -109,6 +110,10 @@ function ReceiveForm({ setReload, mobInc, accInc, serInc, penInc, intInc }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
+    setLoading(true);
+
     if (parseFloat(receiveAmt) <= 0 || !incomeType || !payment) return;
 
     if (parseFloat(receiveAmt) > parseFloat(OutstandingAmt)) {
@@ -142,6 +147,8 @@ function ReceiveForm({ setReload, mobInc, accInc, serInc, penInc, intInc }) {
       handleReset();
     } catch (error) {
       alert('Error Receiving Income');
+    } finally {
+      setLoading(false);
     }
   };
 

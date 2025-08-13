@@ -18,6 +18,7 @@ export default function AddItem() {
   });
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     axios.get('http://localhost:8000/get-category-list/')
@@ -48,6 +49,10 @@ export default function AddItem() {
 
     e.preventDefault();
 
+    if(loading) return;
+
+    setLoading(true);
+
     try {
       await axios.post('http://localhost:8000/add-item/', itemFormData, {
         headers: {
@@ -68,6 +73,8 @@ export default function AddItem() {
       } else {
         alert("Something went wrong!");
       }
+    }finally{
+      setLoading(false);
     }
   }
 

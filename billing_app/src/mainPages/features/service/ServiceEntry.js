@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
 
 export default function ServiceEntry() {
     const date = new Date();
+    const [loading, setLoading] = useState(false);
 
     const [serviceFormData, setServiceFormData] = useState({
         date: date.toISOString().split('T')[0],
@@ -24,6 +25,10 @@ export default function ServiceEntry() {
 
         e.preventDefault();
 
+        if(loading) return;
+
+        setLoading(true);
+
         try {
             await axios.post('http://localhost:8000/add-service/', serviceFormData, {
                 headers: {
@@ -38,6 +43,8 @@ export default function ServiceEntry() {
             } else {
                 alert("Something went wrong!");
             }
+        }finally{
+            setLoading(false);
         }
     }
 

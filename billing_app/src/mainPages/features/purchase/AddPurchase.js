@@ -22,6 +22,7 @@ export default function AddPurchase() {
 
   const [lastCashBal, setLastCashBal] = useState(0);
   const [lastAccBal, setLastAccBal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const newTotal = selectedProducts.reduce((sum, product) => {
@@ -49,9 +50,13 @@ export default function AddPurchase() {
       });
   }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
 
+    e.preventDefault();
 
+    if (loading) return;
+
+    setLoading(true);
 
     if (!selectedSeller?.seller_id) {
       alert('Select a seller')
@@ -114,7 +119,9 @@ export default function AddPurchase() {
       .catch((error) => {
         alert('Error adding purchase')
         // console.error('Error submitting purchase:', error)
-      });
+      }).finally(() => {
+        setLoading(false);
+      })
   };
 
   const handleReset = () => {

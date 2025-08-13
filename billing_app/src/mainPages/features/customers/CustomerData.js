@@ -23,6 +23,7 @@ function CustomerForm({ setReload }) {
     const [formData, setFormData] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,6 +38,9 @@ function CustomerForm({ setReload }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if(loading) return;
+
+        setLoading(true);
 
         const mph = formData.mph;
         if (!mph.startsWith('+91 '))
@@ -66,6 +70,8 @@ function CustomerForm({ setReload }) {
             } else {
                 alert.error("Error:", error.message);
             }
+        }finally{
+            setLoading(false);
         }
     }
 

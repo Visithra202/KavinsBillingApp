@@ -22,6 +22,7 @@ export default function Categories() {
 function CategoryForm({ setReload }) {
   const [formData, setFormData] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!formData.category_name)
@@ -35,6 +36,10 @@ function CategoryForm({ setReload }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if(loading) return;
+
+    setLoading(true);
 
     if (formData.min_stock && (formData.min_stock < 0 || isNaN(formData.min_stock))) {
       alert('Minimum stock must be positive');
@@ -71,6 +76,8 @@ function CategoryForm({ setReload }) {
       } else {
         setError('Server not responding');
       }
+    }finally{
+      setLoading(false);
     }
   }
 

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation} from 'react-router-dom';
 import UseClickOutside from '../../hooks/UseClickOutside';
 import Loader from '../../components/Loader';
 
 export default function ServiceDetails() {
-    const date = new Date();
+    // const date = new Date();
     const location = useLocation();
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const [service, setService] = useState(location.state?.service);
 

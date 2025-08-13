@@ -23,6 +23,7 @@ export default function AddSale() {
   const [discount, setDiscount] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [totAmt, setTotAmt] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     axios.get('http://localhost:8000/get-sale-bill-no/')
@@ -46,7 +47,13 @@ export default function AddSale() {
 
 
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+
+    e.preventDefault();
+
+    if(loading) return;
+
+    setLoading(true);
 
     if (!selectedCustomer?.customer_id) {
       alert('Select a customer')
@@ -99,6 +106,8 @@ export default function AddSale() {
       })
       .catch(error => {
         // console.error('Error submitting sale:', error)
+      }).finally(()=>{
+        setLoading(false);
       });
   };
 

@@ -23,6 +23,8 @@ function TransactionForm({ setReload }) {
     const [formData, setFormData] = useState([]);
     const [lastCashBal, setLastCashBal] = useState(0);
     const [lastAccBal, setLastAccBal] = useState(0);
+    const [loading, setLoading] = useState(false);
+
     const date = new Date();
 
     useEffect(() => {
@@ -43,6 +45,10 @@ function TransactionForm({ setReload }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(loading) return;
+
+        setLoading(true);
 
         if (formData.trans_from === formData.trans_to) {
             alert('Transaction not allowed for same')
@@ -82,7 +88,9 @@ function TransactionForm({ setReload }) {
             setReload((prev) => !prev)
             handleReset();
         } catch (err) {
-            console.log(err)
+            // console.log(err)
+        }finally{
+            setLoading(false);
         }
     }
 

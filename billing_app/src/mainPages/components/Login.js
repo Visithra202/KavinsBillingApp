@@ -15,6 +15,7 @@ export default function Login({ setLogin }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if(loading) return;
         setLoading(true);
         axios.post('http://localhost:8000/user-login/', loginFormData)
             .then((response) => {
@@ -48,16 +49,16 @@ export default function Login({ setLogin }) {
                 <form onSubmit={handleSubmit} className='p-3 px-5'>
                     <div className='d-flex flex-column'>
                         <label htmlFor='username' className='form-label'>Username</label>
-                        <input type='text' id='username' className='form-control p-2'  name='username' value={loginFormData.username||''}
+                        <input type='text' id='username' className='form-control p-2' name='username' value={loginFormData.username || ''}
                             onChange={handleChange} autoComplete="off" required />
                     </div>
                     <div className='d-flex flex-column mt-3'>
                         <label htmlFor='password' className='form-label'>Password</label>
-                        <input type='password' id='password' className='form-control p-2'  name='password' value={loginFormData.password||''}
+                        <input type='password' id='password' className='form-control p-2' name='password' value={loginFormData.password || ''}
                             onChange={handleChange} autoComplete='off' required />
                     </div>
                     <div className='d-flex flex-column justify-content-center align-items-center mt-4 '>
-                        <button type='submit' className='btn btn-success rounded-pill p-1 px-4 w-25 '>Login</button>
+                        <button type='submit' className='btn btn-success rounded-pill p-1 px-4 w-25 ' disabled={loading}>Login</button>
                         <span className='form-label text-primary mt-3'>forgot password?</span>
                     </div>
 

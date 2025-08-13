@@ -22,7 +22,7 @@ export default function Brands() {
 function BrandForm({ setReload }) {
   const [formData, setFormData] = useState([]);
   const [error, setError] = useState('');
-
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -33,6 +33,10 @@ function BrandForm({ setReload }) {
     e.preventDefault();
     setError('');
     
+    if(loading) return;
+
+    setLoading(true);
+
     try {
       await axios.post('http://localhost:8000/add-brand/', formData, {
         headers: {
@@ -55,6 +59,8 @@ function BrandForm({ setReload }) {
       } else {
         setError('Server not responding');
       }
+    }finally{
+      setLoading(false);
     }
   }
 

@@ -19,6 +19,7 @@ export default function CreateLoan() {
     const [lockId, setLockId] = useState('');
     const [loanType, setLoanType] = useState('');
     const date = new Date();
+    const [loading, setLoading] = useState(false);
 
     const [lastCashBal, setLastCashBal] = useState(0);
 
@@ -68,6 +69,10 @@ export default function CreateLoan() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(loading) return;
+
+        setLoading(true);
 
         if (lastCashBal < Number(loanFormData.loan_amount) + Number(loanFormData.advance_bal)) {
             alert('Insufficient cash balance')
@@ -132,6 +137,8 @@ export default function CreateLoan() {
             } else {
                 alert("Something went wrong!");
             }
+        }finally{
+            setLoading(false);
         }
     }
 

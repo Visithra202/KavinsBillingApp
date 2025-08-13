@@ -4,19 +4,21 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function EditItem() {
 
-    const navigate =useNavigate();
+    const navigate = useNavigate();
     const location = useLocation();
 
-    const [itemFormData, setItemFormData] = useState(location.state?.item||'');
+    const [itemFormData, setItemFormData] = useState(location.state?.item || '');
     const [categories, setCategories] = useState([]);
     const [brands, setBrands] = useState([]);
 
-    const beforeEdit = JSON.stringify(location.state?.item||'')
+    const beforeEdit = JSON.stringify(location.state?.item || '')
 
-    useEffect(()=>{
-        if(!location.state)
+    useEffect(() => {
+        if (!location.state) {
             navigate('/stockList');
-    },[])
+        }
+    }, [location.state, navigate]);
+
 
     useEffect(() => {
         axios.get('http://localhost:8000/get-category-list/')
@@ -43,25 +45,25 @@ export default function EditItem() {
     }
 
 
-    const handleUpdate = async() => {
+    const handleUpdate = async () => {
         const afterEdit = JSON.stringify(itemFormData)
 
-        if(beforeEdit===afterEdit){
+        if (beforeEdit === afterEdit) {
             alert('None of the fields changed')
             return;
         }
 
-        try{
-            await axios.put(`http://localhost:8000/edit-item/${itemFormData.item_id}/`, itemFormData,{
-                headers:{"Content-Type":"application/json"}
+        try {
+            await axios.put(`http://localhost:8000/edit-item/${itemFormData.item_id}/`, itemFormData, {
+                headers: { "Content-Type": "application/json" }
             });
             navigate('/stockList');
-        }catch(error){
+        } catch (error) {
             if (error.response && error.response.data) {
                 alert(error.response.data.non_field_errors);
-              } else {
+            } else {
                 alert("Something went wrong!");
-              }
+            }
         }
     }
 
@@ -81,7 +83,7 @@ export default function EditItem() {
                             <div className="col">
                                 <label className="form-label ">Item name</label>
                                 <input type="text" name="item_name" className="form-control"
-                                    value={itemFormData.item_name} onChange={handleChange} required autoComplete="off"/>
+                                    value={itemFormData.item_name} onChange={handleChange} required autoComplete="off" />
                             </div>
                             <div className='col'>
                                 <label htmlFor="category" className="form-label">Category</label>
@@ -128,12 +130,12 @@ export default function EditItem() {
                             <div className="col">
                                 <label className="form-label">Purchase Price</label>
                                 <input type="number" name="purchase_price" className="form-control"
-                                    value={itemFormData.purchase_price} onChange={handleChange} required autoComplete="off"/>
+                                    value={itemFormData.purchase_price} onChange={handleChange} required autoComplete="off" />
                             </div>
                             <div className="col">
                                 <label className="form-label">Sale Price</label>
                                 <input type="number" name="sale_price" className="form-control"
-                                    value={itemFormData.sale_price} onChange={handleChange} required autoComplete="off"/>
+                                    value={itemFormData.sale_price} onChange={handleChange} required autoComplete="off" />
                             </div>
                             <div className="col">
                                 <label className="form-label">Tax Option</label>
@@ -152,7 +154,7 @@ export default function EditItem() {
                             <div className='col'>
                                 <label className="form-label">MRP</label>
                                 <input type="number" name="mrp" className="form-control"
-                                    value={itemFormData.mrp} onChange={handleChange} required autoComplete="off"/>
+                                    value={itemFormData.mrp} onChange={handleChange} required autoComplete="off" />
                             </div>
                             <div className="col">
                                 <label className="form-label">Discount type</label>
@@ -167,7 +169,7 @@ export default function EditItem() {
                             <div className="col">
                                 <label className="form-label">Discount</label>
                                 <input type="number" name="discount" className="form-control"
-                                    value={itemFormData.discount} onChange={handleChange} autoComplete="off"/>
+                                    value={itemFormData.discount} onChange={handleChange} autoComplete="off" />
                             </div>
                         </div>
                     </div>
@@ -180,12 +182,12 @@ export default function EditItem() {
                             <div className="col-4">
                                 <label className="form-label">Quantity</label>
                                 <input type="number" name="quantity" className="form-control"
-                                    value={itemFormData.quantity} onChange={handleChange} required autoComplete="off"/>
+                                    value={itemFormData.quantity} onChange={handleChange} required autoComplete="off" />
                             </div>
                             <div className='col-4'>
                                 <label className="form-label">Minimum Stock Required</label>
                                 <input type="number" id="min_stock" name="min_stock" className="form-control"
-                                    value={itemFormData.min_stock} onChange={handleChange} required autoComplete="off"/>
+                                    value={itemFormData.min_stock} onChange={handleChange} required autoComplete="off" />
                             </div>
                         </div>
                     </div>
@@ -196,7 +198,7 @@ export default function EditItem() {
                     <div className='d-flex justify-content-center mt-3'>
                         <button type="button" className="btn btn-success rounded-pill p-1 px-4 mx-2" onClick={handleUpdate}>Update</button>
                         <button type='button' className="btn btn-secondary rounded-pill p-1 px-4 mx-2"
-                        onClick={()=>navigate('/stockList')} >Cancel</button>
+                            onClick={() => navigate('/stockList')} >Cancel</button>
                     </div>
                 </div>
 

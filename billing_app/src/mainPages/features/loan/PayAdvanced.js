@@ -34,6 +34,7 @@ function PaymentForm({ loan, totalUnpaidDue }) {
     const [discount, setDiscount] = useState('');
     const [payment, setPayment] = useState('');
     const navigate = useNavigate()
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -47,6 +48,10 @@ function PaymentForm({ loan, totalUnpaidDue }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(loading) return;
+
+        setLoading(true);
 
         if (Number(amount) <= 0) {
             return;
@@ -82,6 +87,8 @@ function PaymentForm({ loan, totalUnpaidDue }) {
             navigate('/loanBills', { state: { loan } })
         } catch (error) {
             alert('Error adding loan payment');
+        }finally{
+            setLoading(false);
         }
     }
 

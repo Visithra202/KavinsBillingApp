@@ -21,6 +21,7 @@ export default function Invest() {
 function InvestForm({ setReload }) {
   const [investFormData, setInvestFormData] = useState([]);
   const date = new Date();
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -34,6 +35,10 @@ function InvestForm({ setReload }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if(loading) return;
+
+    setLoading(true);
 
     const investData = {
       date: date.toISOString().split('T')[0],
@@ -53,6 +58,8 @@ function InvestForm({ setReload }) {
       handleReset();
     } catch (error) {
       alert('Error Adding Invest');
+    }finally{
+      setLoading(false);
     }
   }
 

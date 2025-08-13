@@ -7,7 +7,7 @@ export default function Users() {
     <div className='container'>
       <div className='row overflow-hidden'>
         <div className='col bg-light m-4 mt-4 me-0 p-3 px-5 border rounded-5 shadow ' >
-          <UserList reload={reload} setReload={setReload}/>
+          <UserList reload={reload} setReload={setReload} />
         </div>
 
         <div className='col h-75 '>
@@ -20,6 +20,7 @@ export default function Users() {
 
 function UserForm({ setReload }) {
   const [userFormData, setUserFormData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -29,11 +30,15 @@ function UserForm({ setReload }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (userFormData.password !== userFormData.confirm_password){
-        alert('Password does not match')
-        return;
+    if (loading) return;
+
+    setLoading(true);
+
+    if (userFormData.password !== userFormData.confirm_password) {
+      alert('Password does not match')
+      return;
     }
-    
+
     try {
       await axios.post('http://localhost:8000/add-user/', userFormData, {
         headers: {
@@ -44,6 +49,8 @@ function UserForm({ setReload }) {
       handleReset();
     } catch (error) {
       alert('Error Adding User');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -51,7 +58,7 @@ function UserForm({ setReload }) {
     setUserFormData({
       username: '',
       password: '',
-      confirm_password:''
+      confirm_password: ''
     })
   }
 
@@ -62,18 +69,18 @@ function UserForm({ setReload }) {
       <form onSubmit={handleSubmit} className='py-3 px-4'>
         <div className='d-flex flex-column'>
           <label htmlFor='username' className='form-label'>Username</label>
-          <input id='username'  type='text' className='form-control p-2' name='username' value={userFormData.username}
-            onChange={handleChange} autoComplete="off" required/>
+          <input id='username' type='text' className='form-control p-2' name='username' value={userFormData.username}
+            onChange={handleChange} autoComplete="off" required />
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='password' className='form-label'>Password</label>
           <input id='password' type='password' className='form-control p-2' name='password' value={userFormData.password}
-            onChange={handleChange} autoComplete='off' required/>
+            onChange={handleChange} autoComplete='off' required />
         </div>
         <div className='d-flex flex-column mt-3'>
           <label htmlFor='confirm_password' className='form-label'>Confirm password</label>
           <input id='confirm_password' type='password' className='form-control p-2' name='confirm_password' value={userFormData.confirm_password}
-            onChange={handleChange} autoComplete='off' required/>
+            onChange={handleChange} autoComplete='off' required />
         </div>
         <div className='d-flex justify-content-center mt-4 '>
           <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>
@@ -112,20 +119,20 @@ function UserList({ reload, setReload }) {
 
   const handleDelete = (user) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
-    if(confirmDelete){
+    if (confirmDelete) {
       axios.delete(`http://localhost:8000/delete-user/${user.user_id}/`)
-        .then((response)=>
-          setReload((prev)=>!prev)
-        ).catch((error)=>{
+        .then((response) =>
+          setReload((prev) => !prev)
+        ).catch((error) => {
           alert('Error Deleting User')
         });
     }
   }
 
   return (
-    <div className='container' style={{ height: 'calc(100vh - 150px)'}}>
+    <div className='container' style={{ height: 'calc(100vh - 150px)' }}>
       <div className='d-flex justify-content-center pb-2' ><h5>User list</h5></div>
-      <div className='scroll-bar' style={{ minHeight:'50%', maxHeight: '90%', overflowY: 'auto' }}>
+      <div className='scroll-bar' style={{ minHeight: '50%', maxHeight: '90%', overflowY: 'auto' }}>
         <table className="table table-light">
           {/* <thead className="table-head"> */}
           <thead className="table-head" style={{ position: 'sticky', top: '0', zIndex: '1' }}>
@@ -146,7 +153,7 @@ function UserList({ reload, setReload }) {
                 <tr key={index}>
                   <td>{user.username}</td>
                   <td className='text-center'><i className="bi bi-trash-fill text-danger" style={{ cursor: 'pointer' }}
-                  onClick={() => handleDelete(user)}></i></td>
+                    onClick={() => handleDelete(user)}></i></td>
                 </tr>
               ))
             ) : (

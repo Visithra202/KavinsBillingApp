@@ -23,6 +23,7 @@ function SellerForm({ setReload }) {
     const [sellerFormData, setSellerFormData] = useState([]);
     const location=useLocation();
     const navigate=useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,6 +38,10 @@ function SellerForm({ setReload }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(loading) return;
+
+        setLoading(true);
         
         const seller_mph=sellerFormData.seller_mph;
         if(!seller_mph.startsWith('+91 '))
@@ -66,6 +71,8 @@ function SellerForm({ setReload }) {
             } else {
                 alert.error("Error:", error.message);
             }
+        }finally{
+            setLoading(false);
         }
     }
 
