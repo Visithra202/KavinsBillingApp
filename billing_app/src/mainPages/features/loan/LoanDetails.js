@@ -24,6 +24,8 @@ export default function LoanDetails() {
   const [editField, setEditField] = useState('');
   const [editValue, setEditValue] = useState('');
 
+  const [reversing, setReversing] = useState(false);
+
   useEffect(() => {
     axios.get('http://localhost:8000/get-loan-list/')
       .then((res) => {
@@ -113,35 +115,78 @@ export default function LoanDetails() {
     return labels[field] || field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const handleReverse = async () => {
+    if (!loanJournal || loanJournal.length === 0) {
+      alert("No transactions available to reverse.");
+      return;
+    }
+
+    const lastjournal = loanJournal[loanJournal.length - 1];
+
+    if (lastjournal.action_type !== 'PAYMENT') {
+      alert('Reverse not allowed')
+      return;
+    }
+
+    const confirm = window.confirm('Are you sure want to reverse?');
+
+    if (confirm) {
+      try {
+        setReversing(true);
+        const response = await axios.post(`http://localhost:8000/reverse-loan-payment/${loan.loan_accno}/`);
+        alert(response.data.message);
+        const loanRes = await axios.get(`http://localhost:8000/get-loan/${loan.loan_accno}/`);
+        setLoan(loanRes.data);
+
+        getJournals(loan.loan_accno);
+      } catch (error) {
+        if (error.response) {
+          alert(error.response.data.error || "Server error");
+        } else if (error.request) {
+          alert("No response from server");
+        } else {
+          // Other errors
+          alert("Error: " + error.message);
+        }
+      } finally {
+        setReversing(false);
+      }
+    }
+  }
+
   return (
     <div className='container' style={{ height: 'calc(100vh - 80px)' }}>
 
       {/* Search */}
-      <div className='row mt-2 mb-1 mx-0'>
-        <input className='form-control border rounded px-2' type='text' style={{ width: '300px' }}
-          placeholder='Search loan' value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
+      <div className='mt-2 mb-1 mx-0 d-flex justify-content-between'>
+        <div>
+          <input className='form-control border rounded px-2' type='text' style={{ width: '300px' }}
+            placeholder='Search loan' value={searchTerm} onChange={handleChange} autoFocus autoComplete="off" />
 
-        {dropdown && searchTerm.length > 0 && (
-          <div ref={dropdownRef} className='dropdown-menu show mt-5' style={{ maxHeight: '500px', overflowY: 'auto', width: '300px' }}>
-            <table className='table table-hover'>
-              <thead>
-                <tr><th>Account no</th><th>Customer</th></tr>
-              </thead>
-              <tbody>
-                {loading ? <Loader message='Fetching loan' /> :
-                  filteredLoan.length > 0 ? filteredLoan.map((l, i) => (
-                    <tr key={i} onClick={() => handleDisplayLoan(l)}>
-                      <td>{l.loan_accno}</td>
-                      <td>{l.customer?.customer_name}</td>
-                    </tr>
-                  )) : <tr><td colSpan='2' className='text-center'>No matches</td></tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        )}
+          {dropdown && searchTerm.length > 0 && (
+            <div ref={dropdownRef} className='dropdown-menu show mt-1' style={{ maxHeight: '300px', overflowY: 'auto', width: '300px' }}>
+              <table className='table table-hover'>
+                <thead>
+                  <tr><th>Account no</th><th>Customer</th></tr>
+                </thead>
+                <tbody>
+                  {loading ? <Loader message='Fetching loan' /> :
+                    filteredLoan.length > 0 ? filteredLoan.map((l, i) => (
+                      <tr key={i} onClick={() => handleDisplayLoan(l)}>
+                        <td>{l.loan_accno}</td>
+                        <td>{l.customer?.customer_name}</td>
+                      </tr>
+                    )) : <tr><td colSpan='2' className='text-center'>No matches</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div>
+          <button className='btn btn-success' type='button' onClick={handleReverse} disabled={!(loan?.loan_accno) || reversing}>Reverse last bill</button>
+        </div>
       </div>
-
 
       {!details && <div className='text-center fs-5 mt-5'><i className='bi bi-search me-2'></i>Search loan to display</div>}
 
@@ -182,7 +227,7 @@ export default function LoanDetails() {
         {/* Transaction History */}
         <div className='row mt-3'>
           <h6>Transaction history</h6>
-          <div className='px-3' style={{height:'calc( 100vh - 370px)', }}>
+          <div className='px-3' style={{ height: 'calc( 100vh - 370px)', }}>
             <div style={{ maxHeight: '100%', overflowY: 'auto' }}>
               <table className='table shadow py-2'>
                 <thead className='table-light' style={{ position: 'sticky', top: '0', zIndex: 1 }}>

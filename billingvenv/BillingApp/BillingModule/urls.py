@@ -67,7 +67,9 @@ urlpatterns=[
     path('update-loan/<str:loan_accno>/', update_loan, name='update_loan'),
     path('lock-mobile/<str:loan_accno>', lock_mobile, name='lock_mobile'),
     path('get-collection-data/', get_collection_data, name='get_collection_data'),
-
+    path('reverse-loan-payment/<str:loan_accno>/', reverse_loan_payment, name='reverse_loan_payment'),
+    path('get-loan/<str:loan_accno>/', get_loan, name='get_loan'),
+    
     # Purchase
     path('add-purchase/', add_purchase, name='add_purchase'),
     path('get-purchase-list/', get_purchase_list, name='get_purchase_list'),

@@ -1,7 +1,15 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from BillingModule.models import Loan, LoanBill, LoanJournal, GlHist, Income, LoanInfo
+from BillingModule.models import (
+    Loan,
+    LoanBill,
+    LoanJournal,
+    GlHist,
+    Income,
+    LoanInfo,
+    CashGl,
+)
 from BillingModule.serializer import (
     LoanSerializer,
     LoanBillSerializer,
@@ -17,6 +25,7 @@ from django.utils import timezone
 from django.db.models import Sum, ExpressionWrapper, F, DecimalField, Q
 from datetime import date, timedelta, datetime
 from rest_framework.pagination import PageNumberPagination
+from django.shortcuts import get_object_or_404
 
 
 def get_today():
@@ -466,3 +475,140 @@ def get_collection_data(request):
             "totalCount": totalCount,
         }
     )
+
+
+@api_view(["POST"])
+@transaction.atomic
+def reverse_loan_payment(request, loan_accno):
+
+    today = get_today()
+
+    loan = get_object_or_404(Loan, loan_accno=loan_accno)
+
+    last_journal = (
+        LoanJournal.objects.filter(loan=loan).order_by("-journal_seq").first()
+    )
+    if not last_journal:
+        return Response({"error": "No transactions found"}, status=400)
+
+    if last_journal.action_type == "REVERSAL":
+        return Response({"error": "Last transaction already reversed"}, status=400)
+
+    if last_journal.action_type != "PAYMENT":
+        return Response(
+            {"error": "Last transaction is not a payment, cannot reverse"}, status=400
+        )
+    
+    reversed_amount = last_journal.trans_amt
+
+    loan.bal_amount += reversed_amount
+    loan.save()
+
+    pay_back = reversed_amount
+    paid_bills = LoanBill.objects.filter(loan_acc=loan, paid_amount__gt=0).order_by(
+        "-bill_seq"
+    )
+
+    for bill in paid_bills:
+        if pay_back <= 0:
+            break
+
+        if bill.paid_amount > pay_back:
+            bill.paid_amount -= pay_back
+            pay_back = Decimal("0.00")
+        else:
+            pay_back -= bill.paid_amount
+            bill.paid_amount = Decimal("0.00")
+
+        if bill.paid_date:
+            if bill.due_type == "EMI":
+                loan.loanamt_bal += bill.prin
+
+            if bill.late_fee > 0:
+                create_cash_transaction(
+                    penalty=bill.late_fee,
+                    trans_comment=f"Reversal of late fee payment - {loan_accno}",
+                    trans_type="DEBIT",
+                )
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype="Penalty",
+                    defaults={"income_amt": bill.late_fee},
+                )
+
+                if not created:
+                    income_obj.income_amt -= bill.late_fee
+                    income_obj.save()
+
+            if bill.int > 0:
+                create_cash_transaction(
+                    interest=bill.int,
+                    trans_comment=f"Reversal of loan interest payment - {loan_accno}",
+                    trans_type="DEBIT",
+                )
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype="Interest",
+                    defaults={"income_amt": bill.int},
+                    )
+
+                if not created:
+                    income_obj.income_amt -= bill.int
+                    income_obj.save()
+
+            bill.paid_date = None
+
+        bill.save()
+    loan.save()
+
+    last_hist = GlHist.objects.order_by("-trans_seq").first()
+    prev_balance = last_hist.balance if last_hist else Decimal("0.00")
+    GlHist.objects.create(
+        date=today,
+        loan_acc=loan,
+        debit=1,
+        trans_command=f"Reversal of loan payment - {loan_accno}",
+        trans_amount=reversed_amount,
+        balance=prev_balance - reversed_amount,
+    )
+
+    last_gl = CashGl.objects.get(
+        trans_comt=f"Loan due received - accno : {loan_accno}, seq : {last_journal.journal_seq} "
+    )
+
+    cash = 0
+    account = 0
+
+    if last_gl and last_gl.accno == "CASH001":
+        cash = reversed_amount
+    else:
+        account = reversed_amount
+
+    create_cash_transaction(
+        cash=cash,
+        account=account,
+        trans_comment=f"Reversal of loan payment - {loan_accno}, seq - {last_journal.journal_seq}",
+        trans_type="DEBIT",
+    )
+
+    LoanJournal.objects.create(
+        loan=loan,
+        journal_date=today,
+        journal_seq=last_journal.journal_seq + 1,
+        action_type="REVERSAL",
+        description=f"Reversal of loan payment. seq - {last_journal.journal_seq}",
+        old_data=last_journal.new_data,
+        new_data=last_journal.old_data,
+        crdr=False,
+        trans_amt=reversed_amount,
+        balance_amount=last_journal.old_data,
+    )
+
+    return Response({"message": "Last transaction reversed successfully"})
+
+
+@api_view(["GET"])
+def get_loan(request, loan_accno):
+    loan = Loan.objects.get(loan_accno=loan_accno)
+    serializer = LoanSerializer(loan)
+    return Response(serializer.data, status=status.HTTP_200_OK)
