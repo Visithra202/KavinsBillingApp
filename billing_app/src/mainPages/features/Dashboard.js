@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-} from 'recharts';
+// import {
+//   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+// } from 'recharts';
 import Loader from '../components/Loader';
 
 export default function Dashboard() {
@@ -34,7 +34,8 @@ export default function Dashboard() {
           <Recentsales />
         </div>
         <div className='col h-100'>
-          <DashboardChart />
+          {/* <DashboardChart /> */}
+          <AverageIncome />
         </div>
       </div>
     </div>
@@ -300,33 +301,89 @@ function Recentsales() {
 }
 
 
-function DashboardChart() {
-  const [chartData, setChartData] = useState([]);
+// function DashboardChart() {
+//   const [chartData, setChartData] = useState([]);
+
+//   useEffect(() => {
+//     axios.get('http://localhost:8000/stats/last-10-days/')
+//       .then(res => {
+//         setChartData(res.data);
+//       })
+//       .catch(err => {
+//         // console.error('Failed to fetch chart data:', err);
+//       });
+//   }, []);
+//   return (
+//     <div className="card p-3 shadow rounded h-100">
+//       <h6 className="mb-3">Purchase & Sales (Last 10 Days)</h6>
+//       <ResponsiveContainer width="100%">
+//         <BarChart data={chartData}>
+//           <CartesianGrid strokeDasharray="3 3" />
+//           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+//           <YAxis tick={{ fontSize: 12 }} />
+//           <Tooltip />
+//           <Legend />
+//           <Bar dataKey="sales" fill="#28a745" barSize={8} radius={[2, 2, 0, 0]} />
+//           <Bar dataKey="purchase" fill="#dc3545" barSize={8} radius={[2, 2, 0, 0]} />
+//         </BarChart>
+//       </ResponsiveContainer>
+//     </div>
+
+//   )
+// }
+
+function AverageIncome() {
+
+  const [averageIncome, setAverageIncome] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/stats/last-10-days/')
+    axios.get('http://localhost:8000/get-average-income/')
       .then(res => {
-        setChartData(res.data);
+        setAverageIncome(res.data);
       })
       .catch(err => {
         // console.error('Failed to fetch chart data:', err);
       });
   }, []);
-  return (
-    <div className="card p-3 shadow rounded h-100">
-      <h6 className="mb-3">Purchase & Sales (Last 10 Days)</h6>
-      <ResponsiveContainer width="100%">
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="sales" fill="#28a745" barSize={8} radius={[2, 2, 0, 0]} />
-          <Bar dataKey="purchase" fill="#dc3545" barSize={8} radius={[2, 2, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
 
+  return (
+    <div className="card p-3 bg-light shadow rounded h-100">
+      <h6 className='mb-2 mt-2 text-center'>Average Income</h6>
+      <hr />
+
+      <div className='px-5 form-label' style={{ fontSize: '14px' }}>
+        <div className='d-flex justify-content-between my-3'>
+          <span>MOBILE</span>
+          <span>₹ {averageIncome?.mobile_income.toFixed(2)}</span>
+        </div>
+
+        <div className='d-flex justify-content-between my-3'>
+          <span>INTEREST</span>
+          <span>₹ {averageIncome?.interest_income.toFixed(2)}</span>
+        </div>
+
+        <div className='d-flex justify-content-between my-3'>
+          <span>PENALTY</span>
+          <span>₹ {averageIncome?.penalty_income.toFixed(2)}</span>
+        </div>
+
+        <div className='d-flex justify-content-between my-3'>
+          <span>ACCESSORIES</span>
+          <span>₹ {averageIncome?.accessories_income.toFixed(2)}</span>
+        </div>
+
+        <div className='d-flex justify-content-between my-3'>
+          <span>SERVICE</span>
+          <span>₹ {averageIncome?.service_income.toFixed(2)}</span>
+        </div>
+
+      </div>
+
+      <hr />
+      <div className='form-label d-flex justify-content-between mx-5'>
+          <span>TOTAL</span>
+          <span>₹ {averageIncome?.overall_total.toFixed(2)}</span>
+        </div>
+    </div>
   )
 }

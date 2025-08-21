@@ -64,7 +64,7 @@ export default function StockList() {
             <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
                 <div className='d-flex justify-content-between align-items-center btnrow'>
                     <input
-                        className='form-control border rounded px-2 my-3'
+                        className='form-control border rounded px-2 my-2'
                         type='text'
                         placeholder='Search...'
                         style={{ width: '300px' }}
@@ -75,8 +75,8 @@ export default function StockList() {
                     <button className='btn btn-primary' onClick={handlePrint}>Print</button>
                 </div>
 
-                <div className='border border-secondary bg-white rounded-5 shadow my-2 scroll-bar'
-                    style={{ minHeight: '90%', maxHeight: '90%', overflowY: 'auto' }}>
+                <div className='border border-secondary bg-white rounded-5 shadow my-1 scroll-bar'
+                    style={{ minHeight: '93%', maxHeight: '93%', overflowY: 'auto' }}>
                     <table className='itmlst table table-hover'>
                         <thead style={{ position: 'sticky', top: '0', zIndex: '1' }}>
                             <tr>

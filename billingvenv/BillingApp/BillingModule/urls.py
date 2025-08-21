@@ -84,7 +84,8 @@ urlpatterns=[
     path('get-stock-summary/', get_stock_summary, name='get_stock_summary'),
     path('recent-sales/', recent_sales, name='recent_sales'),
     path('stats/last-10-days/', last_10_days_stats, name='last_10_days_stats'),
-    
+    path('get-average-income/', get_average_income, name='get_average_income'),
+
     # report
     path('get-report-sales-by-customer/', sales_by_customer, name='sales_by_customer'),
     path('get-report-sales-by-products/', sale_by_products, name='sale_by_products'),
