@@ -332,58 +332,62 @@ function Recentsales() {
 //   )
 // }
 
-function AverageIncome() {
 
+function AverageIncome() {
   const [averageIncome, setAverageIncome] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/get-average-income/')
-      .then(res => {
-        setAverageIncome(res.data);
-      })
-      .catch(err => {
-        // console.error('Failed to fetch chart data:', err);
+    axios.get("http://localhost:8000/get-average-income/")
+      .then((res) => setAverageIncome(res.data))
+      .catch((err) => {
+        // console.error("Failed to fetch average income:", err)
       });
   }, []);
 
+  const formatValue = (value) => {
+    return value !== undefined && value !== null ? `₹ ${value.toFixed(2)}` : "₹ 0.00";
+  };
+
   return (
-    <div className="card p-3 bg-light shadow rounded h-100">
-      <h6 className='mb-2 mt-2 text-center'>Average Income</h6>
-      <hr />
+    <div className="card p-4 shadow rounded h-100">
+      <h6 className="my-1 text-center">Income Average</h6>
 
-      <div className='px-5 form-label' style={{ fontSize: '14px' }}>
-        <div className='d-flex justify-content-between my-3'>
-          <span>MOBILE</span>
-          <span>₹ {averageIncome?.mobile_income.toFixed(2)}</span>
-        </div>
+      <table className='table table-borderless mt-3'>
+        <thead>
+          <tr className='border-bottom border-top'>
+            <th>Type</th>
+            <th className='text-end'>This Month</th>
+            <th className='text-end'>Last Month</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            ['mobile', 'interest', 'penalty', 'accessories', 'service'].map((type) => (
+              <tr key={type}>
+                <td>{type.charAt(0).toUpperCase() + type.slice(1)}</td>
+                <td className="text-end">
+                  {formatValue(averageIncome?.this_month?.[`${type}_income`])}
+                </td>
+                <td className="text-end">
+                  {formatValue(averageIncome?.last_month?.[`${type}_income`])}
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+        <tfoot>
+          <tr className='border-top form-label'>
+            <td >Total</td>
+            <td className="text-end">
+              {formatValue(averageIncome?.this_month?.overall_total)}
+            </td>
+            <td className="text-end">
+              {formatValue(averageIncome?.last_month?.overall_total)}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
 
-        <div className='d-flex justify-content-between my-3'>
-          <span>INTEREST</span>
-          <span>₹ {averageIncome?.interest_income.toFixed(2)}</span>
-        </div>
-
-        <div className='d-flex justify-content-between my-3'>
-          <span>PENALTY</span>
-          <span>₹ {averageIncome?.penalty_income.toFixed(2)}</span>
-        </div>
-
-        <div className='d-flex justify-content-between my-3'>
-          <span>ACCESSORIES</span>
-          <span>₹ {averageIncome?.accessories_income.toFixed(2)}</span>
-        </div>
-
-        <div className='d-flex justify-content-between my-3'>
-          <span>SERVICE</span>
-          <span>₹ {averageIncome?.service_income.toFixed(2)}</span>
-        </div>
-
-      </div>
-
-      <hr />
-      <div className='form-label d-flex justify-content-between mx-5'>
-          <span>TOTAL</span>
-          <span>₹ {averageIncome?.overall_total.toFixed(2)}</span>
-        </div>
     </div>
-  )
+  );
 }

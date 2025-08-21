@@ -244,31 +244,54 @@ def last_10_days_stats(request):
 @api_view(['GET'])
 def get_average_income(request):
     today = now().date()
-    first_day = today.replace(day=1)
+    first_day_this_month = today.replace(day=1)
     days_so_far = today.day
 
-    def avg_income_for_type(inctype):
+    # last month calculation
+    last_day_last_month = first_day_this_month - timedelta(days=1)
+    first_day_last_month = last_day_last_month.replace(day=1)
+    days_last_month = last_day_last_month.day  # total days in that month
+
+    def avg_income_for_type(inctype, start_date, end_date, days):
         incomes = Income.objects.filter(
             inctype=inctype,
-            income_date__range=(first_day, today)
+            income_date__range=(start_date, end_date)
         )
         total_income = incomes.aggregate(total=Sum('income_amt'))['total'] or 0
-        avg = (total_income / days_so_far if days_so_far > 0 else 0)
+        avg = (total_income / days if days > 0 else 0)
         return float(avg)
-    
-    mobile_avg = avg_income_for_type('Mobile')
-    accessories_avg = avg_income_for_type('Accessories')
-    service_avg = avg_income_for_type('Service')
-    interest_avg = avg_income_for_type('Interest')
-    penalty_avg = avg_income_for_type('Penalty')
 
+    # --- this month averages ---
+    mobile_avg = avg_income_for_type('Mobile', first_day_this_month, today, days_so_far)
+    accessories_avg = avg_income_for_type('Accessories', first_day_this_month, today, days_so_far)
+    service_avg = avg_income_for_type('Service', first_day_this_month, today, days_so_far)
+    interest_avg = avg_income_for_type('Interest', first_day_this_month, today, days_so_far)
+    penalty_avg = avg_income_for_type('Penalty', first_day_this_month, today, days_so_far)
     overall_total = mobile_avg + accessories_avg + service_avg + interest_avg + penalty_avg
 
+    # --- last month averages ---
+    mobile_last = avg_income_for_type('Mobile', first_day_last_month, last_day_last_month, days_last_month)
+    accessories_last = avg_income_for_type('Accessories', first_day_last_month, last_day_last_month, days_last_month)
+    service_last = avg_income_for_type('Service', first_day_last_month, last_day_last_month, days_last_month)
+    interest_last = avg_income_for_type('Interest', first_day_last_month, last_day_last_month, days_last_month)
+    penalty_last = avg_income_for_type('Penalty', first_day_last_month, last_day_last_month, days_last_month)
+    overall_last = mobile_last + accessories_last + service_last + interest_last + penalty_last
+
     return Response({
-        'mobile_income': mobile_avg,
-        'accessories_income': accessories_avg,
-        'service_income': service_avg,
-        'interest_income': interest_avg,
-        'penalty_income': penalty_avg,
-        'overall_total': overall_total,
+        'this_month': {
+            'mobile_income': mobile_avg,
+            'accessories_income': accessories_avg,
+            'service_income': service_avg,
+            'interest_income': interest_avg,
+            'penalty_income': penalty_avg,
+            'overall_total': overall_total,
+        },
+        'last_month': {
+            'mobile_income': mobile_last,
+            'accessories_income': accessories_last,
+            'service_income': service_last,
+            'interest_income': interest_last,
+            'penalty_income': penalty_last,
+            'overall_total': overall_last,
+        }
     })
