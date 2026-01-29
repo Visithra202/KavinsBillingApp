@@ -126,7 +126,7 @@ function PaymentForm({ loan, totalUnpaidDue }) {
                     </div>
                 </div>
                 <div className='d-flex flex-column mt-3'>
-                    <PaymentOption payment={payment} setPayment={setPayment} />
+                    <PaymentOption payment={payment} setPayment={setPayment} loanPayment={true} />
                 </div>
                 <div className='d-flex justify-content-center mt-4 '>
                     <button type='submit' className='btn btn-success rounded-pill p-1 px-4 '>Submit</button>

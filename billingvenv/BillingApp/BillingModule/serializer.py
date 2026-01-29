@@ -447,8 +447,16 @@ class LoanSerializer(serializers.ModelSerializer):
             balance_amount=Decimal(loan.payment_amount + loan.advance_bal),
         )
 
+        amt = loan.loan_amount + loan.advance_bal
+        cash = 0
+        shrtcash = 0
+        if loan.ln_typ == "SHRTCSH":
+            shrtcash = amt
+        else:
+            cash = amt
         create_cash_transaction(
-            cash=loan.loan_amount + loan.advance_bal,
+            cash=cash,
+            shrtcash=shrtcash,
             account=0,
             trans_comment=f"Loan Issued - {loan.customer.customer_name}",
             trans_type="DEBIT",
@@ -491,14 +499,23 @@ class InvestSerializer(serializers.ModelSerializer):
         trans_amt = validated_data.get("invest_amt")
         trans_comment = validated_data.get("invest_desc")
         invest_to = validated_data.get("invest_to")
+
         cash = 0
         account = 0
+        shrtcash = 0
+
         if invest_to == "Cash":
             cash = trans_amt
-        else:
+        elif invest_to == "Account":
             account = trans_amt
+        elif invest_to == "Short cash":
+            shrtcash = trans_amt
         create_cash_transaction(
-            cash=cash, account=account, trans_comment=trans_comment, trans_type="CREDIT"
+            cash=cash,
+            account=account,
+            shrtcash=shrtcash,
+            trans_comment=trans_comment,
+            trans_type="CREDIT",
         )
 
         return super().create(validated_data)
@@ -513,6 +530,10 @@ def create_cash_transaction(
     accessories=0,
     service=0,
     interest=0,
+    shrtcash=0,
+    shrtpen=0,
+    shrtint=0,
+    shrtacc=0,
     trans_comment="",
     trans_type="CREDIT",
 ):
@@ -554,6 +575,10 @@ def create_cash_transaction(
     accs_entry = update_accounts("ACS001", accessories)
     serv_entry = update_accounts("SER001", service)
     int_entry = update_accounts("INT001", interest)
+    shrtcash_entry = update_accounts("SHRTCSH", shrtcash)
+    shrtacc_entry = update_accounts("SHRTACC", shrtacc)
+    shrtpen_entry = update_accounts("SHRTPEN", shrtpen)
+    shrtint_entry = update_accounts("SHRTINT", shrtint)
 
     return {
         "cash_entry": cash_gl_entry,
@@ -563,6 +588,10 @@ def create_cash_transaction(
         "accs_entry": accs_entry,
         "serv_entry": serv_entry,
         "int_entry": int_entry,
+        "shrtcash_entry": shrtcash_entry,
+        "shrtacc_entry": shrtacc_entry,
+        "shrtpen_entry": shrtpen_entry,
+        "shrtint_entry": shrtint_entry,
     }
 
 

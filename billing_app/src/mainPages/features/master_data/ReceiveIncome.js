@@ -187,7 +187,7 @@ function ReceiveForm({ setReload, mobInc, accInc, serInc, penInc, intInc }) {
         </div>
 
         <div className='d-flex flex-column mt-3'>
-          <PaymentOption payment={payment} setPayment={setPayment} />
+          <PaymentOption payment={payment} setPayment={setPayment} loanPayment={true} />
         </div>
 
         <div className='d-flex justify-content-center mt-4'>

@@ -45,7 +45,7 @@ function PaymentForm({ collection, totalDue }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if(loading) return;
+        if (loading) return;
 
         setLoading(true);
 
@@ -53,7 +53,7 @@ function PaymentForm({ collection, totalDue }) {
             return;
         }
 
-        const disc=discount?parseFloat(discount):0;
+        const disc = discount ? parseFloat(discount) : 0;
 
         if (parseFloat(amount) + disc > parseFloat(totalDue)) {
             alert('Enter valid amount');
@@ -69,7 +69,7 @@ function PaymentForm({ collection, totalDue }) {
             loan_accno: collection.loan_accno,
             payment_amount: amount,
             payment: payment,
-            discount: disc 
+            discount: disc
         }
 
         try {
@@ -84,7 +84,7 @@ function PaymentForm({ collection, totalDue }) {
             navigate('/loanCollection')
         } catch (error) {
             alert('Error adding loan payment');
-        }finally{
+        } finally {
             setLoading(false);
         }
     }
@@ -139,7 +139,7 @@ function PaymentForm({ collection, totalDue }) {
                             autoComplete='off' />
                     </div>
                     <div className='col d-flex flex-column '>
-                        <PaymentOption payment={payment} setPayment={setPayment} />
+                        <PaymentOption payment={payment} setPayment={setPayment} loanPayment={true} />
                     </div>
                 </div>
 
@@ -161,7 +161,7 @@ function DueDetails({ collection, setTotalDue }) {
     useEffect(() => {
         const unpaidBills = bills.filter(bill => !bill.paid_date);
         const totalUnpaidDue = unpaidBills.reduce((sum, bill) => {
-            return sum + (parseFloat(bill.total_due)-parseFloat(bill.paid_amount) || 0);
+            return sum + (parseFloat(bill.total_due) - parseFloat(bill.paid_amount) || 0);
         }, 0);
         setTotalDue(totalUnpaidDue);
     }, [bills, setTotalDue]);

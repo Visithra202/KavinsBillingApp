@@ -22,11 +22,13 @@ export default function CreateLoan() {
     const [loading, setLoading] = useState(false);
 
     const [lastCashBal, setLastCashBal] = useState(0);
+    const [lastShrtCash, setLastShrtCash] = useState(0);
 
     useEffect(() => {
         axios.get('http://localhost:8000/get-last-balance/')
             .then((response) => {
                 setLastCashBal(response.data.cash_bal);
+                setLastShrtCash(response.data.shrt_cash_bal)
             })
             .catch((error) => {
                 // console.error('Error Fetching Bill No');
@@ -70,14 +72,20 @@ export default function CreateLoan() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if(loading) return;
+        if (loading) return;
 
-        setLoading(true);
 
-        if (lastCashBal < Number(loanFormData.loan_amount) + Number(loanFormData.advance_bal)) {
+        if (loanType === "SHRTCSH" && lastShrtCash < Number(loanFormData.loan_amount) + Number(loanFormData.advance_bal)) {
+            alert('Insufficient short loan cash')
+            return;
+        }
+
+        if (loanType !== "SHRTCSH" && lastCashBal < Number(loanFormData.loan_amount) + Number(loanFormData.advance_bal)) {
             alert('Insufficient cash balance')
             return;
         }
+
+
 
         if (!searchCustomer.customer_name || !searchCustomer.mph) {
             alert('Please select a customer or add customer');
@@ -122,6 +130,8 @@ export default function CreateLoan() {
             loanamt_bal: loanFormData.loan_amount ? loanFormData.loan_amount : 0,
             details: loanFormData.details
         }
+        setLoading(true);
+
 
         try {
             await axios.post('http://localhost:8000/create-loan/', loanData, {
@@ -137,7 +147,7 @@ export default function CreateLoan() {
             } else {
                 alert("Something went wrong!");
             }
-        }finally{
+        } finally {
             setLoading(false);
         }
     }
@@ -383,6 +393,7 @@ function CustomerSelection({ searchCustomer, setSearchCustomer, refContact, setR
                         <option value='MOB'>Mobile</option>
                         <option value='ACC'>Accessories</option>
                         <option value='OLD'>Old</option>
+                        <option value='SHRTCSH'>Short loan</option>
                     </select>
                 </div>
 

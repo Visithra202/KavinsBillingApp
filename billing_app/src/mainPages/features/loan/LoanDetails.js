@@ -209,7 +209,7 @@ export default function LoanDetails() {
             <Field label="Interest" value={loan.interest} />
             <Field label="Emi amount" value={loan.emi_amount} />
             <Field label="Payment frequency" value={loan.payment_freq} />
-            <Field label="Loan type" value={loan.ln_typ === 'MOB' ? 'Mobile' : loan.ln_typ === 'ACC' ? 'Accessories' : 'Old Loan'} />
+            <Field label="Loan type" value={loan.ln_typ === 'MOB' ? 'Mobile' : loan.ln_typ === 'ACC' ? 'Accessories' : loan.ln_typ === 'OLD' ? 'Old Loan' : 'Short loan'} />
           </div>
           <div className='row'>
             <Field label="Term" value={loan.term} />

@@ -127,7 +127,10 @@ def receive_income(request):
 def get_last_balance(request):
     cash_bal = GlBal.objects.filter(glac='CASH001').order_by('-date').first()
     acc_bal = GlBal.objects.filter(glac='ACC001').order_by('-date').first()
+    shrt_cash_bal = GlBal.objects.filter(glac='SHRTCSH').order_by('-date').first()
+
     return Response({
         'cash_bal': cash_bal.balance if cash_bal else 0,
         'acc_bal': acc_bal.balance if acc_bal else 0,
+        'shrt_cash_bal':shrt_cash_bal.balance if shrt_cash_bal else 0
     }, status=status.HTTP_200_OK)

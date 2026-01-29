@@ -10,7 +10,7 @@ export default function LoanList() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true);
   const [filteredLoans, setFilteredLoans] = useState([]);
-
+  const [loanType, setLoanType] = useState('ALL');
 
   useEffect(() => {
     axios.get('http://localhost:8000/get-loan-list/')
@@ -43,6 +43,25 @@ export default function LoanList() {
 
   const handleChange = (e) => setSearchTerm(e.target.value);
 
+  const handleLoanFilter = (e) => {
+
+    if (loanType === e.target.value){
+      return;
+    }
+
+    setLoanType(e.target.value);
+    setLoading(true);
+    axios.get('http://localhost:8000/get-loan-list/')
+      .then((response) => {
+        setLoans(response.data);
+        setFilteredLoans(response.data);
+        setLoading(false);
+      }).catch((error) => {
+        setLoading(false);
+        // console.error('Error fetching Loans ' + error.response.data)
+      })
+  }
+
 
   return (
     <div className='container' style={{ height: 'calc(100vh - 85px)' }}>
@@ -56,6 +75,12 @@ export default function LoanList() {
           onChange={handleChange}
           autoComplete="off"
         />
+
+        {/* <select className='form-select w-25' onChange={handleLoanFilter} value={loanType}>
+          <option value='ALL'>All</option>
+          <option value='SHRT'>Short Loan</option>
+          <option value='OTHER'>Other Loans</option>
+        </select> */}
       </div>
 
       <div className='border border-secondary bg-white rounded-5 shadow  my-1 scroll-bar'

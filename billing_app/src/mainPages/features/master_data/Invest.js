@@ -99,6 +99,7 @@ function InvestForm({ setReload }) {
             <option value="">Select option</option>
             <option value="Cash">Cash</option>
             <option value="Account">Account</option>
+            <option value="Short cash">Short loan</option>
           </select>
         </div>
         <div className='d-flex flex-column mt-3'>

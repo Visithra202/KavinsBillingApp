@@ -126,35 +126,67 @@ def add_loan_payment(request):
         loan.save()
 
         if bill.paid_amount == bill.total_due and bill.late_fee > 0:
-            create_cash_transaction(
-                penalty=bill.late_fee,
-                trans_comment=f"Accno : {loan_accno}, Bill seq : {bill.bill_seq}",
-                trans_type="CREDIT",
-            )
-            income_obj, created = Income.objects.get_or_create(
-                income_date=get_today(),
-                inctype="Penalty",
-                defaults={"income_amt": bill.late_fee},
-            )
+            if loan.ln_typ in ("SHRTCSH"):
+                create_cash_transaction(
+                    shrtpen=bill.late_fee,
+                    trans_comment=f"Accno : {loan_accno}, Bill seq : {bill.bill_seq}",
+                    trans_type="CREDIT",
+                )
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype="Short Penalty",
+                    defaults={"income_amt": bill.late_fee},
+                )
 
-            if not created:
-                income_obj.income_amt += bill.late_fee
-                income_obj.save()
+                if not created:
+                    income_obj.income_amt += bill.late_fee
+                    income_obj.save()
+            else:
+                create_cash_transaction(
+                    penalty=bill.late_fee,
+                    trans_comment=f"Accno : {loan_accno}, Bill seq : {bill.bill_seq}",
+                    trans_type="CREDIT",
+                )
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype="Penalty",
+                    defaults={"income_amt": bill.late_fee},
+                )
+
+                if not created:
+                    income_obj.income_amt += bill.late_fee
+                    income_obj.save()
         if bill.paid_amount == bill.total_due:
-            create_cash_transaction(
-                interest=bill.int,
-                trans_comment=f"Loan - {bill.loan_acc} Interest credited. seq - {bill.bill_seq}",
-                trans_type="CREDIT",
-            )
-            income_obj, created = Income.objects.get_or_create(
-                income_date=get_today(),
-                inctype="Interest",
-                defaults={"income_amt": bill.int},
-            )
+            if loan.ln_typ in ("SHRTCSH"):
+                create_cash_transaction(
+                    shrtint=bill.int,
+                    trans_comment=f"Short loan - {bill.loan_acc} Interest credited. seq - {bill.bill_seq}",
+                    trans_type="CREDIT",
+                )
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype="Short Interest",
+                    defaults={"income_amt": bill.int},
+                )
 
-            if not created:
-                income_obj.income_amt += bill.int
-                income_obj.save()
+                if not created:
+                    income_obj.income_amt += bill.int
+                    income_obj.save()
+            else:
+                create_cash_transaction(
+                    interest=bill.int,
+                    trans_comment=f"Loan - {bill.loan_acc} Interest credited. seq - {bill.bill_seq}",
+                    trans_type="CREDIT",
+                )
+                income_obj, created = Income.objects.get_or_create(
+                    income_date=get_today(),
+                    inctype="Interest",
+                    defaults={"income_amt": bill.int},
+                )
+
+                if not created:
+                    income_obj.income_amt += bill.int
+                    income_obj.save()
 
         if pay_amount == 0:
             break
@@ -219,27 +251,43 @@ def add_loan_payment(request):
 
     if payment_type == "Cash":
         cash = paid_amount + discount
-    else:
+    elif payment_type == "Account":
         account = paid_amount + discount
+    elif payment_type == "Short Cash":
+        shrtcsh = paid_amount + discount
 
     create_cash_transaction(
         cash=cash,
         account=account,
+        shrtcash=shrtcsh,
         trans_comment=f"Loan due received - accno : {loan_accno}, seq : {loan_journal.journal_seq} ",
         trans_type="CREDIT",
     )
 
     if discount > 0:
-        create_cash_transaction(
-            cash=discount,
-            trans_comment=f"Loan due discount - accno : {loan_accno}",
-            trans_type="DEBIT",
-        )
-        create_cash_transaction(
-            penalty=discount,
-            trans_comment=f"Loan due discount - accno : {loan_accno},",
-            trans_type="DEBIT",
-        )
+        if loan.ln_typ in ("SHRTCSH"):
+            create_cash_transaction(
+                shrtcash=discount,
+                trans_comment=f"Short loan due discount - accno : {loan_accno}",
+                trans_type="DEBIT",
+            )
+            create_cash_transaction(
+                shrtpen=discount,
+                trans_comment=f"Short loan due discount - accno : {loan_accno},",
+                trans_type="DEBIT",
+            )
+            
+        else:
+            create_cash_transaction(
+                cash=discount,
+                trans_comment=f"Loan due discount - accno : {loan_accno}",
+                trans_type="DEBIT",
+            )
+            create_cash_transaction(
+                penalty=discount,
+                trans_comment=f"Loan due discount - accno : {loan_accno},",
+                trans_type="DEBIT",
+            )
 
     if loan.bal_amount <= 0:
         LoanInfo.objects.filter(loan_accno=loan).delete()
@@ -498,7 +546,7 @@ def reverse_loan_payment(request, loan_accno):
         return Response(
             {"error": "Last transaction is not a payment, cannot reverse"}, status=400
         )
-    
+
     reversed_amount = last_journal.trans_amt
 
     loan.bal_amount += reversed_amount
@@ -550,7 +598,7 @@ def reverse_loan_payment(request, loan_accno):
                     income_date=get_today(),
                     inctype="Interest",
                     defaults={"income_amt": bill.int},
-                    )
+                )
 
                 if not created:
                     income_obj.income_amt -= bill.int
