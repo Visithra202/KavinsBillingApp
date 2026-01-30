@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from BillingModule.models import Customer, Sale, Purchase, Item, Income
+from BillingModule.models import Customer, Sale, Purchase, Item, Income, Discmon
 from django.utils import timezone
 from django.http import JsonResponse
 from django.db.models import Sum, F, Q, ExpressionWrapper, DecimalField
@@ -258,7 +258,20 @@ def get_average_income(request):
             income_date__range=(start_date, end_date)
         )
         total_income = incomes.aggregate(total=Sum('income_amt'))['total'] or 0
+
+        #if inctype == "Penalty" and start_date.month == now.month:
+        if inctype == "Penalty":
+            now = datetime.now()
+            if start_date.month == now.month: yearmon = now.strftime("%y%m")
+            if start_date.month != now.month: yearmon = start_date.strftime("%y%m")
+
+            disc_record = Discmon.objects.filter(yearmon=yearmon).first()
+
+            if disc_record:
+                total_income = total_income - disc_record.discamt
+
         avg = (total_income / days if days > 0 else 0)
+
         return float(avg)
 
     # --- this month averages ---

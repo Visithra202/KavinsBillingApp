@@ -286,3 +286,7 @@ class LoanInfo(models.Model):
     committed_in = models.IntegerField()
     extended_date = models.DateField()
     loan_accno = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='loan_infos')
+
+class Discmon(models.Model):
+    yearmon=models.CharField(max_length=30, primary_key=True)
+    discamt=models.IntegerField()
